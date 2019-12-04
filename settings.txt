@@ -1,0 +1,26 @@
+15 15 1 8 15
+rows columns king_count queen_count pawn_count (count for each player)
+
+              (B)
+ A B C D E F G H I J K L M N O
+ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|  1   NP    P    NP    P    NP    P    NP    P    NP    P    NP    P    NP    P    NP    (if P: Pawn(W) -> Queen(W))
+|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|  2   Queen PK   Queen PK   Queen PK   Queen King Queen PK   Queen PK   Queen PK   Queen
+|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|  3   NP    Pawn NP    Pawn NP    Pawn NP    Pawn NP    Pawn NP    Pawn NP    Pawn NP
+|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|  4   Pawn  PK   Pawn  PK   Pawn  PK   Pawn  PK   Pawn  PK   Pawn  PK   Pawn  PK   Pawn
+|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|  5   NP    P    NP    P    NP    P    NP    P    NP    P    NP    P    NP    P    NP
+|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|  6   P     PK   P     PK   P     PK   P     PK   P     PK   P     PK   P     PK   P
+|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|  7   NP    P    NP    P    NP    P    NP    P    NP    P    NP    P    NP    P    NP
+|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|  8   P     PK   P     PK   P     PK   P     PK   P     PK   P     PK   P     PK   P
+|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|  9   NP    P    NP    P    NP    P    NP    P    NP    P    NP    P    NP    P    NP
+|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|  10  P     PK   P     PK   P     PK   P     PK   P     PK   P     PK   P     PK   P
+|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|  11  NP    P    NP    P    NP    P    NP    P    NP    P    NP    P    NP    P    NP
+|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|  12  Pawn  PK   Pawn  PK   Pawn  PK   Pawn  PK   Pawn  PK   Pawn  PK   Pawn  PK   Pawn
+|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|  13  NP    Pawn NP    Pawn NP    Pawn NP    Pawn NP    Pawn NP    Pawn NP    Pawn NP
+|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|  14  Queen PK   Queen PK   Queen PK   Queen King Queen PK   Queen PK   Queen PK   Queen
+|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|  15  NP    P    NP    P    NP    P    NP    P    NP    P    NP    P    NP    P    NP    (if P: Pawn(B) -> Queen(B))
+
+              (W)
+
+NP -> NOT PLAYABLE (case butée), P -> PLAYABLE (case jouable par dames et pions), PK -> PLAYABLE_KING(case jouable par rois)
+NP -> -1, P -> 0, Pawn -> 1, Queen -> 2, King -> 3, PK -> 4.

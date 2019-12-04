@@ -22,5 +22,5 @@ rows columns king_count queen_count pawn_count (count for each player)
 
               (W)
 
-NP -> NOT PLAYABLE (case butée), P -> PLAYABLE (case jouable par dames et pions), PK -> PLAYABLE_KING(case jouable par rois)
+NP -> NOT PLAYABLE (case butée), P -> PLAYABLE (case jouable par dames et pions), PK -> PLAYABLE_KING (case jouable par rois)
 NP -> -1, P -> 0, Pawn -> 1, Queen -> 2, King -> 3, PK -> 4.

@@ -1,0 +1,2 @@
+512 512
+screen_width screen_height

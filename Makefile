@@ -1,4 +1,4 @@
 compile:
-	gcc main.c game_objects.c initMat.c -o main
+	gcc main.c game_objects.c init_mat.c gui.c -o main -lSDL2main -lSDL2
 clean:
 	rm -r main

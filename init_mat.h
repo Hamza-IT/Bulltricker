@@ -6,7 +6,7 @@ int column_count;
 int king_count;
 int queen_count;
 int pawn_count;
-int **im;
+int **initial_matrix;
 
 int **initMat();
 

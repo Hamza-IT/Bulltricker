@@ -98,5 +98,10 @@ bool check_move(int x, int y, int u, int v, int **actual_matrix)
         return true;
       }
     }
+    else
+    {
+      printf("Impossible move!");
+      return false;
+    }
   }
 }

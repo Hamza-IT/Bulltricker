@@ -2,11 +2,11 @@
 #define GUI_H
 
 typedef enum _bool bool;
-int screen_width;
-int screen_height;
+int SCREEN_WIDTH;
+int SCREEN_HEIGHT;
 
 void init();
-void end();
-void createWindow();
+void close();
+void createBoard(int **);
 
 #endif

@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "init_mat.h"
-#include "game_objects.h"
 
 int row_count;
 int column_count;

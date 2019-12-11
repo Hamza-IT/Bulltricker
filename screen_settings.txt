@@ -1,2 +1,2 @@
-465 465
+450 450
 screen_width screen_height

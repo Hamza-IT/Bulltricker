@@ -46,4 +46,4 @@ Explanation:
 
 NP -> NOT PLAYABLE (case butée), P -> PLAYABLE (case jouable par dames et pions), PK -> PLAYABLE_KING (case jouable par rois)
 PK -> -2, NP -> -1, P -> 0, Pawn -> 11* or 21*, Queen -> 12* or 22*, King -> 13* or 23*.
-**0 -> |, **1 -> __;
+**0 -> |, **1 -> __ ;

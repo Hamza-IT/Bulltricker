@@ -65,7 +65,7 @@ void createBoard(int **actual_matrix)
   {
     while(SDL_PollEvent(&event))
     {
-      if(e.type == SDL_QUIT)
+      if(event.type == SDL_QUIT)
       {
         quit = true;
       }

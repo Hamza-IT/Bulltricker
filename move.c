@@ -1,4 +1,6 @@
-#include "check_move.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include "move.h"
 #include "init_mat.h"
 
 int actual_player = 0;
@@ -71,6 +73,7 @@ bool check_move(int x, int y, int u, int v, int **actual_matrix)
         return false;
       }
     }
+    printf("Impossible move!");
     return false;
   }
   else if(actual_matrix[x][y] == 23 && actual_player % 2 == 0)
@@ -103,5 +106,14 @@ bool check_move(int x, int y, int u, int v, int **actual_matrix)
       printf("Impossible move!");
       return false;
     }
+  }
+}
+
+void apply_move(int x, int y, int u, int v, int ***actual_matrix)
+{
+  if(x != u || y != v)
+  {
+    (*actual_matrix)[u][v] = (*actual_matrix)[x][y];
+    (*actual_matrix)[x][y] = 0;
   }
 }

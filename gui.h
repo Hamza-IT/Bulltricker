@@ -4,9 +4,9 @@
 typedef enum _bool bool;
 int SCREEN_WIDTH;
 int SCREEN_HEIGHT;
+int SCREEN_FPS;
+int SCREEN_TICKS_PER_FRAME;
 
-void init();
-void close();
 void createBoard(int **);
 
 #endif

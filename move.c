@@ -11,19 +11,36 @@ typedef enum _bool
   true
 } bool;
 
+// Still need to do queen and pawn movement + rotation...
+
 bool check_move(int x, int y, int u, int v, int **actual_matrix)
 {
-  if(x < 0 || x >= 15 || y >= 15 || y < 0 || u < 0 || u >= 15 || v >= 15 || v < 0)
+  if(actual_matrix[x][y] == 0 || actual_matrix[x][y] == -1 || actual_matrix[x][y] == -2)
   {
-    printf("Out of bounds...");
+    printf("Source is not a playable piece...");
     return false;
   }
-  if(actual_matrix[u][v] == -1)
+  else if((actual_matrix[x][y] / 100 == 1 || actual_matrix[x][y] / 10 == 1) && actual_player % 2 == 0)
   {
-    printf("Destination is a not playable tile...");
+    printf("Not blacks turn...");
     return false;
   }
-  if(actual_matrix == initial_matrix && actual_player == 0)
+  else if((actual_matrix[x][y] / 100 == 2 || actual_matrix[x][y] / 10 == 2) && actual_player % 2 == 1)
+  {
+    printf("Not whites turn...");
+    return false;
+  }
+  else if(actual_matrix[u][v] == -1 || (x == u && y == v) || (actual_matrix[x][y] / 100 == actual_matrix[u][v] / 100 && actual_matrix[x][y] % 10 != 3))
+  {
+    printf("Destination is not a playable tile...");
+    return false;
+  }
+  else if(actual_matrix[x][y] % 100 != 13 && actual_matrix[x][y] != 23 && actual_matrix[u][v] == -2)
+  {
+    printf("Tile is for king only...");
+    return false;
+  }
+  else if(actual_player == 0)
   {
     if(actual_matrix[x][y] == 220)
     {
@@ -39,7 +56,7 @@ bool check_move(int x, int y, int u, int v, int **actual_matrix)
         return false;
       }
     }
-    if(actual_matrix[x][y] == 210)
+    else if(actual_matrix[x][y] == 210)
     {
       if(x - u == 1 && abs(y - v) == 1)
       {
@@ -59,7 +76,7 @@ bool check_move(int x, int y, int u, int v, int **actual_matrix)
         return false;
       }
     }
-    if(actual_matrix[x][y] == 211)
+    else if(actual_matrix[x][y] == 211)
     {
       if((x - u == 2 || x - u == 4) && y == v)
       {
@@ -73,10 +90,69 @@ bool check_move(int x, int y, int u, int v, int **actual_matrix)
         return false;
       }
     }
-    printf("Impossible move!");
-    return false;
+    else
+    {
+      printf("Impossible move!");
+      return false;
+    }
   }
-  else if(actual_matrix[x][y] == 23 && actual_player % 2 == 0)
+  else if(actual_player == 1)
+  {
+    if(actual_matrix[x][y] == 120)
+    {
+      if(x - u == 1 && abs(y - v) == 1)
+      {
+        actual_player++;
+        printf("Possible move!");
+        return true;
+      }
+      else
+      {
+        printf("Impossible move!");
+        return false;
+      }
+    }
+    else if(actual_matrix[x][y] == 110)
+    {
+      if(u - x == 1 && abs(y - v) == 1)
+      {
+        actual_player++;
+        printf("Possible move!");
+        return true;
+      }
+      else if(u - x == 2 && y == v)
+      {
+        actual_player++;
+        printf("Possible move!");
+        return true;
+      }
+      else
+      {
+        printf("Impossible move!");
+        return false;
+      }
+    }
+    else if(actual_matrix[x][y] == 111)
+    {
+      if((u - x == 2 || u - x == 4) && y == v)
+      {
+        actual_player++;
+        printf("Possible move!");
+        return true;
+      }
+      else
+      {
+        printf("Impossible move!");
+        return false;
+      }
+    }
+    else
+    {
+      printf("Impossible move!");
+      return false;
+    }
+  }
+  else if(actual_matrix[x][y] == 23)
   {
     if(actual_matrix[u][v] != -2)
     {
@@ -91,6 +167,11 @@ bool check_move(int x, int y, int u, int v, int **actual_matrix)
         printf("Possible move!");
         return true;
       }
+      else
+      {
+        printf("Impossible move!");
+        return false;
+      }
     }
     else if(y == v)
     {
@@ -100,6 +181,11 @@ bool check_move(int x, int y, int u, int v, int **actual_matrix)
         printf("Possible move!");
         return true;
       }
+      else
+      {
+        printf("Impossible move!");
+        return false;
+      }
     }
     else
     {
@@ -107,11 +193,54 @@ bool check_move(int x, int y, int u, int v, int **actual_matrix)
       return false;
     }
   }
+  else if(actual_matrix[x][y] == 13)
+  {
+    if(actual_matrix[u][v] != -2)
+    {
+      printf("Impossible move!");
+      return false;
+    }
+    else if(x == u)
+    {
+      if((v - y == 2 && actual_matrix[x][y + 1] == 0) || (y - v == 2 && actual_matrix[x][y - 1] == 0))
+      {
+        actual_player++;
+        printf("Possible move!");
+        return true;
+      }
+      else
+      {
+        printf("Impossible move!");
+        return false;
+      }
+    }
+    else if(y == v)
+    {
+      if((x - u == 2 && actual_matrix[x - 1][y] == 0) || (u - x == 2 && actual_matrix[x + 1][y] == 0))
+      {
+        actual_player++;
+        printf("Possible move!");
+        return true;
+      }
+      else
+      {
+        printf("Impossible move!");
+        return false;
+      }
+    }
+    else
+    {
+      printf("Impossible move!");
+      return false;
+    }
+  }
+  actual_player++;
+  return true;
 }
 
 void apply_move(int x, int y, int u, int v, int ***actual_matrix)
 {
-  if(x != u || y != v)
+  if(check_move(x, y, u, v, *actual_matrix))
   {
     (*actual_matrix)[u][v] = (*actual_matrix)[x][y];
     (*actual_matrix)[x][y] = 0;

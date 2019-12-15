@@ -78,23 +78,43 @@ void draw(int **actual_matrix)
       }
       else if(actual_matrix[l][k] == 13)
       {
-        gTexture = loadTexture("Sprites/King.png");
-      }
-      else if(actual_matrix[l][k] == 120 || actual_matrix[l][k] == 121 || actual_matrix[l][k] == 220 || actual_matrix[l][k] == 221)
-      {
-        gTexture = loadTexture("Sprites/Queen.png");
-      }
-      else if(actual_matrix[l][k] == 110 || actual_matrix[l][k] == 210)
-      {
-        gTexture = loadTexture("Sprites/Pawn_r.png");
-      }
-      else if(actual_matrix[l][k] == 111 || actual_matrix[l][k] == 211)
-      {
-        gTexture = loadTexture("Sprites/Pawn.png");
+        gTexture = loadTexture("Sprites/KB.png");
       }
       else if(actual_matrix[l][k] == 23)
       {
-        gTexture = loadTexture("Sprites/King.png");
+        gTexture = loadTexture("Sprites/KW.png");
+      }
+      else if(actual_matrix[l][k] == 121)
+      {
+        gTexture = loadTexture("Sprites/QBR.png");
+      }
+      else if(actual_matrix[l][k] == 120)
+      {
+        gTexture = loadTexture("Sprites/QB.png");
+      }
+      else if(actual_matrix[l][k] == 221)
+      {
+        gTexture = loadTexture("Sprites/QWR.png");
+      }
+      else if(actual_matrix[l][k] == 220)
+      {
+        gTexture = loadTexture("Sprites/QW.png");
+      }
+      else if(actual_matrix[l][k] == 110)
+      {
+        gTexture = loadTexture("Sprites/PBR.png");
+      }
+      else if(actual_matrix[l][k] == 210)
+      {
+        gTexture = loadTexture("Sprites/PWR.png");
+      }
+      else if(actual_matrix[l][k] == 111)
+      {
+        gTexture = loadTexture("Sprites/PB.png");
+      }
+      else if(actual_matrix[l][k] == 211)
+      {
+        gTexture = loadTexture("Sprites/PW.png");
       }
       SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
       SDL_DestroyTexture(gTexture);
@@ -109,7 +129,7 @@ void createBoard(int **actual_matrix)
   init();
   loadMedia();
   draw(actual_matrix);
-  int x, y, u, v, move = 0;
+  int x, y, u, v, move = 0, check = 0;
   bool quit = false;
   SDL_Event event;
   while(!quit)
@@ -124,19 +144,18 @@ void createBoard(int **actual_matrix)
       {
         if(move % 2 == 0)
         {
-          SDL_GetMouseState(&x, &y);
+          SDL_GetMouseState(&y, &x);
           x /= 30;
           y /= 30;
           move++;
         }
         else if(move % 2 == 1)
         {
-          SDL_GetMouseState(&u, &v);
+          SDL_GetMouseState(&v, &u);
           u /= 30;
           v /= 30;
-          // Still needs to check the move...
           printf("\nx = %d, y = %d\nu = %d, v = %d\n", x, y, u, v);
-          apply_move(y, x, v, u, &actual_matrix);
+          apply_move(x, y, u, v, &actual_matrix);
           move++;
         }
         draw(actual_matrix);

@@ -11,7 +11,7 @@ typedef enum _bool
   true
 } bool;
 
-// Still need to do queen and pawn movement + rotation...
+// Still need to do queen and pawn general movements && rotations...
 
 bool check_move(int x, int y, int u, int v, int **actual_matrix)
 {
@@ -35,7 +35,7 @@ bool check_move(int x, int y, int u, int v, int **actual_matrix)
     printf("Destination is not a playable tile...");
     return false;
   }
-  else if(actual_matrix[x][y] % 100 != 13 && actual_matrix[x][y] != 23 && actual_matrix[u][v] == -2)
+  else if(actual_matrix[x][y] != 13 && actual_matrix[x][y] != 23 && actual_matrix[u][v] == -2)
   {
     printf("Tile is for king only...");
     return false;
@@ -242,7 +242,7 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
 {
   if(check_move(x, y, u, v, *actual_matrix))
   {
-    (*actual_matrix)[u][v] = (*actual_matrix)[x][y];
-    (*actual_matrix)[x][y] = 0;
+      (*actual_matrix)[u][v] = (*actual_matrix)[x][y];
+      (*actual_matrix)[x][y] = 0;
   }
 }

@@ -59,67 +59,124 @@ SDL_Texture *loadTexture(char *path)
 void draw(int **actual_matrix)
 {
   SDL_RenderClear(gRenderer);
-  for(int i = 0, k = 0; i < SCREEN_WIDTH, k < 15; i += 30, k++)
+  int x,y;
+  for(int i = 0, k = 0; i < SCREEN_WIDTH, k < 15; k++)
   {
-    for(int j = 0, l = 0; j < SCREEN_HEIGHT, l < 15; j += 30, l++)
+    for(int j = 0, l = 0; j < SCREEN_HEIGHT, l < 15; l++)
     {
-      SDL_Rect fillRect = {i, j, 30, 30};
       if(actual_matrix[l][k] == -1)
       {
+        SDL_Rect fillRect = {i, j, 15, 15};
         gTexture = loadTexture("Sprites/NP.png");
+        SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+        x = y = 15;
       }
-      else if(actual_matrix[l][k] == 0)
+      else if(actual_matrix[l][k] == 1)
       {
-        gTexture = loadTexture("Sprites/P.png");
+        SDL_Rect fillRect = {i, j, 30, 15};
+        gTexture = loadTexture("Sprites/P1.png");
+        SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+        x = 30;
+        y = 15;
+      }
+      else if(actual_matrix[l][k] == 2)
+      {
+        SDL_Rect fillRect = {i, j, 15, 30};
+        gTexture = loadTexture("Sprites/P2.png");
+        SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+        x = 15;
+        y = 30;
       }
       else if(actual_matrix[l][k] == -2)
       {
+        SDL_Rect fillRect = {i, j, 30, 30};
         gTexture = loadTexture("Sprites/PK.png");
+        SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+        x = y = 30;
       }
       else if(actual_matrix[l][k] == 13)
       {
+        SDL_Rect fillRect = {i, j, 30, 30};
         gTexture = loadTexture("Sprites/KB.png");
+        SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+        x = y = 30;
       }
       else if(actual_matrix[l][k] == 23)
       {
+        SDL_Rect fillRect = {i, j, 30, 30};
         gTexture = loadTexture("Sprites/KW.png");
+        SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+        x = y = 30;
       }
       else if(actual_matrix[l][k] == 121)
       {
+        SDL_Rect fillRect = {i, j, 30, 15};
         gTexture = loadTexture("Sprites/QBR.png");
+        SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+        x = 30;
+        y = 15;
       }
       else if(actual_matrix[l][k] == 120)
       {
+        SDL_Rect fillRect = {i, j, 15, 30};
         gTexture = loadTexture("Sprites/QB.png");
+        SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+        x = 15;
+        y = 30;
       }
       else if(actual_matrix[l][k] == 221)
       {
+        SDL_Rect fillRect = {i, j, 30, 15};
         gTexture = loadTexture("Sprites/QWR.png");
+        SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+        x = 30;
+        y = 15;
       }
       else if(actual_matrix[l][k] == 220)
       {
+        SDL_Rect fillRect = {i, j, 15, 30};
         gTexture = loadTexture("Sprites/QW.png");
+        SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+        x = 15;
+        y = 30;
       }
       else if(actual_matrix[l][k] == 110)
       {
+        SDL_Rect fillRect = {i, j, 15, 30};
         gTexture = loadTexture("Sprites/PBR.png");
+        SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+        x = 15;
+        y = 30;
       }
       else if(actual_matrix[l][k] == 210)
       {
+        SDL_Rect fillRect = {i, j, 15, 30};
         gTexture = loadTexture("Sprites/PWR.png");
+        SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+        x = 15;
+        y = 30;
       }
       else if(actual_matrix[l][k] == 111)
       {
+        SDL_Rect fillRect = {i, j, 30, 15};
         gTexture = loadTexture("Sprites/PB.png");
+        SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+        x = 30;
+        y = 15;
       }
-      else if(actual_matrix[l][k] == 211)
+      else
       {
+        SDL_Rect fillRect = {i, j, 30, 15};
         gTexture = loadTexture("Sprites/PW.png");
+        SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+        x = 30;
+        y = 15;
       }
-      SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
       SDL_DestroyTexture(gTexture);
       gTexture = NULL;
+      j += y;
     }
+    i += x;
   }
   SDL_RenderPresent(gRenderer);
 }
@@ -129,7 +186,7 @@ void createBoard(int **actual_matrix)
   init();
   loadMedia();
   draw(actual_matrix);
-  int x, y, u, v, move = 0, check = 0;
+  int x, y, u, v, move = 0;
   bool quit = false;
   SDL_Event event;
   while(!quit)

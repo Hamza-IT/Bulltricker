@@ -11,11 +11,6 @@ SDL_Window *gWindow = NULL;
 SDL_Texture *gTexture = NULL;
 SDL_Renderer *gRenderer = NULL;
 
-typedef enum _bool
-{
-  false,
-  true
-} bool;
 
 void init()
 {
@@ -187,15 +182,35 @@ void mainMenu(bool *quit)
 
 void gameOver(int **actual_matrix, bool *game_over)
 {
-  if(check_mat(actual_matrix) == 1)
+  if(check_mat(actual_matrix) == whites)
   {
     return;
   }
-  else if(check_mat(actual_matrix) == 2)
+  else if(check_mat(actual_matrix) == blacks)
   {
     return;
   }
   return;
+}
+
+void indicator(int x, int y, int **actual_matrix)
+{
+  SDL_Rect fillRect = {x*30, y*30, 30, 30};
+  gTexture = loadTexture("Sprites/Indicator.png");
+  SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+  SDL_RenderPresent(gRenderer);
+  for(int u = 0; u < 15; u++)
+  {
+    for(int v = 0; v < 15; v++)
+    {
+      if(check_move(y, x, u, v, actual_matrix) != impossible)
+      {
+        SDL_Rect _fillRect = {v*30, u*30, 30, 30};
+        SDL_RenderCopy(gRenderer, gTexture, NULL, &_fillRect);
+        SDL_RenderPresent(gRenderer);
+      }
+    }
+  }
 }
 
 void createBoard(int **actual_matrix)
@@ -225,6 +240,7 @@ void createBoard(int **actual_matrix)
           SDL_GetMouseState(&y, &x);
           x /= 30;
           y /= 30;
+          indicator(y, x, actual_matrix);
           move++;
         }
         else if(move % 2 == 1)
@@ -235,8 +251,8 @@ void createBoard(int **actual_matrix)
           printf("\nx = %d, y = %d\nu = %d, v = %d\n", x, y, u, v);
           apply_move(x, y, u, v, &actual_matrix);
           move++;
+          draw(actual_matrix);
         }
-        draw(actual_matrix);
       }
     }
   }

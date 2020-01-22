@@ -7,34 +7,9 @@
 
 int actual_player = 0;
 
-typedef enum _bool
+winner check_mat(int **actual_matrix)
 {
-  false,
-  true
-} bool;
-
-enum
-{
-  none,
-  whites,
-  blacks
-} winner;
-
-typedef enum _mstate
-{
-  impossible,
-  normal,
-  turn,
-  destroy110,
-  destroy111,
-  destroy210,
-  destroy211,
-  destroy
-} mstate;
-
-int check_mat(int **actual_matrix)
-{
-  int player = none;
+  winner player = none;
   int around_wk, around_bk, w_pieces, b_pieces;
   for(int x = 0; x < 15; x++)
   {
@@ -292,27 +267,22 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
 {
   if(actual_matrix[x][y] == 0 || actual_matrix[x][y] == -1 || actual_matrix[x][y] == -2)
   {
-    printf("Source is not a playable piece...");
     return impossible;
   }
   else if((actual_matrix[x][y] / 100 == 1 || actual_matrix[x][y] / 10 == 1) && actual_player % 2 == 0)
   {
-    printf("Not blacks turn...");
     return impossible;
   }
   else if((actual_matrix[x][y] / 100 == 2 || actual_matrix[x][y] / 10 == 2) && actual_player % 2 == 1)
   {
-    printf("Not whites turn...");
     return impossible;
   }
   else if(actual_matrix[u][v] == -1 || (x == u && y == v) || (actual_matrix[x][y] / 100 == actual_matrix[u][v] / 100 && actual_matrix[x][y] % 10 != 3))
   {
-    printf("Destination is not a playable tile...");
     return impossible;
   }
   else if(actual_matrix[x][y] != 13 && actual_matrix[x][y] != 23 && actual_matrix[u][v] == -2)
   {
-    printf("Destination tile is for kings only...");
     return impossible;
   }
   else if(actual_player == 0)
@@ -321,30 +291,22 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
     {
       if(u - x == 1 && abs(y - v) == 1)
       {
-        actual_player++;
-        printf("Possible move!");
         return turn;
       }
-      printf("Impossible move!");
       return impossible;
     }
     else if(actual_matrix[x][y] == 210)
     {
       if(x - u == 1 && abs(y - v) == 1)
       {
-        actual_player++;
-        printf("Possible move!");
         return turn;
       }
       else if(x - u == 2 && y == v)
       {
-        actual_player++;
-        printf("Possible move!");
         return normal;
       }
       else
       {
-        printf("Impossible move!");
         return impossible;
       }
     }
@@ -352,19 +314,15 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
     {
       if((x - u == 2 || x - u == 4) && y == v)
       {
-        actual_player++;
-        printf("Possible move!");
         return normal;
       }
       else
       {
-        printf("Impossible move!");
         return impossible;
       }
     }
     else
     {
-      printf("Impossible move!");
       return impossible;
     }
   }
@@ -374,13 +332,10 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
     {
       if(x - u == 1 && abs(y - v) == 1)
       {
-        actual_player++;
-        printf("Possible move!");
         return turn;
       }
       else
       {
-        printf("Impossible move!");
         return impossible;
       }
     }
@@ -388,19 +343,14 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
     {
       if(u - x == 1 && abs(y - v) == 1)
       {
-        actual_player++;
-        printf("Possible move!");
         return turn;
       }
       else if(u - x == 2 && y == v)
       {
-        actual_player++;
-        printf("Possible move!");
         return normal;
       }
       else
       {
-        printf("Impossible move!");
         return impossible;
       }
     }
@@ -408,19 +358,15 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
     {
       if((u - x == 2 || u - x == 4) && y == v)
       {
-        actual_player++;
-        printf("Possible move!");
         return normal;
       }
       else
       {
-        printf("Impossible move!");
         return impossible;
       }
     }
     else
     {
-      printf("Impossible move!");
       return impossible;
     }
   }
@@ -428,7 +374,6 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
   {
     if(actual_matrix[u][v] != -2)
     {
-      printf("Impossible move!");
       return impossible;
     }
     else if(((u+2 < 15 && actual_matrix[u+2][v] != 13) || u+2 >= 15) && ((v+2 < 15 && actual_matrix[u][v+2] != 13) || v+2 >= 15) && ((u+2 < 15 && v+2 < 15 && actual_matrix[u+2][v+2] != 13) || u+2 >= 15 || v+2 >= 15) && ((u-2 >= 0 && actual_matrix[u-2][v] != 13) || u-2 < 0) && ((v-2 >= 0 && actual_matrix[u][v-2] != 13) || v-2 < 0) && ((u-2 >= 0 && v-2 >= 0 && actual_matrix[u-2][v-2] != 13) || u-2 < 0 || v - 2 < 0) && ((u+2 < 15 && v-2 >= 0 && actual_matrix[u+2][v-2] != 13) || u+2 >= 15 || v-2 < 0) && ((u-2 >= 0 && v+2 < 15 && actual_matrix[u-2][v+2] != 13) || u-2 < 0 || v+2 >= 15))
@@ -437,35 +382,26 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
       {
         if((v - y == 2 && actual_matrix[x][y + 1] == 0) || (y - v == 2 && actual_matrix[x][y - 1] == 0))
         {
-          actual_player++;
-          printf("Possible move!");
           return normal;
         }
-        printf("Impossible move!");
         return impossible;
       }
       else if(y == v)
       {
         if((x - u == 2 && actual_matrix[x - 1][y] == 0) || (u - x == 2 && actual_matrix[x + 1][y] == 0))
         {
-          actual_player++;
-          printf("Possible move!");
           return normal;
         }
-        printf("Impossible move!");
         return impossible;
       }
-      printf("Impossible move!");
       return impossible;
     }
-    printf("Impossible move!");
     return impossible;
   }
   else if(actual_matrix[x][y] == 13)
   {
     if(actual_matrix[u][v] != -2)
     {
-      printf("Impossible move!");
       return impossible;
     }
     else if(((u+2 < 15 && actual_matrix[u+2][v] != 23) || u+2 >= 15) && ((v+2 < 15 && actual_matrix[u][v+2] != 23) || v+2 >= 15) && ((u+2 < 15 && v+2 < 15 && actual_matrix[u+2][v+2] != 23) || u+2 >= 15 || v+2 >= 15) && ((u-2 >= 0 && actual_matrix[u-2][v] != 23) || u-2 < 0) && ((v-2 >= 0 && actual_matrix[u][v-2] != 23) || v-2 < 0) && ((u-2 >= 0 && v-2 >= 0 && actual_matrix[u-2][v-2] != 23) || u-2 < 0 || v - 2 < 0) && ((u+2 < 15 && v-2 >= 0 && actual_matrix[u+2][v-2] != 23) || u+2 >= 15 || v-2 < 0) && ((u-2 >= 0 && v+2 < 15 && actual_matrix[u-2][v+2] != 23) || u-2 < 0 || v+2 >= 15))
@@ -474,28 +410,20 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
       {
         if((v - y == 2 && actual_matrix[x][y + 1] == 0) || (y - v == 2 && actual_matrix[x][y - 1] == 0))
         {
-          actual_player++;
-          printf("Possible move!");
           return normal;
         }
-        printf("Impossible move!");
         return impossible;
       }
       else if(y == v)
       {
         if((x - u == 2 && actual_matrix[x - 1][y] == 0) || (u - x == 2 && actual_matrix[x + 1][y] == 0))
         {
-          actual_player++;
-          printf("Possible move!");
           return normal;
         }
-        printf("Impossible move!");
         return impossible;
       }
-      printf("Impossible move!");
       return impossible;
     }
-    printf("Impossible move!");
     return impossible;
   }
   else if(actual_matrix[x][y] == 110 || actual_matrix[x][y] == 111)
@@ -506,8 +434,6 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
       {
         if(u - x == 2 && actual_matrix[x+1][v] % 10 != 3)
         {
-          actual_player++;
-          printf("Possible move!");
           return normal;
         }
         else if(x + 2 < 15 && actual_matrix[x+2][y] / 100 == 2 && u - x > 2 && actual_matrix[x+1][y] % 10 != 3)
@@ -516,8 +442,6 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
           {
             if(((x + 6 < 15 && actual_matrix[x+6][y] / 100 != 2) || (x + 6 >= 15) || (actual_matrix[x+5][y] % 10 == 3)) && u - x == 4)
             {
-              actual_player++;
-              printf("Possible move!");
               return destroy110;
             }
             else if(x + 6 < 15 && actual_matrix[x+6][y] / 100 == 2 && actual_matrix[x+5][y] % 10 != 3)
@@ -526,40 +450,28 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
               {
                 if(((x + 10 < 15 && actual_matrix[x+10][y] / 100 != 2) || (x + 10 >= 15) || (actual_matrix[x+9][y] % 10 == 3)) && u - x == 8)
                 {
-                  actual_player++;
-                  printf("Possible move!");
                   return destroy111;
                 }
-                printf("Impossible move!");
                 return impossible;
               }
-              printf("Impossible move!");
               return impossible;
             }
-            printf("Impossible move!");
             return impossible;
           }
-          printf("Impossible move!");
           return impossible;
         }
-        printf("Impossible move!");
         return impossible;
       }
       else if(y % 2 == 0)
       {
         if(u - x == 2 && actual_matrix[u][v] == 0)
         {
-          actual_player++;
-          printf("Possible move!");
           return normal;
         }
         else if(x + 2 < 15 && actual_matrix[x+2][y] / 100 == 2 && u - x == 2)
         {
-          actual_player++;
-          printf("Possible move!");
           return normal;
         }
-        printf("Impossible move!");
         return impossible;
       }
     }
@@ -567,14 +479,10 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
     {
       if(actual_matrix[u][v] == 0)
       {
-        actual_player++;
-        printf("Possible move!");
         return turn;
       }
-      printf("Impossible move!");
       return impossible;
     }
-    printf("Impossible move!");
     return impossible;
   }
   else if(actual_matrix[x][y] == 210 || actual_matrix[x][y] == 211)
@@ -585,8 +493,6 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
       {
         if(x - u == 2 && actual_matrix[x-1][v] % 10 != 3)
         {
-          actual_player++;
-          printf("Possible move!");
           return normal;
         }
         else if(x - 2 >= 0 && actual_matrix[x-2][y] / 100 == 1 && x - u > 2 && actual_matrix[x-1][y] % 10 != 3)
@@ -595,8 +501,6 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
           {
             if(((x - 6 >= 0 && actual_matrix[x-6][y] / 100 != 1) || (x - 6 < 0) || (actual_matrix[x-5][y] % 10 == 3)) && x - u == 4)
             {
-              actual_player++;
-              printf("Possible move!");
               return destroy210;
             }
             else if(x - 6 >= 0 && actual_matrix[x-6][y] / 100 == 1 && actual_matrix[x-5][y] % 10 != 3)
@@ -605,40 +509,28 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
               {
                 if(((x - 10 >= 0 && actual_matrix[x-10][y] / 100 != 1) || (x - 10 < 0) || (actual_matrix[x-9][y] % 10 == 3)) && x - u == 8)
                 {
-                  actual_player++;
-                  printf("Possible move!");
                   return destroy211;
                 }
-                printf("Impossible move!");
                 return impossible;
               }
-              printf("Impossible move!");
               return impossible;
             }
-            printf("Impossible move!");
             return impossible;
           }
-          printf("Impossible move!");
           return impossible;
         }
-        printf("Impossible move!");
         return impossible;
       }
       else if(y % 2 == 0)
       {
         if(x - u == 2 && actual_matrix[u][v] == 0)
         {
-          actual_player++;
-          printf("Possible move!");
           return normal;
         }
         if(x-2 >= 0 && actual_matrix[x-2][y] / 100 == 1 && x - u == 2)
         {
-          actual_player++;
-          printf("Possible move!");
           return normal;
         }
-        printf("Impossible move!");
         return impossible;
       }
     }
@@ -646,14 +538,10 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
     {
       if(actual_matrix[u][v] == 0)
       {
-        actual_player++;
-        printf("Possible move!");
         return turn;
       }
-      printf("Impossible move!");
       return impossible;
     }
-    printf("Impossible move!");
     return impossible;
   }
   else if(actual_matrix[x][y] == 120 || actual_matrix[x][y] == 121)
@@ -662,8 +550,6 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
     {
       if(abs(x - u) == 1 && abs(y - v) == 1 && actual_matrix[u][v] == 0)
       {
-        actual_player++;
-        printf("Possible move!");
         return turn;
       }
       else if(y == v)
@@ -672,17 +558,12 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
         {
           if(u - x == 2 && actual_matrix[x+1][y] % 10 != 3)
           {
-            actual_player++;
-            printf("Possible move!");
             return normal;
           }
           else if(x - u == 2 && actual_matrix[x-1][y] % 10 != 3)
           {
-            actual_player++;
-            printf("Possible move!");
             return normal;
           }
-          printf("Impossible move!");
           return impossible;
         }
         else if(u - x > 2 && actual_matrix[u][v] == 0)
@@ -691,12 +572,9 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
           {
             if(actual_matrix[z-1][y] % 10 == 3 || actual_matrix[z][y] != 0)
             {
-              printf("Impossible move!");
               return impossible;
             }
           }
-          actual_player++;
-          printf("Possible move!");
           return destroy;
         }
         else if(x - u > 2 && actual_matrix[u][v] == 0)
@@ -705,15 +583,11 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
           {
             if(actual_matrix[z+1][y] % 10 == 3 || actual_matrix[z][y] != 0)
             {
-              printf("Impossible move!");
               return impossible;
             }
           }
-          actual_player++;
-          printf("Possible move!");
           return destroy;
         }
-        printf("Impossible move!");
         return impossible;
       }
       else if(x == u && actual_matrix[u][v] == 0)
@@ -724,77 +598,61 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
           {
             if(actual_matrix[x][z-1] % 10 != 3 && actual_matrix[x][z] / 100 == 2 && actual_matrix[x][z+2] == 0)
             {
-              printf("Impossible move!");
               return impossible;
             }
           }
-          if(y+2 < 15 && actual_matrix[x][y+1] % 10 != 3 && actual_matrix[x][y+2] / 100 != 1)
+          if(v - y == 2 && actual_matrix[x][y+1] % 10 != 3)
+          {
+            return normal;
+          }
+          else if(y+2 < 15 && actual_matrix[x][y+1] % 10 != 3 && actual_matrix[x][y+2] / 100 != 1)
           {
             if(y+4 < 15 && actual_matrix[x][y+3] % 10 != 3 && ((actual_matrix[x][y+2] == 0 && actual_matrix[x][y+4] / 100 == 2) || actual_matrix[x][y+4] == 0))
             {
               if(v - y == 4)
               {
-                actual_player++;
-                printf("Possible move!");
                 return destroy;
               }
               else if(y+6 < 15 && actual_matrix[x][y+5] % 10 != 3 && actual_matrix[x][y+6] / 100 != 1)
               {
                 if(v - y == 6)
                 {
-                  actual_player++;
-                  printf("Possible move!");
                   return destroy;
                 }
                 else if(y+8 < 15 && actual_matrix[x][y+7] % 10 != 3 && ((actual_matrix[x][y+6] == 0 && actual_matrix[x][y+8] / 100 == 2) || actual_matrix[x][y+8] == 0))
                 {
                   if(v - y == 8)
                   {
-                    actual_player++;
-                    printf("Possible move!");
                     return destroy;
                   }
                   else if(y+10 < 15 && actual_matrix[x][y+9] % 10 != 3 && actual_matrix[x][y+10] / 100 != 1)
                   {
                     if(v - y == 10)
                     {
-                      actual_player++;
-                      printf("Possible move!");
                       return destroy;
                     }
                     else if(y+12 < 15 && actual_matrix[x][y+11] % 10 != 3 && ((actual_matrix[x][y+10] == 0 && actual_matrix[x][y+12] / 100 == 2) || actual_matrix[x][y+12] == 0))
                     {
                       if(v - y == 12)
                       {
-                        actual_player++;
-                        printf("Possible move!");
                         return destroy;
                       }
                       else if(v - y == 14 && actual_matrix[x][y+13] % 10 != 3)
                       {
-                        actual_player++;
-                        printf("Possible move!");
                         return destroy;
                       }
-                      printf("Impossible move!");
                       return impossible;
                     }
-                    printf("Impossible move!");
                     return impossible;
                   }
-                  printf("Impossible move!");
                   return impossible;
                 }
-                printf("Impossible move!");
                 return impossible;
               }
-              printf("Impossible move!");
               return impossible;
             }
-            printf("Impossible move!");
             return impossible;
           }
-          printf("Impossible move!");
           return impossible;
         }
         else if(y > v)
@@ -803,91 +661,71 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
           {
             if(actual_matrix[x][z+1] % 10 != 3 && actual_matrix[x][z] / 100 == 2 && actual_matrix[x][z-2] == 0)
             {
-              printf("Impossible move!");
               return impossible;
             }
           }
-          if(y-2 >= 0 && actual_matrix[x][y-1] % 10 != 3 && actual_matrix[x][y-2] / 100 != 1)
+          if(y - v == 2 && actual_matrix[x][y-1] % 10 != 3)
+          {
+            return normal;
+          }
+          else if(y-2 >= 0 && actual_matrix[x][y-1] % 10 != 3 && actual_matrix[x][y-2] / 100 != 1)
           {
             if(y-4 >= 0 && actual_matrix[x][y-3] % 10 != 3 && ((actual_matrix[x][y-2] == 0 && actual_matrix[x][y-4] / 100 == 2) || actual_matrix[x][y-4] == 0))
             {
               if(y - v == 4)
               {
-                actual_player++;
-                printf("Possible move!");
                 return destroy;
               }
               else if(y-6 >= 0 && actual_matrix[x][y-5] % 10 != 3 && actual_matrix[x][y-6] / 100 != 1)
               {
                 if(y - v == 6)
                 {
-                  actual_player++;
-                  printf("Possible move!");
                   return destroy;
                 }
                 else if(y-8 >= 0 && actual_matrix[x][y-7] % 10 != 3 && ((actual_matrix[x][y-6] == 0 && actual_matrix[x][y-8] / 100 == 2) || actual_matrix[x][y-8] == 0))
                 {
                   if(y - v == 8)
                   {
-                    actual_player++;
-                    printf("Possible move!");
                     return destroy;
                   }
                   else if(y-10 >= 0 && actual_matrix[x][y-9] % 10 != 3 && actual_matrix[x][y-10] / 100 != 0)
                   {
                     if(y - v == 10)
                     {
-                      actual_player++;
-                      printf("Possible move!");
                       return destroy;
                     }
                     else if(y-12 >= 0 && actual_matrix[x][y-11] % 10 != 3 && ((actual_matrix[x][y-10] == 0 && actual_matrix[x][y-12] / 100 == 2) || actual_matrix[x][y-12] == 0))
                     {
                       if(y - v == 12)
                       {
-                        actual_player++;
-                        printf("Possible move!");
                         return destroy;
                       }
                       else if(y - v == 14 && actual_matrix[x][y-13] % 10 != 3)
                       {
-                        actual_player++;
-                        printf("Possible move!");
                         return destroy;
                       }
-                      printf("Impossible move!");
                       return impossible;
                     }
-                    printf("Impossible move!");
                     return impossible;
                   }
-                  printf("Impossible move!");
                   return impossible;
                 }
-                printf("Impossible move!");
                 return impossible;
               }
-              printf("Impossible move!");
               return impossible;
             }
-            printf("Impossible move!");
             return impossible;
           }
-          printf("Impossible move!");
           return impossible;
         }
-        printf("Impossible move!");
         return impossible;
       }
-      printf("Impossible move!");
       return impossible;
     }
     else if(actual_matrix[x][y] == 121)
     {
       if(abs(x - u) == 1 && abs(y - v) == 1 && actual_matrix[u][v] == 0)
       {
-        actual_player++;
-        printf("Possible move!");
         return turn;
       }
       else if(x == u)
@@ -896,17 +734,12 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
         {
           if(v - y == 2 && actual_matrix[x][y+1] % 10 != 3)
           {
-            actual_player++;
-            printf("Possible move!");
             return normal;
           }
           else if(y - v == 2 && actual_matrix[x][y-1] % 10 != 3)
           {
-            actual_player++;
-            printf("Possible move!");
             return normal;
           }
-          printf("Impossible move!");
           return impossible;
         }
         else if(v - y > 2 && actual_matrix[u][v] == 0)
@@ -915,12 +748,9 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
           {
             if(actual_matrix[x][z-1] % 10 == 3 || actual_matrix[x][z] != 0)
             {
-              printf("Impossible move!");
               return impossible;
             }
           }
-          actual_player++;
-          printf("Possible move!");
           return destroy;
         }
         else if(y - v > 2 && actual_matrix[u][v] == 0)
@@ -929,15 +759,11 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
           {
             if(actual_matrix[x][z+1] % 10 == 3 || actual_matrix[x][z] != 0)
             {
-              printf("Impossible move!");
               return impossible;
             }
           }
-          actual_player++;
-          printf("Possible move!");
           return destroy;
         }
-        printf("Impossible move!");
         return impossible;
       }
       else if(y == v && actual_matrix[u][v] == 0)
@@ -948,77 +774,61 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
           {
             if(actual_matrix[z-1][y] % 10 != 3 && actual_matrix[z][y] / 100 == 2 && actual_matrix[z+2][y] == 0)
             {
-              printf("Impossible move!");
               return impossible;
             }
           }
-          if(x+2 < 15 && actual_matrix[x+1][y] % 10 != 3 && actual_matrix[x+2][y] / 100 != 1)
+          if(u - x == 2 && actual_matrix[x+1][y] % 10 != 3)
+          {
+            return normal;
+          }
+          else if(x+2 < 15 && actual_matrix[x+1][y] % 10 != 3 && actual_matrix[x+2][y] / 100 != 1)
           {
             if(x+4 < 15 && actual_matrix[x+3][y] % 10 != 3 && ((actual_matrix[x+2][y] == 0 && actual_matrix[x+4][y] / 100 == 2) || actual_matrix[x+4][y] == 0))
             {
               if(u - x == 4)
               {
-                actual_player++;
-                printf("Possible move!");
                 return destroy;
               }
               else if(x+6 < 15 && actual_matrix[x+5][y] % 10 != 3 && actual_matrix[x+6][y] / 100 != 1)
               {
                 if(u - x == 6)
                 {
-                  actual_player++;
-                  printf("Possible move!");
                   return destroy;
                 }
                 else if(x+8 < 15 && actual_matrix[x+7][y] % 10 != 3 && ((actual_matrix[x+6][y] == 0 && actual_matrix[x+8][y] / 100 == 2) || actual_matrix[x+8][y] == 0))
                 {
                   if(u - x == 8)
                   {
-                    actual_player++;
-                    printf("Possible move!");
                     return destroy;
                   }
                   else if(x+10 < 15 && actual_matrix[x+9][y] % 10 != 3 && actual_matrix[x+10][y] / 100 != 1)
                   {
                     if(u - x == 10)
                     {
-                      actual_player++;
-                      printf("Possible move!");
                       return destroy;
                     }
                     else if(x+12 < 15 && actual_matrix[x+11][y] % 10 != 3 && ((actual_matrix[x+10][y] == 0 && actual_matrix[x+12][y] / 100 == 2) || actual_matrix[x+12][y] == 0))
                     {
                       if(u - x == 12)
                       {
-                        actual_player++;
-                        printf("Possible move!");
                         return destroy;
                       }
                       else if(u - x == 14 && actual_matrix[x+13][y] % 10 != 3)
                       {
-                        actual_player++;
-                        printf("Possible move!");
                         return destroy;
                       }
-                      printf("Impossible move!");
                       return impossible;
                     }
-                    printf("Impossible move!");
                     return impossible;
                   }
-                  printf("Impossible move!");
                   return impossible;
                 }
-                printf("Impossible move!");
                 return impossible;
               }
-              printf("Impossible move!");
               return impossible;
             }
-            printf("Impossible move!");
             return impossible;
           }
-          printf("Impossible move!");
           return impossible;
         }
         else if(x > u)
@@ -1027,86 +837,67 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
           {
             if(actual_matrix[z+1][y] % 10 != 3 && actual_matrix[z][y] / 100 == 2 && actual_matrix[z-2][y] == 0)
             {
-              printf("Impossible move!");
               return impossible;
             }
           }
-          if(x-2 >= 0 && actual_matrix[x-1][y] % 10 != 3 && actual_matrix[x-2][y] / 100 != 1)
+          if(x - u == 2 && actual_matrix[x-1][y] % 10 != 3)
+          {
+            return normal;
+          }
+          else if(x-2 >= 0 && actual_matrix[x-1][y] % 10 != 3 && actual_matrix[x-2][y] / 100 != 1)
           {
             if(x-4 >= 0 && actual_matrix[x-3][y] % 10 != 3 && ((actual_matrix[x-2][y] == 0 && actual_matrix[x-4][y] / 100 == 2) || actual_matrix[x-4][y] == 0))
             {
               if(x - u == 4)
               {
-                actual_player++;
-                printf("Possible move!");
                 return destroy;
               }
               else if(x-6 >= 0 && actual_matrix[x-5][y] % 10 != 3 && actual_matrix[x-6][y] / 100 != 1)
               {
                 if(x - u == 6)
                 {
-                  actual_player++;
-                  printf("Possible move!");
                   return destroy;
                 }
                 else if(x-8 >= 0 && actual_matrix[x-7][y] % 10 != 3 && ((actual_matrix[x-6][y] == 0 && actual_matrix[x-8][y] / 100 == 2) || actual_matrix[x-8][y] == 0))
                 {
                   if(x - u == 8)
                   {
-                    actual_player++;
-                    printf("Possible move!");
                     return destroy;
                   }
                   else if(x-10 >= 0 && actual_matrix[x-9][y] % 10 != 3 && actual_matrix[x-10][y] / 100 != 1)
                   {
                     if(x - u == 10)
                     {
-                      actual_player++;
-                      printf("Possible move!");
                       return destroy;
                     }
                     else if(x-12 >= 0 && actual_matrix[x-11][y] % 10 != 3 && ((actual_matrix[x-10][y] == 0 && actual_matrix[x-12][y] / 100 == 2) || actual_matrix[x-12][y] == 0))
                     {
                       if(x - u == 12)
                       {
-                        actual_player++;
-                        printf("Possible move!");
                         return destroy;
                       }
                       else if(x - u == 14 && actual_matrix[x-13][y] % 10 != 3)
                       {
-                        actual_player++;
-                        printf("Possible move!");
                         return destroy;
                       }
-                      printf("Impossible move!");
                       return impossible;
                     }
-                    printf("Impossible move!");
                     return impossible;
                   }
-                  printf("Impossible move!");
                   return impossible;
                 }
-                printf("Impossible move!");
                 return impossible;
               }
-              printf("Impossible move!");
               return impossible;
             }
-            printf("Impossible move!");
             return impossible;
           }
-          printf("Impossible move!");
           return impossible;
         }
-        printf("Impossible move!");
         return impossible;
       }
-      printf("Impossible move!");
       return impossible;
     }
-    printf("Impossible move!");
     return impossible;
   }
   else if(actual_matrix[x][y] == 220 || actual_matrix[x][y] == 221)
@@ -1115,8 +906,6 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
     {
       if(abs(x - u) == 1 && abs(y - v) == 1 && actual_matrix[u][v] == 0)
       {
-        actual_player++;
-        printf("Possible move!");
         return turn;
       }
       else if(y == v)
@@ -1125,17 +914,12 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
         {
           if(u - x == 2 && actual_matrix[x+1][y] % 10 != 3)
           {
-            actual_player++;
-            printf("Possible move!");
             return normal;
           }
           else if(x - u == 2 && actual_matrix[x-1][y] % 10 != 3)
           {
-            actual_player++;
-            printf("Possible move!");
             return normal;
           }
-          printf("Impossible move!");
           return impossible;
         }
         else if(u - x > 2 && actual_matrix[u][v] == 0)
@@ -1144,12 +928,9 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
           {
             if(actual_matrix[z-1][y] % 10 == 3 || actual_matrix[z][y] != 0)
             {
-              printf("Impossible move!");
               return impossible;
             }
           }
-          actual_player++;
-          printf("Possible move!");
           return destroy;
         }
         else if(x - u > 2 && actual_matrix[u][v] == 0)
@@ -1158,15 +939,11 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
           {
             if(actual_matrix[z+1][y] % 10 == 3 || actual_matrix[z][y] != 0)
             {
-              printf("Impossible move!");
               return impossible;
             }
           }
-          actual_player++;
-          printf("Possible move!");
           return destroy;
         }
-        printf("Impossible move!");
         return impossible;
       }
       else if(x == u && actual_matrix[u][v] == 0)
@@ -1177,77 +954,61 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
           {
             if(actual_matrix[x][z-1] % 10 != 3 && actual_matrix[x][z] / 100 == 1 && actual_matrix[x][z+2] == 0)
             {
-              printf("Impossible move!");
               return impossible;
             }
           }
-          if(y+2 < 15 && actual_matrix[x][y+1] % 10 != 3 && actual_matrix[x][y+2] / 100 != 2)
+          if(v - y == 2 && actual_matrix[x][y+1] % 10 != 3)
+          {
+            return normal;
+          }
+          else if(y+2 < 15 && actual_matrix[x][y+1] % 10 != 3 && actual_matrix[x][y+2] / 100 != 2)
           {
             if(y+4 < 15 && actual_matrix[x][y+3] % 10 != 3 && ((actual_matrix[x][y+2] == 0 && actual_matrix[x][y+4] / 100 == 1) || actual_matrix[x][y+4] == 0))
             {
               if(v - y == 4)
               {
-                actual_player++;
-                printf("Possible move!");
                 return destroy;
               }
               else if(y+6 < 15 && actual_matrix[x][y+5] % 10 != 3 && actual_matrix[x][y+6] / 100 != 2)
               {
                 if(v - y == 6)
                 {
-                  actual_player++;
-                  printf("Possible move!");
                   return destroy;
                 }
                 else if(y+8 < 15 && actual_matrix[x][y+7] % 10 != 3 && ((actual_matrix[x][y+6] == 0 && actual_matrix[x][y+8] / 100 == 1) || actual_matrix[x][y+8] == 0))
                 {
                   if(v - y == 8)
                   {
-                    actual_player++;
-                    printf("Possible move!");
                     return destroy;
                   }
                   else if(y+10 < 15 && actual_matrix[x][y+9] % 10 != 3 && actual_matrix[x][y+10] / 100 != 2)
                   {
                     if(v - y == 10)
                     {
-                      actual_player++;
-                      printf("Possible move!");
                       return destroy;
                     }
                     else if(y+12 < 15 && actual_matrix[x][y+11] % 10 != 3 && ((actual_matrix[x][y+10] == 0 && actual_matrix[x][y+12] / 100 == 1) || actual_matrix[x][y+12] == 0))
                     {
                       if(v - y == 12)
                       {
-                        actual_player++;
-                        printf("Possible move!");
                         return destroy;
                       }
                       else if(v - y == 14 && actual_matrix[x][y+13] % 10 != 3)
                       {
-                        actual_player++;
-                        printf("Possible move!");
                         return destroy;
                       }
-                      printf("Impossible move!");
                       return impossible;
                     }
-                    printf("Impossible move!");
                     return impossible;
                   }
-                  printf("Impossible move!");
                   return impossible;
                 }
-                printf("Impossible move!");
                 return impossible;
               }
-              printf("Impossible move!");
               return impossible;
             }
-            printf("Impossible move!");
             return impossible;
           }
-          printf("Impossible move!");
           return impossible;
         }
         else if(y > v)
@@ -1256,91 +1017,71 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
           {
             if(actual_matrix[x][z+1] % 10 != 3 && actual_matrix[x][z] / 100 == 1 && actual_matrix[x][z-2] == 0)
             {
-              printf("Impossible move!");
               return impossible;
             }
           }
-          if(y-2 >= 0 && actual_matrix[x][y-1] % 10 != 3 && actual_matrix[x][y-2] / 100 != 2)
+          if(y - v == 2 && actual_matrix[x][y-1] % 10 != 3)
+          {
+            return normal;
+          }
+          else if(y-2 >= 0 && actual_matrix[x][y-1] % 10 != 3 && actual_matrix[x][y-2] / 100 != 2)
           {
             if(y-4 >= 0 && actual_matrix[x][y-3] % 10 != 3 && ((actual_matrix[x][y-2] == 0 && actual_matrix[x][y-4] / 100 == 1) || actual_matrix[x][y-4] == 0))
             {
               if(y - v == 4)
               {
-                actual_player++;
-                printf("Possible move!");
                 return destroy;
               }
               else if(y-6 >= 0 && actual_matrix[x][y-5] % 10 != 3 && actual_matrix[x][y-6] / 100 != 2)
               {
                 if(y - v == 6)
                 {
-                  actual_player++;
-                  printf("Possible move!");
                   return destroy;
                 }
                 else if(y-8 >= 0 && actual_matrix[x][y-7] % 10 != 3 && ((actual_matrix[x][y-6] == 0 && actual_matrix[x][y-8] / 100 == 1) || actual_matrix[x][y-8] == 0))
                 {
                   if(y - v == 8)
                   {
-                    actual_player++;
-                    printf("Possible move!");
                     return destroy;
                   }
                   else if(y-10 >= 0 && actual_matrix[x][y-9] % 10 != 3 && actual_matrix[x][y-10] / 100 != 2)
                   {
                     if(y - v == 10)
                     {
-                      actual_player++;
-                      printf("Possible move!");
                       return destroy;
                     }
                     else if(y-12 >= 0 && actual_matrix[x][y-11] % 10 != 3 && ((actual_matrix[x][y-10] == 0 && actual_matrix[x][y-12] / 100 == 1) || actual_matrix[x][y-12] == 0))
                     {
                       if(y - v == 12)
                       {
-                        actual_player++;
-                        printf("Possible move!");
                         return destroy;
                       }
                       else if(y - v == 14 && actual_matrix[x][y-13] % 10 != 3)
                       {
-                        actual_player++;
-                        printf("Possible move!");
                         return destroy;
                       }
-                      printf("Impossible move!");
                       return impossible;
                     }
-                    printf("Impossible move!");
                     return impossible;
                   }
-                  printf("Impossible move!");
                   return impossible;
                 }
-                printf("Impossible move!");
                 return impossible;
               }
-              printf("Impossible move!");
               return impossible;
             }
-            printf("Impossible move!");
             return impossible;
           }
-          printf("Impossible move!");
           return impossible;
         }
-        printf("Impossible move!");
         return impossible;
       }
-      printf("Impossible move!");
       return impossible;
     }
     else if(actual_matrix[x][y] == 221)
     {
       if(abs(x - u) == 1 && abs(y - v) == 1 && actual_matrix[u][v] == 0)
       {
-        actual_player++;
-        printf("Possible move!");
         return turn;
       }
       else if(x == u)
@@ -1349,17 +1090,12 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
         {
           if(v - y == 2 && actual_matrix[x][y+1] % 10 != 3)
           {
-            actual_player++;
-            printf("Possible move!");
             return normal;
           }
           else if(y - v == 2 && actual_matrix[x][y-1] % 10 != 3)
           {
-            actual_player++;
-            printf("Possible move!");
             return normal;
           }
-          printf("Impossible move!");
           return impossible;
         }
         else if(v - y > 2 && actual_matrix[u][v] == 0)
@@ -1368,12 +1104,9 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
           {
             if(actual_matrix[x][z-1] % 10 == 3 || actual_matrix[x][z] != 0)
             {
-              printf("Impossible move!");
               return impossible;
             }
           }
-          actual_player++;
-          printf("Possible move!");
           return destroy;
         }
         else if(y - v > 2 && actual_matrix[u][v] == 0)
@@ -1382,15 +1115,11 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
           {
             if(actual_matrix[x][z+1] % 10 == 3 || actual_matrix[x][z] != 0)
             {
-              printf("Impossible move!");
               return impossible;
             }
           }
-          actual_player++;
-          printf("Possible move!");
           return destroy;
         }
-        printf("Impossible move!");
         return impossible;
       }
       else if(y == v && actual_matrix[u][v] == 0)
@@ -1401,77 +1130,61 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
           {
             if(actual_matrix[z-1][y] % 10 != 3 && actual_matrix[z][y] / 100 == 1 && actual_matrix[z+2][y] == 0)
             {
-              printf("Impossible move!");
               return impossible;
             }
           }
-          if(x+2 < 15 && actual_matrix[x+1][y] % 10 != 3 && actual_matrix[x+2][y] / 100 != 2)
+          if(u - x == 2 && actual_matrix[x+1][y] % 10 != 3)
+          {
+            return normal;
+          }
+          else if(x+2 < 15 && actual_matrix[x+1][y] % 10 != 3 && actual_matrix[x+2][y] / 100 != 2)
           {
             if(x+4 < 15 && actual_matrix[x+3][y] % 10 != 3 && ((actual_matrix[x+2][y] == 0 && actual_matrix[x+4][y] / 100 == 1) || actual_matrix[x+4][y] == 0))
             {
               if(u - x == 4)
               {
-                actual_player++;
-                printf("Possible move!");
                 return destroy;
               }
               else if(x+6 < 15 && actual_matrix[x+5][y] % 10 != 3 && actual_matrix[x+6][y] / 100 != 2)
               {
                 if(u - x == 6)
                 {
-                  actual_player++;
-                  printf("Possible move!");
                   return destroy;
                 }
                 else if(x+8 < 15 && actual_matrix[x+7][y] % 10 != 3 && ((actual_matrix[x+6][y] == 0 && actual_matrix[x+8][y] / 100 == 1) || actual_matrix[x+8][y] == 0))
                 {
                   if(u - x == 8)
                   {
-                    actual_player++;
-                    printf("Possible move!");
                     return destroy;
                   }
                   else if(x+10 < 15 && actual_matrix[x+9][y] % 10 != 3 && actual_matrix[x+10][y] / 100 != 2)
                   {
                     if(u - x == 10)
                     {
-                      actual_player++;
-                      printf("Possible move!");
                       return destroy;
                     }
                     else if(x+12 < 15 && actual_matrix[x+11][y] % 10 != 3 && ((actual_matrix[x+10][y] == 0 && actual_matrix[x+12][y] / 100 == 1) || actual_matrix[x+12][y] == 0))
                     {
                       if(u - x == 12)
                       {
-                        actual_player++;
-                        printf("Possible move!");
                         return destroy;
                       }
                       else if(u - x == 14 && actual_matrix[x+13][y] % 10 != 3)
                       {
-                        actual_player++;
-                        printf("Possible move!");
                         return destroy;
                       }
-                      printf("Impossible move!");
                       return impossible;
                     }
-                    printf("Impossible move!");
                     return impossible;
                   }
-                  printf("Impossible move!");
                   return impossible;
                 }
-                printf("Impossible move!");
                 return impossible;
               }
-              printf("Impossible move!");
               return impossible;
             }
-            printf("Impossible move!");
             return impossible;
           }
-          printf("Impossible move!");
           return impossible;
         }
         else if(x > u)
@@ -1480,89 +1193,69 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
           {
             if(actual_matrix[z+1][y] % 10 != 3 && actual_matrix[z][y] / 100 == 1 && actual_matrix[z-2][y] == 0)
             {
-              printf("Impossible move!");
               return impossible;
             }
           }
-          if(x-2 >= 0 && actual_matrix[x-1][y] % 10 != 3 && actual_matrix[x-2][y] / 100 != 2)
+          if(x - u == 2 && actual_matrix[x-1][y] % 10 != 3)
+          {
+            return normal;
+          }
+          else if(x-2 >= 0 && actual_matrix[x-1][y] % 10 != 3 && actual_matrix[x-2][y] / 100 != 2)
           {
             if(x-4 >= 0 && actual_matrix[x-3][y] % 10 != 3 && ((actual_matrix[x-2][y] == 0 && actual_matrix[x-4][y] / 100 == 1) || actual_matrix[x-4][y] == 0))
             {
               if(x - u == 4)
               {
-                actual_player++;
-                printf("Possible move!");
                 return destroy;
               }
               else if(x-6 >= 0 && actual_matrix[x-5][y] % 10 != 3 && actual_matrix[x-6][y] / 100 != 2)
               {
                 if(x - u == 6)
                 {
-                  actual_player++;
-                  printf("Possible move!");
                   return destroy;
                 }
                 else if(x-8 >= 0 && actual_matrix[x-7][y] % 10 != 3 && ((actual_matrix[x-6][y] == 0 && actual_matrix[x-8][y] / 100 == 1) || actual_matrix[x-8][y] == 0))
                 {
                   if(x - u == 8)
                   {
-                    actual_player++;
-                    printf("Possible move!");
                     return destroy;
                   }
                   else if(x-10 >= 0 && actual_matrix[x-9][y] % 10 != 3 && actual_matrix[x-10][y] / 100 != 2)
                   {
                     if(x - u == 10)
                     {
-                      actual_player++;
-                      printf("Possible move!");
                       return destroy;
                     }
                     else if(x-12 >= 0 && actual_matrix[x-11][y] % 10 != 3 && ((actual_matrix[x-10][y] == 0 && actual_matrix[x-12][y] / 100 == 1) || actual_matrix[x-12][y] == 0))
                     {
                       if(x - u == 12)
                       {
-                        actual_player++;
-                        printf("Possible move!");
                         return destroy;
                       }
                       else if(x - u == 14 && actual_matrix[x-13][y] % 10 != 3)
                       {
-                        actual_player++;
-                        printf("Possible move!");
                         return destroy;
                       }
-                      printf("Impossible move!");
                       return impossible;
                     }
-                    printf("Impossible move!");
                     return impossible;
                   }
-                  printf("Impossible move!");
                   return impossible;
                 }
-                printf("Impossible move!");
                 return impossible;
               }
-              printf("Impossible move!");
               return impossible;
             }
-            printf("Impossible move!");
             return impossible;
           }
-          printf("Impossible move!");
           return impossible;
         }
-        printf("Impossible move!");
         return impossible;
       }
-      printf("Impossible move!");
       return impossible;
     }
-    printf("Impossible move!");
     return impossible;
   }
-  printf("Not yet implemented!");
   return impossible;
 }
 
@@ -1721,5 +1414,6 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
       SDL_Delay(600);
       (*actual_matrix)[u][v] = 221;
     }
+    actual_player++;
   }
 }

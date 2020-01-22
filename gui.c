@@ -30,11 +30,6 @@ void init()
   IMG_Init(IMG_INIT_PNG);
 }
 
-void loadMedia()
-{
-  return;
-}
-
 void close()
 {
   SDL_DestroyRenderer(gRenderer);
@@ -124,16 +119,94 @@ void draw(int **actual_matrix)
   SDL_RenderPresent(gRenderer);
 }
 
+void mainMenu(bool *quit)
+{
+  SDL_RenderClear(gRenderer);
+  SDL_Rect fillRect = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
+  SDL_Texture *textureList[4] = {loadTexture("Sprites/Main_Menu_1.png"), loadTexture("Sprites/Main_Menu_2.png"), loadTexture("Sprites/Main_Menu_3.png"), loadTexture("Sprites/Main_Menu_4.png")};
+  int i = 0;
+  gTexture = textureList[i];
+  SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+  SDL_RenderPresent(gRenderer);
+  SDL_Event event;
+  bool start = false;
+  while(!start)
+  {
+    if(SDL_WaitEvent(&event))
+    {
+      if(event.type == SDL_QUIT)
+      {
+        start = true;
+        *quit = true;
+      }
+      else if(event.type == SDL_KEYDOWN)
+      {
+        switch(event.key.keysym.sym)
+        {
+          case SDLK_DOWN:
+          {
+            i++;
+            i = i % 4;
+            gTexture = textureList[i];
+            SDL_RenderClear(gRenderer);
+            SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+            SDL_RenderPresent(gRenderer);
+            break;
+          }
+          case SDLK_UP:
+          {
+            i--;
+            if(i == -1)
+            {
+              i = 3;
+            }
+            gTexture = textureList[i];
+            SDL_RenderClear(gRenderer);
+            SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+            SDL_RenderPresent(gRenderer);
+            break;
+          }
+          case SDLK_RETURN:
+          {
+            if(i == 0)
+            {
+              start = true;
+            }
+            break;
+          }
+        }
+      }
+    }
+  }
+}
+
+void gameOver(int **actual_matrix)
+{
+  if(check_mat(actual_matrix) == 1)
+  {
+    return;
+  }
+  else if(check_mat(actual_matrix) == 2)
+  {
+    return;
+  }
+  return;
+}
+
 void createBoard(int **actual_matrix)
 {
   init();
-  loadMedia();
-  draw(actual_matrix);
-  int x, y, u, v, move = 0, check = 0;
+  int x, y, u, v, move = 0;
   bool quit = false;
+  mainMenu(&quit);
+  if(!quit)
+  {
+    draw(actual_matrix);
+  }
   SDL_Event event;
   while(!quit)
   {
+    gameOver(actual_matrix);
     if(SDL_WaitEvent(&event))
     {
       if(event.type == SDL_QUIT)

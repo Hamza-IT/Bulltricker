@@ -130,13 +130,12 @@ void mainMenu(bool *quit)
   SDL_RenderPresent(gRenderer);
   SDL_Event event;
   bool start = false;
-  while(!start)
+  while(!start && !*quit)
   {
     if(SDL_WaitEvent(&event))
     {
       if(event.type == SDL_QUIT)
       {
-        start = true;
         *quit = true;
       }
       else if(event.type == SDL_KEYDOWN)
@@ -145,6 +144,7 @@ void mainMenu(bool *quit)
         {
           case SDLK_DOWN:
           {
+            SDL_Delay(50);
             i++;
             i = i % 4;
             gTexture = textureList[i];
@@ -155,6 +155,7 @@ void mainMenu(bool *quit)
           }
           case SDLK_UP:
           {
+            SDL_Delay(50);
             i--;
             if(i == -1)
             {
@@ -168,9 +169,13 @@ void mainMenu(bool *quit)
           }
           case SDLK_RETURN:
           {
+            SDL_Delay(150);
             if(i == 0)
             {
               start = true;
+              SDL_RenderClear(gRenderer);
+              SDL_DestroyTexture(gTexture);
+              gTexture = NULL;
             }
             break;
           }
@@ -180,7 +185,7 @@ void mainMenu(bool *quit)
   }
 }
 
-void gameOver(int **actual_matrix)
+void gameOver(int **actual_matrix, bool *game_over)
 {
   if(check_mat(actual_matrix) == 1)
   {
@@ -196,8 +201,8 @@ void gameOver(int **actual_matrix)
 void createBoard(int **actual_matrix)
 {
   init();
-  int x, y, u, v, move = 0;
-  bool quit = false;
+  int x, y, u, v, move = 0, p[3];
+  bool quit = false, game_over = false;
   mainMenu(&quit);
   if(!quit)
   {
@@ -206,14 +211,14 @@ void createBoard(int **actual_matrix)
   SDL_Event event;
   while(!quit)
   {
-    gameOver(actual_matrix);
+    gameOver(actual_matrix, &game_over);
     if(SDL_WaitEvent(&event))
     {
       if(event.type == SDL_QUIT)
       {
         quit = true;
       }
-      if(event.type == SDL_MOUSEBUTTONDOWN)
+      else if(event.type == SDL_MOUSEBUTTONDOWN)
       {
         if(move % 2 == 0)
         {

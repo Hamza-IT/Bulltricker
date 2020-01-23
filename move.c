@@ -446,7 +446,11 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
             }
             else if(x + 6 < 15 && actual_matrix[x+6][y] / 100 == 2 && actual_matrix[x+5][y] % 10 != 3)
             {
-              if(x + 8 < 15 && actual_matrix[x+8][y] == 0 && actual_matrix[x+7][y] % 10 != 3)
+              if(x + 8 < 15 && (actual_matrix[x+7][y] % 10 == 3 || actual_matrix[x+8][y] != 0) && u - x == 4)
+              {
+                return destroy110;
+              }
+              else if(x + 8 < 15 && actual_matrix[x+8][y] == 0 && actual_matrix[x+7][y] % 10 != 3)
               {
                 if(((x + 10 < 15 && actual_matrix[x+10][y] / 100 != 2) || (x + 10 >= 15) || (actual_matrix[x+9][y] % 10 == 3)) && u - x == 8)
                 {
@@ -505,7 +509,11 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
             }
             else if(x - 6 >= 0 && actual_matrix[x-6][y] / 100 == 1 && actual_matrix[x-5][y] % 10 != 3)
             {
-              if(x - 8 >= 0 && actual_matrix[x-8][y] == 0 && actual_matrix[x-7][y] % 10 != 3)
+              if(x - 8 >= 0 && (actual_matrix[x-7][y] % 10 == 3 || actual_matrix[x-8][y] != 0) && x - u == 4)
+              {
+                return destroy210;
+              }
+              else if(x - 8 >= 0 && actual_matrix[x-8][y] == 0 && actual_matrix[x-7][y] % 10 != 3)
               {
                 if(((x - 10 >= 0 && actual_matrix[x-10][y] / 100 != 1) || (x - 10 < 0) || (actual_matrix[x-9][y] % 10 == 3)) && x - u == 8)
                 {

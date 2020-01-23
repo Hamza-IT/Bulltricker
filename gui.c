@@ -49,9 +49,9 @@ SDL_Texture *loadTexture(char *path)
 void draw(int **actual_matrix)
 {
   SDL_RenderClear(gRenderer);
-  for(int i = 0, k = 0; i < SCREEN_WIDTH, k < 15; i += 30, k++)
+  for(int i = 0, k = 0; i < 450, k < 15; i += 30, k++)
   {
-    for(int j = 0, l = 0; j < SCREEN_HEIGHT, l < 15; j += 30, l++)
+    for(int j = 0, l = 0; j < 450, l < 15; j += 30, l++)
     {
       SDL_Rect fillRect = {i, j, 30, 30};
       if(actual_matrix[l][k] == -1)
@@ -118,7 +118,7 @@ void mainMenu(bool *quit)
 {
   SDL_RenderClear(gRenderer);
   SDL_Rect fillRect = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
-  SDL_Texture *textureList[4] = {loadTexture("Sprites/Main_Menu_1.png"), loadTexture("Sprites/Main_Menu_2.png"), loadTexture("Sprites/Main_Menu_3.png"), loadTexture("Sprites/Main_Menu_4.png")};
+  SDL_Texture *textureList[5] = {loadTexture("Sprites/Main_Menu_1.png"), loadTexture("Sprites/Main_Menu_2.png"), loadTexture("Sprites/Main_Menu_3.png"), loadTexture("Sprites/Main_Menu_4.png")};
   int i = 0;
   gTexture = textureList[i];
   SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
@@ -193,24 +193,29 @@ void gameOver(int **actual_matrix, bool *game_over)
   return;
 }
 
-void indicator(int x, int y, int **actual_matrix)
+bool indicator(int x, int y, int **actual_matrix)
 {
-  SDL_Rect fillRect = {x*30, y*30, 30, 30};
-  gTexture = loadTexture("Sprites/Indicator.png");
-  SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
-  SDL_RenderPresent(gRenderer);
-  for(int u = 0; u < 15; u++)
+  if((actual_player % 2 == 0 && (actual_matrix[y][x] / 100 == 2 || actual_matrix[y][x] / 10 == 2)) || (actual_player % 2 == 1 && (actual_matrix[y][x] / 100 == 1 || actual_matrix[y][x] / 10 == 1)))
   {
-    for(int v = 0; v < 15; v++)
+    SDL_Rect fillRect = {x*30, y*30, 30, 30};
+    gTexture = loadTexture("Sprites/Indicator.png");
+    SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+    SDL_RenderPresent(gRenderer);
+    for(int u = 0; u < 15; u++)
     {
-      if(check_move(y, x, u, v, actual_matrix) != impossible)
+      for(int v = 0; v < 15; v++)
       {
-        SDL_Rect _fillRect = {v*30, u*30, 30, 30};
-        SDL_RenderCopy(gRenderer, gTexture, NULL, &_fillRect);
-        SDL_RenderPresent(gRenderer);
+        if(check_move(y, x, u, v, actual_matrix) != impossible)
+        {
+          SDL_Rect _fillRect = {v*30, u*30, 30, 30};
+          SDL_RenderCopy(gRenderer, gTexture, NULL, &_fillRect);
+          SDL_RenderPresent(gRenderer);
+        }
       }
     }
+    return true;
   }
+  return false;
 }
 
 void createBoard(int **actual_matrix)
@@ -233,22 +238,23 @@ void createBoard(int **actual_matrix)
       {
         quit = true;
       }
-      else if(event.type == SDL_MOUSEBUTTONDOWN)
+      else if(event.type == SDL_MOUSEBUTTONDOWN && !game_over)
       {
         if(move % 2 == 0)
         {
           SDL_GetMouseState(&y, &x);
           x /= 30;
           y /= 30;
-          indicator(y, x, actual_matrix);
-          move++;
+          if(indicator(y, x, actual_matrix))
+          {
+            move++;
+          }
         }
         else if(move % 2 == 1)
         {
           SDL_GetMouseState(&v, &u);
           u /= 30;
           v /= 30;
-          printf("\nx = %d, y = %d\nu = %d, v = %d\n", x, y, u, v);
           apply_move(x, y, u, v, &actual_matrix);
           move++;
           draw(actual_matrix);

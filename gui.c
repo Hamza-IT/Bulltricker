@@ -1,5 +1,6 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h>
 #include <stdio.h>
 #include "gui.h"
 #include "move.h"
@@ -8,8 +9,11 @@ int SCREEN_WIDTH;
 int SCREEN_HEIGHT;
 
 SDL_Window *gWindow = NULL;
+SDL_Surface *gSurface = NULL;
 SDL_Texture *gTexture = NULL;
 SDL_Renderer *gRenderer = NULL;
+TTF_Font *gFont = NULL;
+SDL_Color black = {50, 50, 50}, white = {255, 255, 255}, grey = {127, 127, 127}, light_grey = {241, 241, 241};
 
 int size[2] = {0};
 
@@ -20,7 +24,7 @@ void init()
   fclose(fptr);
   if(SDL_Init(SDL_INIT_VIDEO))
   {
-    printf("Failed to initialize video!");
+    printf("Failed to initialize video!\n%s\n", SDL_GetError());
   }
   if(!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1"))
   {
@@ -29,30 +33,47 @@ void init()
   gWindow = SDL_CreateWindow("Bulltricker", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
   if(gWindow == NULL)
   {
-    printf("Failed to create window!");
+    printf("Failed to create window!\n%s\n", SDL_GetError());
   }
-  gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_TARGETTEXTURE);
+  gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_TARGETTEXTURE | SDL_RENDERER_PRESENTVSYNC);
   if(gRenderer == NULL)
   {
-    printf("Failed to create renderer!");
+    printf("Failed to create renderer!\n%s\n", SDL_GetError());
   }
   SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
   if(!IMG_Init(IMG_INIT_PNG))
   {
-    printf("Failed to initialize SDL_Image!");
+    printf("Failed to initialize SDL_Image!\n%s\n", IMG_GetError());
+  }
+  if(TTF_Init() == -1)
+  {
+    printf("SDL_ttf could not initialize!\n%s\n", TTF_GetError());
   }
 }
 
 void close()
 {
+  TTF_CloseFont(gFont);
+  gFont = NULL;
   SDL_DestroyRenderer(gRenderer);
   gRenderer = NULL;
   SDL_DestroyTexture(gTexture);
   gTexture = NULL;
   SDL_DestroyWindow(gWindow);
   gWindow = NULL;
+  TTF_Quit();
   IMG_Quit();
   SDL_Quit();
+}
+
+TTF_Font *loadFont(char *path, unsigned char size)
+{
+  TTF_Font *newFont = TTF_OpenFont(path, size);
+  if(newFont == NULL)
+  {
+    printf("Failed to load font %s!\n%s\n", path, TTF_GetError());
+  }
+  return newFont;
 }
 
 SDL_Texture *loadTexture(char *path)
@@ -61,18 +82,41 @@ SDL_Texture *loadTexture(char *path)
   newTexture = IMG_LoadTexture(gRenderer, path);
   if(newTexture == NULL)
   {
-    printf("Failed to create texture from surface %s!\n%s", path, IMG_GetError());
+    printf("Failed to create texture from surface %s!\n%s\n", path, IMG_GetError());
   }
   return newTexture;
 }
 
+void loadText(char *text, SDL_Color color, int x, int y, int width, int height)
+{
+  SDL_Rect textRect = {x, y, width, height};
+  gSurface = TTF_RenderText_Blended(gFont, text, color);
+  gTexture = SDL_CreateTextureFromSurface(gRenderer, gSurface);
+  SDL_FreeSurface(gSurface);
+  gSurface = NULL;
+  SDL_RenderCopy(gRenderer, gTexture, NULL, &textRect);
+  SDL_DestroyTexture(gTexture);
+  gTexture = NULL;
+}
+
 void loadGrid()
 {
+  SDL_Delay(50);
   SDL_Rect fillRect = {600, 0, 200, 580};
   gTexture = loadTexture("Sprites/Grid.png");
   SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
   SDL_DestroyTexture(gTexture);
   gTexture = NULL;
+  char *text;
+  if(actual_player % 2 == 0)
+  {
+    text = "Whites turn";
+  }
+  else
+  {
+    text = "Blacks turn";
+  }
+  loadText(text, black, 660, 190, 120, 30);
 }
 
 void fillBlank()
@@ -81,9 +125,13 @@ void fillBlank()
   SDL_Rect fillRect1 = {580, 0, 20, 580};
   SDL_Rect fillRect2 = {0, 580, 800, 20};
   SDL_Texture *newTexture = loadTexture("Sprites/fill1.png");
+  SDL_SetTextureBlendMode(newTexture, SDL_BLENDMODE_BLEND);
+  SDL_SetTextureAlphaMod(newTexture, 150);
   SDL_RenderCopy(gRenderer, newTexture, NULL, &fillRect1);
   SDL_DestroyTexture(newTexture);
   newTexture = loadTexture("Sprites/fill2.png");
+  SDL_SetTextureBlendMode(newTexture, SDL_BLENDMODE_BLEND);
+  SDL_SetTextureAlphaMod(newTexture, 150);
   SDL_RenderCopy(gRenderer, newTexture, NULL, &fillRect2);
   SDL_DestroyTexture(newTexture);
   newTexture = NULL;
@@ -294,12 +342,21 @@ void gameOver(int **actual_matrix, bool *game_over)
 {
   if(check_mat(actual_matrix) == whites)
   {
-    return;
+    *game_over = true;
+    char *text = "Game Over";
+    loadText(text, black, 640, 240, 120, 30);
+    text = "Player 1 Wins";
+    loadText(text, black, 620, 280, 160, 30);
   }
   else if(check_mat(actual_matrix) == blacks)
   {
-    return;
+    *game_over = true;
+    char *text = "Game Over";
+    loadText(text, black, 640, 240, 120, 30);
+    text = "Player 2 Wins";
+    loadText(text, black, 620, 280, 160, 30);
   }
+  SDL_RenderPresent(gRenderer);
 }
 
 void getSize(int x, int y)
@@ -401,6 +458,7 @@ bool indicator(int x, int y, int **actual_matrix)
 void createBoard(int **actual_matrix)
 {
   init();
+  gFont = loadFont("Fonts/bodoni_mtblack.ttf", 40);
   int x, y, u, v, move = 0, p[3];
   bool quit = false, game_over = false;
   mainMenu(&quit);
@@ -411,16 +469,15 @@ void createBoard(int **actual_matrix)
   SDL_Event event;
   while(!quit)
   {
-    gameOver(actual_matrix, &game_over);
     if(SDL_WaitEvent(&event))
     {
       if(event.type == SDL_QUIT)
       {
         quit = true;
       }
-      else if(event.type == SDL_MOUSEBUTTONDOWN && !game_over)
+      else if(event.type == SDL_MOUSEBUTTONDOWN)
       {
-        if(move % 2 == 0)
+        if(move % 2 == 0 && !game_over)
         {
           SDL_GetMouseState(&y, &x);
           if(x <= 580 && y <= 580)
@@ -445,6 +502,7 @@ void createBoard(int **actual_matrix)
             apply_move(x, y, u, v, &actual_matrix);
             move++;
             draw(actual_matrix);
+            gameOver(actual_matrix, &game_over);
           }
         }
       }

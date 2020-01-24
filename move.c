@@ -10,7 +10,7 @@ int actual_player = 0;
 winner check_mat(int **actual_matrix)
 {
   winner player = none;
-  int around_wk, around_bk, w_pieces, b_pieces;
+  int around_wk = 0, around_bk = 0, w_pieces = 0, b_pieces = 0;
   for(int x = 0; x < 15; x++)
   {
     for(int y = 0; y < 15; y++)

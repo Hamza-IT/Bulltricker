@@ -77,6 +77,7 @@ void loadGrid()
 
 void fillBlank()
 {
+  SDL_RenderClear(gRenderer);
   SDL_Rect fillRect1 = {580, 0, 20, 580};
   SDL_Rect fillRect2 = {0, 580, 800, 20};
   SDL_Texture *newTexture = loadTexture("Sprites/fill1.png");
@@ -89,7 +90,6 @@ void fillBlank()
 
 void draw(int **actual_matrix)
 {
-  SDL_RenderClear(gRenderer);
   fillBlank();
   loadGrid();
   int x, y;
@@ -349,20 +349,38 @@ int mapToEdge(int x)
   return edges[x];
 }
 
+void setBlendMode(SDL_BlendMode blendMode)
+{
+  SDL_SetTextureBlendMode(gTexture, blendMode);
+}
+
+void setAlpha(unsigned char alpha)
+{
+  SDL_SetTextureAlphaMod(gTexture, alpha);
+}
+
 bool indicator(int x, int y, int **actual_matrix)
 {
-  /*if((actual_player % 2 == 0 && (actual_matrix[y][x] / 100 == 2 || actual_matrix[y][x] / 10 == 2)) || (actual_player % 2 == 1 && (actual_matrix[y][x] / 100 == 1 || actual_matrix[y][x] / 10 == 1)))
+  if((actual_player % 2 == 0 && (actual_matrix[y][x] / 100 == 2 || actual_matrix[y][x] / 10 == 2)) || (actual_player % 2 == 1 && (actual_matrix[y][x] / 100 == 1 || actual_matrix[y][x] / 10 == 1)))
   {
-    SDL_Rect fillRect = {x, y, size[0], size[1]};
+    int temp_x = mapToEdge(x);
+    int temp_y = mapToEdge(y);
+    SDL_Rect fillRect = {temp_x, temp_y, size[0], size[1]};
     gTexture = loadTexture("Sprites/Indicator.png");
+    setBlendMode(SDL_BLENDMODE_BLEND);
+    setAlpha(120);
     SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+    setAlpha(150);
     for(int u = 0; u < 15; u++)
     {
       for(int v = 0; v < 15; v++)
       {
         if(check_move(y, x, u, v, actual_matrix) != impossible)
         {
-          SDL_Rect _fillRect = {v*size[0], u*size[1], size[0], size[1]};
+          int temp_u = mapToEdge(u);
+          int temp_v = mapToEdge(v);
+          getSize(temp_u, temp_v);
+          SDL_Rect _fillRect = {temp_v, temp_u, size[1], size[0]};
           SDL_RenderCopy(gRenderer, gTexture, NULL, &_fillRect);
         }
       }
@@ -372,8 +390,7 @@ bool indicator(int x, int y, int **actual_matrix)
     SDL_RenderPresent(gRenderer);
     return true;
   }
-  return false;*/
-  return true;
+  return false;
 }
 
 void createBoard(int **actual_matrix)

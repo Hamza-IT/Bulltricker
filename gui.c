@@ -11,6 +11,7 @@ SDL_Window *gWindow = NULL;
 SDL_Texture *gTexture = NULL;
 SDL_Renderer *gRenderer = NULL;
 
+int size[2] = {0};
 
 void init()
 {
@@ -65,70 +66,154 @@ SDL_Texture *loadTexture(char *path)
   return newTexture;
 }
 
+void loadGrid()
+{
+  SDL_Rect fillRect = {600, 0, 200, 580};
+  gTexture = loadTexture("Sprites/Grid.png");
+  SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+  SDL_DestroyTexture(gTexture);
+  gTexture = NULL;
+}
+
+void fillBlank()
+{
+  SDL_Rect fillRect1 = {580, 0, 20, 580};
+  SDL_Rect fillRect2 = {0, 580, 800, 20};
+  SDL_Texture *newTexture = loadTexture("Sprites/fill1.png");
+  SDL_RenderCopy(gRenderer, newTexture, NULL, &fillRect1);
+  newTexture = loadTexture("Sprites/fill2.png");
+  SDL_RenderCopy(gRenderer, newTexture, NULL, &fillRect2);
+  SDL_DestroyTexture(newTexture);
+  newTexture = NULL;
+}
+
 void draw(int **actual_matrix)
 {
   SDL_RenderClear(gRenderer);
-  for(int i = 0, k = 0; i < 450, k < 15; i += 30, k++)
+  fillBlank();
+  loadGrid();
+  int x, y;
+  for(int i = 0, k = 0; i < 580, k < 15; k++)
   {
-    for(int j = 0, l = 0; j < 450, l < 15; j += 30, l++)
+    for(int j = 0, l = 0; j < 580, l < 15; l++)
     {
-      SDL_Rect fillRect = {i, j, 30, 30};
       if(actual_matrix[l][k] == -1)
       {
         gTexture = loadTexture("Sprites/NP.png");
+        SDL_Rect fillRect = {i, j, 20, 20};
+        SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+        x=20;
+        y=20;
       }
-      else if(actual_matrix[l][k] == 0)
+      else if(actual_matrix[l][k] == 0 && l % 2 == 1)
       {
-        gTexture = loadTexture("Sprites/P.png");
+        gTexture = loadTexture("Sprites/P0.png");
+        SDL_Rect fillRect = {i, j, 20, 60};
+        SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+        x=20;
+        y=60;
+      }
+      else if(actual_matrix[l][k] == 0 && l % 2 == 0)
+      {
+        gTexture = loadTexture("Sprites/P1.png");
+        SDL_Rect fillRect = {i, j, 60, 20};
+        SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+        x=60;
+        y=20;
       }
       else if(actual_matrix[l][k] == -2)
       {
         gTexture = loadTexture("Sprites/PK.png");
+        SDL_Rect fillRect = {i, j, 60, 60};
+        SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+        x=60;
+        y=60;
       }
       else if(actual_matrix[l][k] == 13)
       {
         gTexture = loadTexture("Sprites/KB.png");
+        SDL_Rect fillRect = {i, j, 60, 60};
+        SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+        x=60;
+        y=60;
       }
       else if(actual_matrix[l][k] == 23)
       {
         gTexture = loadTexture("Sprites/KW.png");
+        SDL_Rect fillRect = {i, j, 60, 60};
+        SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+        x=60;
+        y=60;
       }
       else if(actual_matrix[l][k] == 121)
       {
         gTexture = loadTexture("Sprites/QBR.png");
+        SDL_Rect fillRect = {i, j, 60, 20};
+        SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+        x=60;
+        y=20;
       }
       else if(actual_matrix[l][k] == 120)
       {
         gTexture = loadTexture("Sprites/QB.png");
+        SDL_Rect fillRect = {i, j, 20, 60};
+        SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+        x=20;
+        y=60;
       }
       else if(actual_matrix[l][k] == 221)
       {
         gTexture = loadTexture("Sprites/QWR.png");
+        SDL_Rect fillRect = {i, j, 60, 20};
+        SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+        x=60;
+        y=20;
       }
       else if(actual_matrix[l][k] == 220)
       {
         gTexture = loadTexture("Sprites/QW.png");
+        SDL_Rect fillRect = {i, j, 20, 60};
+        SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+        x=20;
+        y=60;
       }
       else if(actual_matrix[l][k] == 110)
       {
         gTexture = loadTexture("Sprites/PBR.png");
+        SDL_Rect fillRect = {i, j, 20, 60};
+        SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+        x=20;
+        y=60;
       }
       else if(actual_matrix[l][k] == 210)
       {
         gTexture = loadTexture("Sprites/PWR.png");
+        SDL_Rect fillRect = {i, j, 20, 60};
+        SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+        x=20;
+        y=60;
       }
       else if(actual_matrix[l][k] == 111)
       {
         gTexture = loadTexture("Sprites/PB.png");
+        SDL_Rect fillRect = {i, j, 60, 20};
+        SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+        x=60;
+        y=20;
       }
       else if(actual_matrix[l][k] == 211)
       {
         gTexture = loadTexture("Sprites/PW.png");
+        SDL_Rect fillRect = {i, j, 60, 20};
+        SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+        x=60;
+        y=20;
       }
-      SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+      j+=y;
       SDL_DestroyTexture(gTexture);
       gTexture = NULL;
     }
+    i+=x;
   }
   SDL_RenderPresent(gRenderer);
 }
@@ -214,35 +299,81 @@ void gameOver(int **actual_matrix, bool *game_over)
   {
     return;
   }
-  return;
+}
+
+void getSize(int x, int y)
+{
+  if((y/20) % 4 == 0)
+  {
+    if((x/20) % 4 == 0)
+    {
+      size[0] = 20;
+      size[1] = 20;
+    }
+    else
+    {
+      size[0] = 60;
+      size[1] = 20;
+    }
+  }
+  else
+  {
+    if((x/20) % 4 == 0)
+    {
+      size[0] = 20;
+      size[1] = 60;
+    }
+    else
+    {
+      size[0] = 60;
+      size[1] = 60;
+    }
+  }
+}
+
+int mapToInt(int x)
+{
+  int edges[15] = {20, 80, 100, 160, 180, 240, 260, 320, 340, 400, 420, 480, 500, 560, 580};
+  for(int i = 0; i < 15; i++)
+  {
+    if(x < edges[i])
+    {
+      return i;
+    }
+  }
+}
+
+int mapToEdge(int x)
+{
+  int edges[15] = {0, 20, 80, 100, 160, 180, 240, 260, 320, 340, 400, 420, 480, 500, 560};
+  return edges[x];
 }
 
 bool indicator(int x, int y, int **actual_matrix)
 {
-  if((actual_player % 2 == 0 && (actual_matrix[y][x] / 100 == 2 || actual_matrix[y][x] / 10 == 2)) || (actual_player % 2 == 1 && (actual_matrix[y][x] / 100 == 1 || actual_matrix[y][x] / 10 == 1)))
+  /*if((actual_player % 2 == 0 && (actual_matrix[y][x] / 100 == 2 || actual_matrix[y][x] / 10 == 2)) || (actual_player % 2 == 1 && (actual_matrix[y][x] / 100 == 1 || actual_matrix[y][x] / 10 == 1)))
   {
-    SDL_Rect fillRect = {x*30, y*30, 30, 30};
+    SDL_Rect fillRect = {x, y, size[0], size[1]};
     gTexture = loadTexture("Sprites/Indicator.png");
     SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
-    SDL_RenderPresent(gRenderer);
     for(int u = 0; u < 15; u++)
     {
       for(int v = 0; v < 15; v++)
       {
         if(check_move(y, x, u, v, actual_matrix) != impossible)
         {
-          SDL_Rect _fillRect = {v*30, u*30, 30, 30};
+          SDL_Rect _fillRect = {v*size[0], u*size[1], size[0], size[1]};
           SDL_RenderCopy(gRenderer, gTexture, NULL, &_fillRect);
-          SDL_RenderPresent(gRenderer);
         }
       }
     }
-    SDL_RenderClear(gRenderer);
     SDL_DestroyTexture(gTexture);
     gTexture = NULL;
+    SDL_RenderPresent(gRenderer);
     return true;
   }
-  return false;
+  return false;*/
+  return true;
 }
 
 void createBoard(int **actual_matrix)
@@ -270,21 +401,29 @@ void createBoard(int **actual_matrix)
         if(move % 2 == 0)
         {
           SDL_GetMouseState(&y, &x);
-          x /= 30;
-          y /= 30;
-          if(indicator(y, x, actual_matrix))
+          if(x <= 580 && y <= 580)
           {
-            move++;
+            getSize(y, x);
+            y = mapToInt(y);
+            x = mapToInt(x);
+            if(indicator(y, x, actual_matrix))
+            {
+              move++;
+            }
           }
         }
         else if(move % 2 == 1)
         {
           SDL_GetMouseState(&v, &u);
-          u /= 30;
-          v /= 30;
-          apply_move(x, y, u, v, &actual_matrix);
-          move++;
-          draw(actual_matrix);
+          if(u <= 580 && v <= 580)
+          {
+            getSize(v, u);
+            v = mapToInt(v);
+            u = mapToInt(u);
+            apply_move(x, y, u, v, &actual_matrix);
+            move++;
+            draw(actual_matrix);
+          }
         }
       }
     }

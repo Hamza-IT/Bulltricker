@@ -82,6 +82,7 @@ void fillBlank()
   SDL_Rect fillRect2 = {0, 580, 800, 20};
   SDL_Texture *newTexture = loadTexture("Sprites/fill1.png");
   SDL_RenderCopy(gRenderer, newTexture, NULL, &fillRect1);
+  SDL_DestroyTexture(newTexture);
   newTexture = loadTexture("Sprites/fill2.png");
   SDL_RenderCopy(gRenderer, newTexture, NULL, &fillRect2);
   SDL_DestroyTexture(newTexture);
@@ -371,6 +372,7 @@ bool indicator(int x, int y, int **actual_matrix)
     setAlpha(120);
     SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
     SDL_DestroyTexture(gTexture);
+    gTexture = NULL;
     gTexture = loadTexture("Sprites/Indicator.png");
     setAlpha(150);
     for(int u = 0; u < 15; u++)
@@ -390,6 +392,7 @@ bool indicator(int x, int y, int **actual_matrix)
     SDL_DestroyTexture(gTexture);
     gTexture = NULL;
     SDL_RenderPresent(gRenderer);
+    SDL_RenderClear(gRenderer);
     return true;
   }
   return false;
@@ -431,7 +434,7 @@ void createBoard(int **actual_matrix)
             }
           }
         }
-        else if(move % 2 == 1)
+        else if(event.type == SDL_MOUSEBUTTONDOWN && move % 2 == 1)
         {
           SDL_GetMouseState(&v, &u);
           if(u <= 580 && v <= 580)

@@ -17,12 +17,29 @@ void init()
   FILE * fptr = fopen("screen_settings.txt", "r");
   fscanf(fptr, "%d %d", &SCREEN_WIDTH, &SCREEN_HEIGHT);
   fclose(fptr);
-  SDL_Init(SDL_INIT_VIDEO);
-  SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
+  if(SDL_Init(SDL_INIT_VIDEO))
+  {
+    printf("Failed to initialize video!");
+  }
+  if(!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1"))
+  {
+    printf("Failed to set hint!");
+  }
   gWindow = SDL_CreateWindow("Bulltricker", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
-  gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_PRESENTVSYNC);
+  if(gWindow == NULL)
+  {
+    printf("Failed to create window!");
+  }
+  gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_TARGETTEXTURE);
+  if(gRenderer == NULL)
+  {
+    printf("Failed to create renderer!");
+  }
   SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-  IMG_Init(IMG_INIT_PNG);
+  if(!IMG_Init(IMG_INIT_PNG))
+  {
+    printf("Failed to initialize SDL_Image!");
+  }
 }
 
 void close()
@@ -40,9 +57,11 @@ void close()
 SDL_Texture *loadTexture(char *path)
 {
   SDL_Texture *newTexture = NULL;
-  SDL_Surface *temp = IMG_Load(path);
-  newTexture = SDL_CreateTextureFromSurface(gRenderer, temp);
-  SDL_FreeSurface(temp);
+  newTexture = IMG_LoadTexture(gRenderer, path);
+  if(newTexture == NULL)
+  {
+    printf("Failed to create texture from surface %s!\n%s", path, IMG_GetError());
+  }
   return newTexture;
 }
 
@@ -168,9 +187,14 @@ void mainMenu(bool *quit)
             if(i == 0)
             {
               start = true;
-              SDL_RenderClear(gRenderer);
               SDL_DestroyTexture(gTexture);
+              for(i = 0; i < 4; i++)
+              {
+                SDL_DestroyTexture(textureList[i]);
+                textureList[i] = NULL;
+              }
               gTexture = NULL;
+              SDL_RenderClear(gRenderer);
             }
             break;
           }
@@ -213,6 +237,9 @@ bool indicator(int x, int y, int **actual_matrix)
         }
       }
     }
+    SDL_RenderClear(gRenderer);
+    SDL_DestroyTexture(gTexture);
+    gTexture = NULL;
     return true;
   }
   return false;

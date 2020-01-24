@@ -366,10 +366,12 @@ bool indicator(int x, int y, int **actual_matrix)
     int temp_x = mapToEdge(x);
     int temp_y = mapToEdge(y);
     SDL_Rect fillRect = {temp_x, temp_y, size[0], size[1]};
-    gTexture = loadTexture("Sprites/Indicator.png");
+    gTexture = loadTexture("Sprites/_Indicator.png");
     setBlendMode(SDL_BLENDMODE_BLEND);
     setAlpha(120);
     SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+    SDL_DestroyTexture(gTexture);
+    gTexture = loadTexture("Sprites/Indicator.png");
     setAlpha(150);
     for(int u = 0; u < 15; u++)
     {

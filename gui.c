@@ -126,12 +126,12 @@ void fillBlank()
   SDL_Rect fillRect2 = {0, 580, 800, 20};
   SDL_Texture *newTexture = loadTexture("Sprites/fill1.png");
   SDL_SetTextureBlendMode(newTexture, SDL_BLENDMODE_BLEND);
-  SDL_SetTextureAlphaMod(newTexture, 150);
+  SDL_SetTextureAlphaMod(newTexture, 200);
   SDL_RenderCopy(gRenderer, newTexture, NULL, &fillRect1);
   SDL_DestroyTexture(newTexture);
   newTexture = loadTexture("Sprites/fill2.png");
   SDL_SetTextureBlendMode(newTexture, SDL_BLENDMODE_BLEND);
-  SDL_SetTextureAlphaMod(newTexture, 150);
+  SDL_SetTextureAlphaMod(newTexture, 200);
   SDL_RenderCopy(gRenderer, newTexture, NULL, &fillRect2);
   SDL_DestroyTexture(newTexture);
   newTexture = NULL;
@@ -271,7 +271,7 @@ void mainMenu(bool *quit)
 {
   SDL_RenderClear(gRenderer);
   SDL_Rect fillRect = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
-  SDL_Texture *textureList[5] = {loadTexture("Sprites/Main_Menu_1.png"), loadTexture("Sprites/Main_Menu_2.png"), loadTexture("Sprites/Main_Menu_3.png"), loadTexture("Sprites/Main_Menu_4.png")};
+  SDL_Texture *textureList[4] = {loadTexture("Sprites/Main_Menu_1.png"), loadTexture("Sprites/Main_Menu_2.png"), loadTexture("Sprites/Main_Menu_3.png"), loadTexture("Sprites/Main_Menu_4.png")};
   int i = 0;
   gTexture = textureList[i];
   SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
@@ -285,6 +285,63 @@ void mainMenu(bool *quit)
       if(event.type == SDL_QUIT)
       {
         *quit = true;
+      }
+      else if(event.type == SDL_MOUSEMOTION)
+      {
+        int x, y;
+        SDL_GetMouseState(&x, &y);
+        if(y >= 389 && y < 440 && i != 0)
+        {
+          SDL_Delay(50);
+          i = 0;
+          gTexture = textureList[i];
+          SDL_RenderClear(gRenderer);
+          SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+          SDL_RenderPresent(gRenderer);
+        }
+        else if(y >= 440 && y < 493 && i != 1)
+        {
+          SDL_Delay(50);
+          i = 1;
+          gTexture = textureList[i];
+          SDL_RenderClear(gRenderer);
+          SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+          SDL_RenderPresent(gRenderer);
+        }
+        else if(y >= 493 && y < 548 && i != 2)
+        {
+          SDL_Delay(50);
+          i = 2;
+          gTexture = textureList[i];
+          SDL_RenderClear(gRenderer);
+          SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+          SDL_RenderPresent(gRenderer);
+        }
+        else if(y >= 548 && i != 3)
+        {
+          SDL_Delay(50);
+          i = 3;
+          gTexture = textureList[i];
+          SDL_RenderClear(gRenderer);
+          SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+          SDL_RenderPresent(gRenderer);
+        }
+      }
+      else if(event.type == SDL_MOUSEBUTTONDOWN)
+      {
+        if(i == 0)
+        {
+          SDL_Delay(150);
+          start = true;
+          SDL_DestroyTexture(gTexture);
+          for(i = 0; i < 4; i++)
+          {
+            SDL_DestroyTexture(textureList[i]);
+            textureList[i] = NULL;
+          }
+          gTexture = NULL;
+          SDL_RenderClear(gRenderer);
+        }
       }
       else if(event.type == SDL_KEYDOWN)
       {
@@ -317,9 +374,9 @@ void mainMenu(bool *quit)
           }
           case SDLK_RETURN:
           {
-            SDL_Delay(150);
             if(i == 0)
             {
+              SDL_Delay(150);
               start = true;
               SDL_DestroyTexture(gTexture);
               for(i = 0; i < 4; i++)

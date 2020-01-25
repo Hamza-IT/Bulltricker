@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include "gui.h"
 #include "move.h"
+#include "init_mat.h"
 
 int SCREEN_WIDTH;
 int SCREEN_HEIGHT;
@@ -107,6 +108,24 @@ void loadGrid()
   SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
   SDL_DestroyTexture(gTexture);
   gTexture = NULL;
+  SDL_Texture *buttonList[4] = {loadTexture("Sprites/Undo_Button.png"), loadTexture("Sprites/Save_Button.png"), loadTexture("Sprites/Load_Button.png"), loadTexture("Sprites/Menu_Button.png")};
+  SDL_Rect fillRect1 = {617, 360, 30, 30};
+  SDL_Rect fillRect2 = {662, 360, 30, 30};
+  SDL_Rect fillRect3 = {707, 360, 30, 30};
+  SDL_Rect fillRect4 = {752, 360, 30, 30};
+  gTexture = buttonList[0];
+  SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect1);
+  gTexture = buttonList[1];
+  SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect2);
+  gTexture = buttonList[2];
+  SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect3);
+  gTexture = buttonList[3];
+  SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect4);
+  for(int i = 0; i < 4; i++)
+  {
+    SDL_DestroyTexture(buttonList[i]);
+    buttonList[i] = NULL;
+  }
   char *text;
   if(actual_player % 2 == 0)
   {
@@ -478,6 +497,7 @@ bool indicator(int x, int y, int **actual_matrix)
 {
   if((actual_player % 2 == 0 && (actual_matrix[y][x] / 100 == 2 || actual_matrix[y][x] / 10 == 2)) || (actual_player % 2 == 1 && (actual_matrix[y][x] / 100 == 1 || actual_matrix[y][x] / 10 == 1)))
   {
+    SDL_Delay(50);
     int temp_x = mapToEdge(x);
     int temp_y = mapToEdge(y);
     SDL_Rect fillRect = {temp_x, temp_y, size[0], size[1]};
@@ -517,13 +537,14 @@ void createBoard(int **actual_matrix)
   init();
   gFont = loadFont("Fonts/bodoni_mtblack.ttf", 40);
   int x, y, u, v, move = 0, p[3];
+  int **previous_matrix = actual_matrix;
   bool quit = false, game_over = false;
+  SDL_Event event;
   mainMenu(&quit);
   if(!quit)
   {
     draw(actual_matrix);
   }
-  SDL_Event event;
   while(!quit)
   {
     if(SDL_WaitEvent(&event))
@@ -532,20 +553,53 @@ void createBoard(int **actual_matrix)
       {
         quit = true;
       }
-      else if(event.type == SDL_MOUSEBUTTONDOWN)
+      else if(event.type == SDL_MOUSEMOTION || event.type == SDL_MOUSEBUTTONDOWN)
       {
-        if(move % 2 == 0 && !game_over)
+        if(move % 2 != 1)
+        {
+          SDL_GetMouseState(&x, &y);
+        }
+        if(x > 580 && y >= 360 && y < 391)
+        {
+          if(x >= 617 && x < 648)
+          {
+            if(event.type == SDL_MOUSEBUTTONDOWN)
+            {
+              printf("Undo button clicked!\n\n");
+              draw(previous_matrix);
+            }
+          }
+          else if(x >= 662 && x < 693)
+          {
+            if(event.type == SDL_MOUSEBUTTONDOWN)
+            {
+              printf("Save button clicked!\n\n");
+            }
+          }
+          else if(x >= 707 && x < 738)
+          {
+            if(event.type == SDL_MOUSEBUTTONDOWN)
+            {
+              printf("Load button clicked!\n\n");
+            }
+          }
+          else if(x >= 752 && x < 783)
+          {
+            if(event.type == SDL_MOUSEBUTTONDOWN)
+            {
+              printf("Menu button clicked!\n\n");
+            }
+          }
+        }
+        else if(x <= 580 && y <= 580 && event.type == SDL_MOUSEBUTTONDOWN && move % 2 == 0 && !game_over)
         {
           SDL_GetMouseState(&y, &x);
-          if(x <= 580 && y <= 580)
+          getSize(y, x);
+          x = mapToInt(x);
+          y = mapToInt(y);
+          if(indicator(y, x, actual_matrix))
           {
-            getSize(y, x);
-            y = mapToInt(y);
-            x = mapToInt(x);
-            if(indicator(y, x, actual_matrix))
-            {
-              move++;
-            }
+            move++;
           }
         }
         else if(event.type == SDL_MOUSEBUTTONDOWN && move % 2 == 1)
@@ -556,6 +610,7 @@ void createBoard(int **actual_matrix)
             getSize(v, u);
             v = mapToInt(v);
             u = mapToInt(u);
+            previous_matrix = actual_matrix;
             apply_move(x, y, u, v, &actual_matrix);
             move++;
             draw(actual_matrix);

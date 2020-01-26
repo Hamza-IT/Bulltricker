@@ -568,7 +568,8 @@ void createBoard(int ***actual_matrix)
           {
             if(!drawn)
             {
-              loadText("Restart Game", black, 640, 320, 120, 30);
+              SDL_Delay(100);
+              loadText("Restart Game", black, 630, 318, 140, 30);
               SDL_RenderPresent(gRenderer);
               drawn = true;
             }
@@ -602,7 +603,8 @@ void createBoard(int ***actual_matrix)
           {
             if(!drawn)
             {
-              loadText("Save Game", black, 640, 320, 120, 30);
+              SDL_Delay(100);
+              loadText("Save Game", black, 640, 318, 120, 30);
               SDL_RenderPresent(gRenderer);
               drawn = true;
             }
@@ -615,7 +617,8 @@ void createBoard(int ***actual_matrix)
           {
             if(!drawn)
             {
-              loadText("Load Game", black, 640, 320, 120, 30);
+              SDL_Delay(100);
+              loadText("Load Game", black, 640, 318, 120, 30);
               SDL_RenderPresent(gRenderer);
               drawn = true;
             }
@@ -628,7 +631,8 @@ void createBoard(int ***actual_matrix)
           {
             if(!drawn)
             {
-              loadText("Main Menu", black, 640, 320, 120, 30);
+              SDL_Delay(100);
+              loadText("Main Menu", black, 640, 318, 120, 30);
               SDL_RenderPresent(gRenderer);
               drawn = true;
             }
@@ -643,14 +647,30 @@ void createBoard(int ***actual_matrix)
               draw(*actual_matrix);
             }
           }
-          else
+          else if(drawn = true)
           {
-            SDL_RenderClear(gRenderer);
-            draw(*actual_matrix);
+            SDL_Delay(100);
+            SDL_Rect fillRect = {630, 318, 140, 30};
+            gTexture = loadTexture("Sprites/Hide_Text.png");
+            SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+            SDL_DestroyTexture(gTexture);
+            gTexture = NULL;
+            SDL_RenderPresent(gRenderer);
             drawn = false;
           }
         }
-        else if(x <= 580 && y <= 580 && event.type == SDL_MOUSEBUTTONDOWN && move % 2 == 0 && !game_over)
+        if((y < 360 || y >= 391) && drawn == true && event.type == SDL_MOUSEMOTION)
+        {
+          SDL_Delay(100);
+          SDL_Rect fillRect = {630, 318, 140, 30};
+          gTexture = loadTexture("Sprites/Hide_Text.png");
+          SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+          SDL_DestroyTexture(gTexture);
+          gTexture = NULL;
+          SDL_RenderPresent(gRenderer);
+          drawn = false;
+        }
+        if(x <= 580 && y <= 580 && event.type == SDL_MOUSEBUTTONDOWN && move % 2 == 0 && !game_over)
         {
           SDL_GetMouseState(&y, &x);
           getSize(y, x);

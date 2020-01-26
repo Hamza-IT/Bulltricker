@@ -1,6 +1,4 @@
 compile:
-	gcc main.c game_objects.c init_mat.c -o main
-compile_gui:
-	gcc main.c game_objects.c init_mat.c gui.c -o main -lSDL2main -lSDL2
+	gcc main.c game_objects.c init_mat.c -o Bulltricker -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf
 clean:
-	rm -r main
+	rm -r Bulltricker

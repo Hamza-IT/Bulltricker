@@ -28,7 +28,7 @@ typedef enum _mstate
 
 int actual_player;
 winner check_mat(int **);
-int *check_queen(int **, int, int *);
+int *check_mandatory_move(int **, int, int *);
 mstate check_move(int, int, int, int, int **);
 void apply_move(int, int, int, int, int ***);
 

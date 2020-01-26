@@ -5,6 +5,6 @@ int SCREEN_WIDTH;
 int SCREEN_HEIGHT;
 
 void draw(int **);
-void createBoard(int **);
+void createBoard(int ***);
 
 #endif

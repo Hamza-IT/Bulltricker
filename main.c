@@ -13,6 +13,6 @@ int main(int argc, char **argv)
   //HWND hWnd = GetConsoleWindow();
   //ShowWindow( hWnd, SW_HIDE );
   int **actual_matrix = initMat();
-  createBoard(actual_matrix);
+  createBoard(&actual_matrix);
   return 0;
 }

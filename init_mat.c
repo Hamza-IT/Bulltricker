@@ -2,13 +2,6 @@
 #include <stdlib.h>
 #include "init_mat.h"
 
-int row_count;
-int column_count;
-int king_count;
-int queen_count;
-int pawn_count;
-int **initial_matrix;
-
 int **initMat()
 {
   FILE *fptr = fopen("general.txt", "r");
@@ -18,11 +11,19 @@ int **initMat()
   {
     initial_matrix[i] = malloc(column_count * sizeof(int));
   }
+  copy_matrix = malloc(row_count * sizeof(int*));
+  for(int i = 0; i < row_count; i++)
+  {
+    copy_matrix[i] = malloc(column_count * sizeof(int));
+  }
   for(int i = 0; i < row_count; i++)
   {
     for(int j = 0; j < column_count; j++)
     {
-      fscanf(fptr, "%d", *(initial_matrix + i) + j);
+      int x;
+      fscanf(fptr, "%d", &x);
+      initial_matrix[i][j] = x;
+      copy_matrix[i][j] = x;
     }
   }
   fclose(fptr);

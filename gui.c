@@ -348,7 +348,9 @@ void mainMenu(bool *quit)
       }
       else if(event.type == SDL_MOUSEBUTTONDOWN)
       {
-        if(i == 0)
+        int x, y;
+        SDL_GetMouseState(&x, &y);
+        if(i == 0 && y >= 389 && y < 440)
         {
           SDL_Delay(150);
           start = true;
@@ -532,18 +534,19 @@ bool indicator(int x, int y, int **actual_matrix)
   return false;
 }
 
-void createBoard(int **actual_matrix)
+// Still needs to code a save/load feature && implement mandatory moves && add sounds && finally finish the main menu ...
+
+void createBoard(int ***actual_matrix)
 {
   init();
   gFont = loadFont("Fonts/bodoni_mtblack.ttf", 40);
   int x, y, u, v, move = 0, p[3];
-  int **previous_matrix = actual_matrix;
-  bool quit = false, game_over = false;
+  bool quit = false, game_over = false, drawn = false, restart;
   SDL_Event event;
   mainMenu(&quit);
   if(!quit)
   {
-    draw(actual_matrix);
+    draw(*actual_matrix);
   }
   while(!quit)
   {
@@ -563,14 +566,46 @@ void createBoard(int **actual_matrix)
         {
           if(x >= 617 && x < 648)
           {
+            if(!drawn)
+            {
+              loadText("Restart Game", black, 640, 320, 120, 30);
+              SDL_RenderPresent(gRenderer);
+              drawn = true;
+            }
             if(event.type == SDL_MOUSEBUTTONDOWN)
             {
-              printf("Undo button clicked!\n\n");
-              draw(previous_matrix);
+              restart = false;
+              for(int i = 0; i < 15; i++)
+              {
+                for(int j = 0; j < 15; j++)
+                {
+                  if((*actual_matrix)[i][j] != copy_matrix[i][j])
+                  {
+                    move = 0;
+                    actual_player = 0;
+                    game_over = false;
+                    *actual_matrix = initMat();
+                    SDL_Delay(50);
+                    draw(*actual_matrix);
+                    restart = true;
+                    break;
+                  }
+                }
+                if(restart)
+                {
+                  break;
+                }
+              }
             }
           }
           else if(x >= 662 && x < 693)
           {
+            if(!drawn)
+            {
+              loadText("Save Game", black, 640, 320, 120, 30);
+              SDL_RenderPresent(gRenderer);
+              drawn = true;
+            }
             if(event.type == SDL_MOUSEBUTTONDOWN)
             {
               printf("Save button clicked!\n\n");
@@ -578,6 +613,12 @@ void createBoard(int **actual_matrix)
           }
           else if(x >= 707 && x < 738)
           {
+            if(!drawn)
+            {
+              loadText("Load Game", black, 640, 320, 120, 30);
+              SDL_RenderPresent(gRenderer);
+              drawn = true;
+            }
             if(event.type == SDL_MOUSEBUTTONDOWN)
             {
               printf("Load button clicked!\n\n");
@@ -585,10 +626,28 @@ void createBoard(int **actual_matrix)
           }
           else if(x >= 752 && x < 783)
           {
+            if(!drawn)
+            {
+              loadText("Main Menu", black, 640, 320, 120, 30);
+              SDL_RenderPresent(gRenderer);
+              drawn = true;
+            }
             if(event.type == SDL_MOUSEBUTTONDOWN)
             {
-              printf("Menu button clicked!\n\n");
+              SDL_Delay(125);
+              mainMenu(&quit);
+              move = 0;
+              actual_player = 0;
+              game_over = false;
+              *actual_matrix = initMat();
+              draw(*actual_matrix);
             }
+          }
+          else
+          {
+            SDL_RenderClear(gRenderer);
+            draw(*actual_matrix);
+            drawn = false;
           }
         }
         else if(x <= 580 && y <= 580 && event.type == SDL_MOUSEBUTTONDOWN && move % 2 == 0 && !game_over)
@@ -597,7 +656,7 @@ void createBoard(int **actual_matrix)
           getSize(y, x);
           x = mapToInt(x);
           y = mapToInt(y);
-          if(indicator(y, x, actual_matrix))
+          if(indicator(y, x, *actual_matrix))
           {
             move++;
           }
@@ -610,11 +669,10 @@ void createBoard(int **actual_matrix)
             getSize(v, u);
             v = mapToInt(v);
             u = mapToInt(u);
-            previous_matrix = actual_matrix;
-            apply_move(x, y, u, v, &actual_matrix);
+            apply_move(x, y, u, v, actual_matrix);
             move++;
-            draw(actual_matrix);
-            gameOver(actual_matrix, &game_over);
+            draw(*actual_matrix);
+            gameOver(*actual_matrix, &game_over);
           }
         }
       }

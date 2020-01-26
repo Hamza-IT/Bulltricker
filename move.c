@@ -98,7 +98,7 @@ winner check_mat(int **actual_matrix)
   return player;
 }
 
-int *check_queen(int **actual_matrix, int actual_player, int *p)
+int *check_mandatory_move(int **actual_matrix, int actual_player, int *p)
 {
   if(actual_player % 2 == 0)
   {

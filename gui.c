@@ -286,7 +286,30 @@ void draw(int **actual_matrix)
   SDL_RenderPresent(gRenderer);
 }
 
-void mainMenu(bool *quit)
+void saveGame(int **actual_matrix, bool game_over)
+{
+  FILE *fptr = fopen("Saves/save.bin", "wb");
+  fwrite(&actual_matrix, 1, sizeof(actual_matrix), fptr);
+  fwrite(&actual_player, 1, sizeof(int), fptr);
+  fwrite(&game_over, 1, sizeof(bool), fptr);
+  fclose(fptr);
+}
+
+bool loadGame(int ***actual_matrix, bool game_over)
+{
+  FILE *fptr = fopen("Saves/save.bin", "rb");
+  if(fptr != NULL)
+  {
+    fread(actual_matrix, sizeof(actual_matrix), 1, fptr);
+    fread(&actual_player, sizeof(int), 1, fptr);
+    fread(&game_over, sizeof(bool), 1, fptr);
+    fclose(fptr);
+    return true;
+  }
+  return false;
+}
+
+void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
 {
   SDL_RenderClear(gRenderer);
   SDL_Rect fillRect = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
@@ -353,6 +376,10 @@ void mainMenu(bool *quit)
         if(i == 0 && y >= 389 && y < 440)
         {
           SDL_Delay(150);
+          *move = 0;
+          actual_player = 0;
+          *game_over = false;
+          *actual_matrix = initMat();
           start = true;
           SDL_DestroyTexture(gTexture);
           for(i = 0; i < 4; i++)
@@ -361,7 +388,31 @@ void mainMenu(bool *quit)
             textureList[i] = NULL;
           }
           gTexture = NULL;
-          SDL_RenderClear(gRenderer);
+          draw(*actual_matrix);
+        }
+        else if(i == 1 && y >= 440 && y < 493)
+        {
+          SDL_Delay(150);
+          if(loadGame(actual_matrix, *game_over) == true)
+          {
+            start = true;
+            SDL_DestroyTexture(gTexture);
+            for(i = 0; i < 4; i++)
+            {
+              SDL_DestroyTexture(textureList[i]);
+              textureList[i] = NULL;
+            }
+            gTexture = NULL;
+            draw(*actual_matrix);
+          }
+        }
+        else if(i == 2 && y >= 493 && y < 548)
+        {
+
+        }
+        else if(i == 3 && y >= 548)
+        {
+
         }
       }
       else if(event.type == SDL_KEYDOWN)
@@ -398,6 +449,10 @@ void mainMenu(bool *quit)
             if(i == 0)
             {
               SDL_Delay(150);
+              *move = 0;
+              actual_player = 0;
+              *game_over = false;
+              *actual_matrix = initMat();
               start = true;
               SDL_DestroyTexture(gTexture);
               for(i = 0; i < 4; i++)
@@ -406,7 +461,23 @@ void mainMenu(bool *quit)
                 textureList[i] = NULL;
               }
               gTexture = NULL;
-              SDL_RenderClear(gRenderer);
+              draw(*actual_matrix);
+            }
+            else if(i == 1)
+            {
+              SDL_Delay(150);
+              if(loadGame(actual_matrix, *game_over) == true)
+              {
+                start = true;
+                SDL_DestroyTexture(gTexture);
+                for(i = 0; i < 4; i++)
+                {
+                  SDL_DestroyTexture(textureList[i]);
+                  textureList[i] = NULL;
+                }
+                gTexture = NULL;
+                draw(*actual_matrix);
+              }
             }
             break;
           }
@@ -534,7 +605,7 @@ bool indicator(int x, int y, int **actual_matrix)
   return false;
 }
 
-// Still needs to code a save/load feature && implement mandatory moves && add sounds && finally finish the main menu ...
+// Still needs to implement mandatory moves && add sounds && finally finish the main menu ...
 
 void createBoard(int ***actual_matrix)
 {
@@ -543,11 +614,7 @@ void createBoard(int ***actual_matrix)
   int x, y, u, v, move = 0, p[3];
   bool quit = false, game_over = false, drawn = false, restart;
   SDL_Event event;
-  mainMenu(&quit);
-  if(!quit)
-  {
-    draw(*actual_matrix);
-  }
+  mainMenu(actual_matrix, &game_over, &quit, &move);
   while(!quit)
   {
     if(SDL_WaitEvent(&event))
@@ -610,7 +677,16 @@ void createBoard(int ***actual_matrix)
             }
             if(event.type == SDL_MOUSEBUTTONDOWN)
             {
-              printf("Save button clicked!\n\n");
+              saveGame(*actual_matrix, game_over);
+              SDL_Delay(100);
+              SDL_Rect fillRect = {630, 318, 140, 30};
+              gTexture = loadTexture("Sprites/Hide_Text.png");
+              SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+              SDL_DestroyTexture(gTexture);
+              gTexture = NULL;
+              SDL_RenderPresent(gRenderer);
+              loadText("Game Saved", black, 640, 318, 120, 30);
+              SDL_RenderPresent(gRenderer);
             }
           }
           else if(x >= 707 && x < 738)
@@ -624,7 +700,20 @@ void createBoard(int ***actual_matrix)
             }
             if(event.type == SDL_MOUSEBUTTONDOWN)
             {
-              printf("Load button clicked!\n\n");
+              if(loadGame(actual_matrix, game_over))
+              {
+                move = 0;
+                SDL_Delay(100);
+                SDL_Rect fillRect = {630, 318, 140, 30};
+                gTexture = loadTexture("Sprites/Hide_Text.png");
+                SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+                SDL_DestroyTexture(gTexture);
+                gTexture = NULL;
+                SDL_RenderPresent(gRenderer);
+                draw(*actual_matrix);
+                loadText("Game Loaded", black, 640, 318, 120, 30);
+                gameOver(*actual_matrix, &game_over);
+              }
             }
           }
           else if(x >= 752 && x < 783)
@@ -639,12 +728,7 @@ void createBoard(int ***actual_matrix)
             if(event.type == SDL_MOUSEBUTTONDOWN)
             {
               SDL_Delay(125);
-              mainMenu(&quit);
-              move = 0;
-              actual_player = 0;
-              game_over = false;
-              *actual_matrix = initMat();
-              draw(*actual_matrix);
+              mainMenu(actual_matrix, &game_over, &quit, &move);
             }
           }
           else if(drawn = true)

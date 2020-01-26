@@ -604,7 +604,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
         {
           for(int z = v+2; z < 14; z += 2)
           {
-            if(actual_matrix[x][z-1] % 10 != 3 && actual_matrix[x][z] / 100 == 2 && actual_matrix[x][z+2] == 0  && actual_matrix[x][z-2] == 0)
+            if(actual_matrix[x][z-1] % 10 != 3 && actual_matrix[x][z] / 100 == 2 && actual_matrix[x][z+2] == 0 && actual_matrix[x][z+1] == -2 && actual_matrix[x][z-2] == 0)
             {
               return impossible;
             }
@@ -667,7 +667,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
         {
           for(int z = v-2; z > 0; z -= 2)
           {
-            if(actual_matrix[x][z+1] % 10 != 3 && actual_matrix[x][z] / 100 == 2 && actual_matrix[x][z-2] == 0  && actual_matrix[x][z+2] == 0)
+            if(actual_matrix[x][z+1] % 10 != 3 && actual_matrix[x][z] / 100 == 2 && actual_matrix[x][z-2] == 0 && actual_matrix[x][z-1] == -2 && actual_matrix[x][z+2] == 0)
             {
               return impossible;
             }
@@ -780,7 +780,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
         {
           for(int z = u+2; z < 14; z += 2)
           {
-            if(actual_matrix[z-1][y] % 10 != 3 && actual_matrix[z][y] / 100 == 2 && actual_matrix[z+2][y] == 0 && actual_matrix[z-2][y] == 0)
+            if(actual_matrix[z-1][y] % 10 != 3 && actual_matrix[z][y] / 100 == 2 && actual_matrix[z+2][y] == 0 && actual_matrix[z+1][y] == -2 && actual_matrix[z-2][y] == 0)
             {
               return impossible;
             }
@@ -843,7 +843,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
         {
           for(int z = u-2; z > 0; z -= 2)
           {
-            if(actual_matrix[z+1][y] % 10 != 3 && actual_matrix[z][y] / 100 == 2 && actual_matrix[z-2][y] == 0 && actual_matrix[z+2][y] == 0)
+            if(actual_matrix[z+1][y] % 10 != 3 && actual_matrix[z][y] / 100 == 2 && actual_matrix[z-2][y] == 0 && actual_matrix[z-1][y] == -2 && actual_matrix[z+2][y] == 0)
             {
               return impossible;
             }
@@ -960,7 +960,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
         {
           for(int z = v+2; z < 14; z += 2)
           {
-            if(actual_matrix[x][z-1] % 10 != 3 && actual_matrix[x][z] / 100 == 1 && actual_matrix[x][z+2] == 0 && actual_matrix[x][z-2] == 0)
+            if(actual_matrix[x][z-1] % 10 != 3 && actual_matrix[x][z] / 100 == 1 && actual_matrix[x][z+2] == 0 && actual_matrix[x][z+1] == -2 && actual_matrix[x][z-2] == 0)
             {
               return impossible;
             }
@@ -1023,7 +1023,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
         {
           for(int z = v-2; z > 0; z -= 2)
           {
-            if(actual_matrix[x][z+1] % 10 != 3 && actual_matrix[x][z] / 100 == 1 && actual_matrix[x][z-2] == 0  && actual_matrix[x][z+2] == 0)
+            if(actual_matrix[x][z+1] % 10 != 3 && actual_matrix[x][z] / 100 == 1 && actual_matrix[x][z-2] == 0 && actual_matrix[x][z-1] == -2 && actual_matrix[x][z+2] == 0)
             {
               return impossible;
             }
@@ -1136,7 +1136,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
         {
           for(int z = u+2; z < 14; z += 2)
           {
-            if(actual_matrix[z-1][y] % 10 != 3 && actual_matrix[z][y] / 100 == 1 && actual_matrix[z+2][y] == 0 && actual_matrix[z-2][y] == 0)
+            if(actual_matrix[z-1][y] % 10 != 3 && actual_matrix[z][y] / 100 == 1 && actual_matrix[z+2][y] == 0 && actual_matrix[z+1][y] == -2 && actual_matrix[z-2][y] == 0)
             {
               return impossible;
             }
@@ -1199,7 +1199,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
         {
           for(int z = u-2; z > 0; z -= 2)
           {
-            if(actual_matrix[z+1][y] % 10 != 3 && actual_matrix[z][y] / 100 == 1 && actual_matrix[z-2][y] == 0  && actual_matrix[z+2][y] == 0)
+            if(actual_matrix[z+1][y] % 10 != 3 && actual_matrix[z][y] / 100 == 1 && actual_matrix[z-2][y] == 0 && actual_matrix[z-1][y] == -2 && actual_matrix[z+2][y] == 0)
             {
               return impossible;
             }

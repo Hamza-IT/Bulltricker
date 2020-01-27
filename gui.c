@@ -18,17 +18,17 @@ SDL_Texture *gTexture = NULL;
 SDL_Renderer *gRenderer = NULL;
 TTF_Font *gFont = NULL;
 SDL_Color black = {50, 50, 50}, white = {255, 255, 255}, grey = {127, 127, 127}, light_grey = {241, 241, 241};
-Mix_Chunk *gBip[2] = {NULL, NULL};
-Mix_Chunk *gMove[2] = {NULL, NULL};
+Mix_Chunk *sBip[2] = {NULL, NULL};
+Mix_Chunk *sMove[2] = {NULL, NULL};
 
 void init()
 {
   FILE * fptr = fopen("screen_settings.txt", "r");
   fscanf(fptr, "%d %d", &SCREEN_WIDTH, &SCREEN_HEIGHT);
   fclose(fptr);
-  if(SDL_Init(SDL_INIT_VIDEO))
+  if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
   {
-    printf("Failed to initialize video!\n%s\n", SDL_GetError());
+    printf("Failed to initialize SDL!\n%s\n", SDL_GetError());
   }
   if(!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1"))
   {
@@ -51,12 +51,44 @@ void init()
   }
   if(TTF_Init() == -1)
   {
-    printf("SDL_ttf could not initialize!\n%s\n", TTF_GetError());
+    printf("Failed to initialize SDL_TTF!\n%s\n", TTF_GetError());
+  }
+  if(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
+  {
+    printf("Failed to initialize SDL_Mixer!\n%s\n", Mix_GetError());
+  }
+}
+
+
+void loadSound()
+{
+  sBip[0] = Mix_LoadWAV("Sounds/menu_select.wav");
+  if(sBip[0] == NULL)
+  {
+    printf( "Failed to load sound effect!\n%s\n", Mix_GetError());
+  }
+  sMove[0] = Mix_LoadWAV("Sounds/move_1.wav");
+  if(sMove[0] == NULL)
+  {
+    printf( "Failed to load sound effect!\n%s\n", Mix_GetError());
+  }
+  sMove[1] = Mix_LoadWAV("Sounds/move_2.wav");
+  if(sMove[1] == NULL)
+  {
+    printf( "Failed to load sound effect!\n%s\n", Mix_GetError());
   }
 }
 
 void close()
 {
+  Mix_FreeChunk(sBip[0]);
+  sBip[0] = NULL;
+  Mix_FreeChunk(sBip[1]);
+  sBip[1] = NULL;
+  Mix_FreeChunk(sMove[0]);
+  sMove[0] = NULL;
+  Mix_FreeChunk(sMove[1]);
+  sMove[1] = NULL;
   TTF_CloseFont(gFont);
   gFont = NULL;
   SDL_DestroyRenderer(gRenderer);
@@ -65,6 +97,7 @@ void close()
   gTexture = NULL;
   SDL_DestroyWindow(gWindow);
   gWindow = NULL;
+  Mix_Quit();
   TTF_Quit();
   IMG_Quit();
   SDL_Quit();
@@ -390,6 +423,7 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
         if(y >= 389 && y < 440 && i != 0)
         {
           SDL_Delay(50);
+          Mix_PlayChannel(-1, sBip[0], 0);
           i = 0;
           gTexture = textureList[i];
           SDL_RenderClear(gRenderer);
@@ -399,6 +433,7 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
         else if(y >= 440 && y < 493 && i != 1)
         {
           SDL_Delay(50);
+          Mix_PlayChannel(-1, sBip[0], 0);
           i = 1;
           gTexture = textureList[i];
           SDL_RenderClear(gRenderer);
@@ -408,6 +443,7 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
         else if(y >= 493 && y < 548 && i != 2)
         {
           SDL_Delay(50);
+          Mix_PlayChannel(-1, sBip[0], 0);
           i = 2;
           gTexture = textureList[i];
           SDL_RenderClear(gRenderer);
@@ -417,6 +453,7 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
         else if(y >= 548 && i != 3)
         {
           SDL_Delay(50);
+          Mix_PlayChannel(-1, sBip[0], 0);
           i = 3;
           gTexture = textureList[i];
           SDL_RenderClear(gRenderer);
@@ -480,6 +517,7 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
           case SDLK_DOWN:
           {
             SDL_Delay(50);
+            Mix_PlayChannel(-1, sBip[0], 0);
             i++;
             i = i % 4;
             gTexture = textureList[i];
@@ -491,6 +529,7 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
           case SDLK_UP:
           {
             SDL_Delay(50);
+            Mix_PlayChannel(-1, sBip[0], 0);
             i--;
             if(i == -1)
             {
@@ -513,6 +552,7 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
               queen_mandatory = false;
               pawn_mandatory = false;
               shown = false;
+              start = true;
               SDL_DestroyTexture(gTexture);
               for(i = 0; i < 4; i++)
               {
@@ -581,7 +621,7 @@ bool indicator(int x, int y, int **actual_matrix)
 {
   if((actual_player % 2 == 0 && (actual_matrix[y][x] / 100 == 2 || actual_matrix[y][x] / 10 == 2)) || (actual_player % 2 == 1 && (actual_matrix[y][x] / 100 == 1 || actual_matrix[y][x] / 10 == 1)))
   {
-    if(!queen_mandatory && !pawn_mandatory && x == mandatory_x && y == mandatory_y)
+    if(!queen_mandatory && !pawn_mandatory && x != mandatory_x && y != mandatory_y)
     {
       SDL_Delay(50);
       int temp_x = mapToEdge(x);
@@ -645,6 +685,7 @@ void mandatoryIndicator()
 void createBoard(int ***actual_matrix)
 {
   init();
+  loadSound();
   gFont = loadFont("Fonts/bodoni_mtblack.ttf", 40);
   int x, y, u, v, move = 0, p[3];
   bool quit = false, game_over = false, drawn = false, restart;
@@ -796,6 +837,11 @@ void createBoard(int ***actual_matrix)
           check_queen(*actual_matrix);
           check_pawn(*actual_matrix);
           mandatoryIndicator();
+          if(!shown && (queen_mandatory || pawn_mandatory))
+          {
+            loadText("Obligatory move", black, 630, 240, 140, 30);
+          }
+          Mix_PlayChannel(-1, sMove[0], 0);
           SDL_GetMouseState(&y, &x);
           getSize(y, x);
           x = mapToInt(x);
@@ -807,6 +853,7 @@ void createBoard(int ***actual_matrix)
         }
         else if(event.type == SDL_MOUSEBUTTONDOWN && move % 2 == 1)
         {
+          Mix_PlayChannel(-1, sMove[1], 0);
           SDL_GetMouseState(&v, &u);
           if(u <= 580 && v <= 580)
           {

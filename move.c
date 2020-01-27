@@ -6,6 +6,8 @@
 #include "gui.h"
 
 int actual_player = 0;
+bool pawn_mandatory = false, queen_mandatory = false;
+int mandatory_x, mandatory_y;
 
 winner check_mat(int **actual_matrix)
 {
@@ -98,7 +100,54 @@ winner check_mat(int **actual_matrix)
   return player;
 }
 
-int *check_mandatory_move(int **actual_matrix, int actual_player, int *p)
+void check_pawn(int **actual_matrix)
+{
+  bool found = false;
+  if(actual_player % 2 == 0)
+  {
+    for(int x = 0; x < 15; x++)
+    {
+      for(int y = 0; y < 15; y++)
+      {
+        if(actual_matrix[x][y] == 211 && x-4 >= 0 && actual_matrix[x-1][y] == -2 && actual_matrix[x-2][y] / 100 == 1 && actual_matrix[x-4][y] == 0)
+        {
+          pawn_mandatory = true;
+          found = true;
+          mandatory_x = x;
+          mandatory_y = y;
+          break;
+        }
+      }
+      if(found)
+      {
+        break;
+      }
+    }
+  }
+  else
+  {
+    for(int x = 0; x < 15; x++)
+    {
+      for(int y = 0; y < 15; y++)
+      {
+        if(actual_matrix[x][y] == 111 && x+4 < 15 && actual_matrix[x+1][y] == -2 && actual_matrix[x+2][y] / 100 == 2 && actual_matrix[x+4][y] == 0)
+        {
+          pawn_mandatory = true;
+          found = true;
+          mandatory_x = x;
+          mandatory_y = y;
+          break;
+        }
+      }
+      if(found)
+      {
+        break;
+      }
+    }
+  }
+}
+
+void check_queen(int **actual_matrix)
 {
   if(actual_player % 2 == 0)
   {
@@ -116,12 +165,11 @@ int *check_mandatory_move(int **actual_matrix, int actual_player, int *p)
             }
             else if(actual_matrix[z][y] / 100 == 1)
             {
-              if(actual_matrix[z-2][y] == 0)
+              if(actual_matrix[z-2][y] == 0 && actual_matrix[z-1][y] == -2)
               {
-                p[0] = true;
-                p[1] = x;
-                p[2] = y;
-                return p;
+                queen_mandatory = true;
+                mandatory_x = x;
+                mandatory_y = y;
               }
             }
           }
@@ -133,10 +181,12 @@ int *check_mandatory_move(int **actual_matrix, int actual_player, int *p)
             }
             else if(actual_matrix[z][y] / 100 == 1)
             {
-              p[0] = true;
-              p[1] = x;
-              p[2] = y;
-              return p;
+              if(actual_matrix[z+2][y] == 0 && actual_matrix[z+1][y] == -2)
+              {
+                queen_mandatory = true;
+                mandatory_x = x;
+                mandatory_y = y;
+              }
             }
           }
         }
@@ -150,12 +200,11 @@ int *check_mandatory_move(int **actual_matrix, int actual_player, int *p)
             }
             else if(actual_matrix[x][z] / 100 == 1)
             {
-              if(actual_matrix[x][z-2] == 0)
+              if(actual_matrix[x][z-2] == 0 && actual_matrix[x][z-1] == -2)
               {
-                p[0] = true;
-                p[1] = x;
-                p[2] = y;
-                return p;
+                queen_mandatory = true;
+                mandatory_x = x;
+                mandatory_y = y;
               }
             }
           }
@@ -167,12 +216,11 @@ int *check_mandatory_move(int **actual_matrix, int actual_player, int *p)
             }
             else if(actual_matrix[x][z] / 100 == 1)
             {
-              if(actual_matrix[x][z+2] == 0)
+              if(actual_matrix[x][z+2] == 0 && actual_matrix[x][z+1] == -2)
               {
-                p[0] = true;
-                p[1] = x;
-                p[2] = y;
-                return p;
+                queen_mandatory = true;
+                mandatory_x = x;
+                mandatory_y = y;
               }
             }
           }
@@ -196,12 +244,11 @@ int *check_mandatory_move(int **actual_matrix, int actual_player, int *p)
             }
             else if(actual_matrix[z][y] / 100 == 2)
             {
-              if(actual_matrix[z-2][y] == 0)
+              if(actual_matrix[z-2][y] == 0 && actual_matrix[z-1][y] == -2)
               {
-                p[0] = true;
-                p[1] = x;
-                p[2] = y;
-                return p;
+                queen_mandatory = true;
+                mandatory_x = x;
+                mandatory_y = y;
               }
             }
           }
@@ -213,10 +260,12 @@ int *check_mandatory_move(int **actual_matrix, int actual_player, int *p)
             }
             else if(actual_matrix[z][y] / 100 == 2)
             {
-              p[0] = true;
-              p[1] = x;
-              p[2] = y;
-              return p;
+              if(actual_matrix[z+2][y] == 0 && actual_matrix[z+1][y] == -2)
+              {
+                queen_mandatory = true;
+                mandatory_x = x;
+                mandatory_y = y;
+              }
             }
           }
         }
@@ -230,12 +279,11 @@ int *check_mandatory_move(int **actual_matrix, int actual_player, int *p)
             }
             else if(actual_matrix[x][z] / 100 == 2)
             {
-              if(actual_matrix[x][z-2] == 0)
+              if(actual_matrix[x][z-2] == 0 && actual_matrix[x][z-1] == -2)
               {
-                p[0] = true;
-                p[1] = x;
-                p[2] = y;
-                return p;
+                queen_mandatory = true;
+                mandatory_x = x;
+                mandatory_y = y;
               }
             }
           }
@@ -247,12 +295,11 @@ int *check_mandatory_move(int **actual_matrix, int actual_player, int *p)
             }
             else if(actual_matrix[x][z] / 100 == 2)
             {
-              if(actual_matrix[x][z+2] == 0)
+              if(actual_matrix[x][z+2] == 0 && actual_matrix[x][z+1] == -2)
               {
-                p[0] = true;
-                p[1] = x;
-                p[2] = y;
-                return p;
+                queen_mandatory = true;
+                mandatory_x = x;
+                mandatory_y = y;
               }
             }
           }
@@ -260,7 +307,6 @@ int *check_mandatory_move(int **actual_matrix, int actual_player, int *p)
       }
     }
   }
-  return p;
 }
 
 mstate check_move(int x, int y, int u, int v, int **actual_matrix)
@@ -370,7 +416,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
       return impossible;
     }
   }
-  else if(actual_matrix[x][y] == 23)
+  else if(actual_matrix[x][y] == 23 && !pawn_mandatory && !queen_mandatory)
   {
     if(actual_matrix[u][v] != -2)
     {
@@ -398,7 +444,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
     }
     return impossible;
   }
-  else if(actual_matrix[x][y] == 13)
+  else if(actual_matrix[x][y] == 13 && !queen_mandatory && !pawn_mandatory)
   {
     if(actual_matrix[u][v] != -2)
     {
@@ -426,13 +472,13 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
     }
     return impossible;
   }
-  else if(actual_matrix[x][y] == 110 || actual_matrix[x][y] == 111)
+  else if((actual_matrix[x][y] == 110 || actual_matrix[x][y] == 111) && !queen_mandatory)
   {
     if(y == v)
     {
       if(y % 2 == 1 && actual_matrix[u][v] == 0)
       {
-        if(u - x == 2 && actual_matrix[x+1][v] % 10 != 3)
+        if(u - x == 2 && actual_matrix[x+1][v] % 10 != 3 && !pawn_mandatory)
         {
           return normal;
         }
@@ -468,18 +514,18 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
       }
       else if(y % 2 == 0)
       {
-        if(u - x == 2 && actual_matrix[u][v] == 0)
+        if(u - x == 2 && actual_matrix[u][v] == 0 && !pawn_mandatory)
         {
           return normal;
         }
-        else if(x + 2 < 15 && actual_matrix[x+2][y] / 100 == 2 && u - x == 2)
+        else if(x + 2 < 15 && actual_matrix[x+2][y] / 100 == 2 && u - x == 2 && !pawn_mandatory)
         {
           return normal;
         }
         return impossible;
       }
     }
-    else if(abs(y - v) == 1 && u - x == 1)
+    else if(abs(y - v) == 1 && u - x == 1 && !pawn_mandatory)
     {
       if(actual_matrix[u][v] == 0)
       {
@@ -489,13 +535,13 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
     }
     return impossible;
   }
-  else if(actual_matrix[x][y] == 210 || actual_matrix[x][y] == 211)
+  else if((actual_matrix[x][y] == 210 || actual_matrix[x][y] == 211) && !queen_mandatory)
   {
     if(y == v)
     {
       if(y % 2 == 1 && actual_matrix[u][v] == 0)
       {
-        if(x - u == 2 && actual_matrix[x-1][v] % 10 != 3)
+        if(x - u == 2 && actual_matrix[x-1][v] % 10 != 3 && !pawn_mandatory)
         {
           return normal;
         }
@@ -531,18 +577,18 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
       }
       else if(y % 2 == 0)
       {
-        if(x - u == 2 && actual_matrix[u][v] == 0)
+        if(x - u == 2 && actual_matrix[u][v] == 0 && !pawn_mandatory)
         {
           return normal;
         }
-        if(x-2 >= 0 && actual_matrix[x-2][y] / 100 == 1 && x - u == 2)
+        if(x-2 >= 0 && actual_matrix[x-2][y] / 100 == 1 && x - u == 2 && !pawn_mandatory)
         {
           return normal;
         }
         return impossible;
       }
     }
-    else if(abs(y - v) == 1 && x - u == 1)
+    else if(abs(y - v) == 1 && x - u == 1 && !pawn_mandatory)
     {
       if(actual_matrix[u][v] == 0)
       {
@@ -556,13 +602,13 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
   {
     if(actual_matrix[x][y] == 120)
     {
-      if(abs(x - u) == 1 && abs(y - v) == 1 && actual_matrix[u][v] == 0)
+      if(abs(x - u) == 1 && abs(y - v) == 1 && actual_matrix[u][v] == 0 && !queen_mandatory && !pawn_mandatory)
       {
         return turn;
       }
       else if(y == v)
       {
-        if(abs(u - x) == 2 && (actual_matrix[u][v] / 100 == 2 || actual_matrix[u][v] == 0))
+        if(abs(u - x) == 2 && (actual_matrix[u][v] / 100 == 2 || actual_matrix[u][v] == 0) && !queen_mandatory && !pawn_mandatory)
         {
           if(u - x == 2 && actual_matrix[x+1][y] % 10 != 3)
           {
@@ -574,7 +620,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
           }
           return impossible;
         }
-        else if(u - x > 2 && actual_matrix[u][v] == 0)
+        else if(u - x > 2 && actual_matrix[u][v] == 0 && !queen_mandatory && !pawn_mandatory)
         {
           for(int z = x+2; z <= u; z += 2)
           {
@@ -585,7 +631,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
           }
           return destroy;
         }
-        else if(x - u > 2 && actual_matrix[u][v] == 0)
+        else if(x - u > 2 && actual_matrix[u][v] == 0 && !queen_mandatory && !pawn_mandatory)
         {
           for(int z = x-2; z >= u; z -= 2)
           {
@@ -609,7 +655,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
               return impossible;
             }
           }
-          if(v - y == 2 && actual_matrix[x][y+1] % 10 != 3)
+          if(v - y == 2 && actual_matrix[x][y+1] % 10 != 3 && !queen_mandatory && !pawn_mandatory)
           {
             return normal;
           }
@@ -672,7 +718,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
               return impossible;
             }
           }
-          if(y - v == 2 && actual_matrix[x][y-1] % 10 != 3)
+          if(y - v == 2 && actual_matrix[x][y-1] % 10 != 3 && !queen_mandatory && !pawn_mandatory)
           {
             return normal;
           }
@@ -732,13 +778,13 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
     }
     else if(actual_matrix[x][y] == 121)
     {
-      if(abs(x - u) == 1 && abs(y - v) == 1 && actual_matrix[u][v] == 0)
+      if(abs(x - u) == 1 && abs(y - v) == 1 && actual_matrix[u][v] == 0 && !queen_mandatory && !pawn_mandatory)
       {
         return turn;
       }
       else if(x == u)
       {
-        if(abs(y - v) == 2 && (actual_matrix[u][v] / 100 == 2 || actual_matrix[u][v] == 0))
+        if(abs(y - v) == 2 && (actual_matrix[u][v] / 100 == 2 || actual_matrix[u][v] == 0) && !queen_mandatory && !pawn_mandatory)
         {
           if(v - y == 2 && actual_matrix[x][y+1] % 10 != 3)
           {
@@ -750,7 +796,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
           }
           return impossible;
         }
-        else if(v - y > 2 && actual_matrix[u][v] == 0)
+        else if(v - y > 2 && actual_matrix[u][v] == 0 && !queen_mandatory && !pawn_mandatory)
         {
           for(int z = y+2; z <= v; z += 2)
           {
@@ -761,7 +807,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
           }
           return destroy;
         }
-        else if(y - v > 2 && actual_matrix[u][v] == 0)
+        else if(y - v > 2 && actual_matrix[u][v] == 0 && !queen_mandatory && !pawn_mandatory)
         {
           for(int z = y-2; z >= v; z -= 2)
           {
@@ -785,7 +831,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
               return impossible;
             }
           }
-          if(u - x == 2 && actual_matrix[x+1][y] % 10 != 3)
+          if(u - x == 2 && actual_matrix[x+1][y] % 10 != 3 && !queen_mandatory && !pawn_mandatory)
           {
             return normal;
           }
@@ -848,7 +894,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
               return impossible;
             }
           }
-          if(x - u == 2 && actual_matrix[x-1][y] % 10 != 3)
+          if(x - u == 2 && actual_matrix[x-1][y] % 10 != 3 && !queen_mandatory && !pawn_mandatory)
           {
             return normal;
           }
@@ -912,13 +958,13 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
   {
     if(actual_matrix[x][y] == 220)
     {
-      if(abs(x - u) == 1 && abs(y - v) == 1 && actual_matrix[u][v] == 0)
+      if(abs(x - u) == 1 && abs(y - v) == 1 && actual_matrix[u][v] == 0 && !queen_mandatory && !pawn_mandatory)
       {
         return turn;
       }
       else if(y == v)
       {
-        if(abs(u - x) == 2 && (actual_matrix[u][v] / 100 == 1 || actual_matrix[u][v] == 0))
+        if(abs(u - x) == 2 && (actual_matrix[u][v] / 100 == 1 || actual_matrix[u][v] == 0) && !pawn_mandatory && !queen_mandatory)
         {
           if(u - x == 2 && actual_matrix[x+1][y] % 10 != 3)
           {
@@ -930,7 +976,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
           }
           return impossible;
         }
-        else if(u - x > 2 && actual_matrix[u][v] == 0)
+        else if(u - x > 2 && actual_matrix[u][v] == 0 && !queen_mandatory && !pawn_mandatory)
         {
           for(int z = x+2; z <= u; z += 2)
           {
@@ -941,7 +987,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
           }
           return destroy;
         }
-        else if(x - u > 2 && actual_matrix[u][v] == 0)
+        else if(x - u > 2 && actual_matrix[u][v] == 0 && !queen_mandatory && !pawn_mandatory)
         {
           for(int z = x-2; z >= u; z -= 2)
           {
@@ -965,7 +1011,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
               return impossible;
             }
           }
-          if(v - y == 2 && actual_matrix[x][y+1] % 10 != 3)
+          if(v - y == 2 && actual_matrix[x][y+1] % 10 != 3 && !queen_mandatory && !pawn_mandatory)
           {
             return normal;
           }
@@ -1028,7 +1074,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
               return impossible;
             }
           }
-          if(y - v == 2 && actual_matrix[x][y-1] % 10 != 3)
+          if(y - v == 2 && actual_matrix[x][y-1] % 10 != 3 && !queen_mandatory && !pawn_mandatory)
           {
             return normal;
           }
@@ -1088,13 +1134,13 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
     }
     else if(actual_matrix[x][y] == 221)
     {
-      if(abs(x - u) == 1 && abs(y - v) == 1 && actual_matrix[u][v] == 0)
+      if(abs(x - u) == 1 && abs(y - v) == 1 && actual_matrix[u][v] == 0 && !pawn_mandatory && !queen_mandatory)
       {
         return turn;
       }
       else if(x == u)
       {
-        if(abs(y - v) == 2 && (actual_matrix[u][v] / 100 == 1 || actual_matrix[u][v] == 0))
+        if(abs(y - v) == 2 && (actual_matrix[u][v] / 100 == 1 || actual_matrix[u][v] == 0) && !queen_mandatory && !pawn_mandatory)
         {
           if(v - y == 2 && actual_matrix[x][y+1] % 10 != 3)
           {
@@ -1106,7 +1152,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
           }
           return impossible;
         }
-        else if(v - y > 2 && actual_matrix[u][v] == 0)
+        else if(v - y > 2 && actual_matrix[u][v] == 0 && !queen_mandatory && !pawn_mandatory)
         {
           for(int z = y+2; z <= v; z += 2)
           {
@@ -1117,7 +1163,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
           }
           return destroy;
         }
-        else if(y - v > 2 && actual_matrix[u][v] == 0)
+        else if(y - v > 2 && actual_matrix[u][v] == 0 && !queen_mandatory && !pawn_mandatory)
         {
           for(int z = y-2; z >= v; z -= 2)
           {
@@ -1141,7 +1187,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
               return impossible;
             }
           }
-          if(u - x == 2 && actual_matrix[x+1][y] % 10 != 3)
+          if(u - x == 2 && actual_matrix[x+1][y] % 10 != 3 && !queen_mandatory && !pawn_mandatory)
           {
             return normal;
           }
@@ -1204,7 +1250,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
               return impossible;
             }
           }
-          if(x - u == 2 && actual_matrix[x-1][y] % 10 != 3)
+          if(x - u == 2 && actual_matrix[x-1][y] % 10 != 3 && !queen_mandatory && !pawn_mandatory)
           {
             return normal;
           }
@@ -1308,6 +1354,7 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
       (*actual_matrix)[x+6][y] = 0;
       (*actual_matrix)[x+8][y] = temp;
     }
+    pawn_mandatory = false;
   }
   else if(apply == destroy210 || apply == destroy211)
   {
@@ -1323,6 +1370,7 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
       (*actual_matrix)[x-6][y] = 0;
       (*actual_matrix)[x-8][y] = temp;
     }
+    pawn_mandatory = false;
   }
   else if(apply == destroy)
   {
@@ -1407,6 +1455,7 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
       }
     }
     (*actual_matrix)[u][v] = temp;
+    queen_mandatory = false;
   }
   if(apply != impossible)
   {

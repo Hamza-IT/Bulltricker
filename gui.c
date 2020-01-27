@@ -1,6 +1,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_mixer.h>
 #include <stdio.h>
 #include "gui.h"
 #include "move.h"
@@ -8,6 +9,8 @@
 
 int SCREEN_WIDTH;
 int SCREEN_HEIGHT;
+int size[2] = {0};
+bool shown;
 
 SDL_Window *gWindow = NULL;
 SDL_Surface *gSurface = NULL;
@@ -15,8 +18,8 @@ SDL_Texture *gTexture = NULL;
 SDL_Renderer *gRenderer = NULL;
 TTF_Font *gFont = NULL;
 SDL_Color black = {50, 50, 50}, white = {255, 255, 255}, grey = {127, 127, 127}, light_grey = {241, 241, 241};
-
-int size[2] = {0};
+Mix_Chunk *gBip[2] = {NULL, NULL};
+Mix_Chunk *gMove[2] = {NULL, NULL};
 
 void init()
 {
@@ -65,6 +68,54 @@ void close()
   TTF_Quit();
   IMG_Quit();
   SDL_Quit();
+}
+
+void getSize(int x, int y)
+{
+  if((y/20) % 4 == 0)
+  {
+    if((x/20) % 4 == 0)
+    {
+      size[0] = 20;
+      size[1] = 20;
+    }
+    else
+    {
+      size[0] = 60;
+      size[1] = 20;
+    }
+  }
+  else
+  {
+    if((x/20) % 4 == 0)
+    {
+      size[0] = 20;
+      size[1] = 60;
+    }
+    else
+    {
+      size[0] = 60;
+      size[1] = 60;
+    }
+  }
+}
+
+int mapToInt(int x)
+{
+  int edges[15] = {20, 80, 100, 160, 180, 240, 260, 320, 340, 400, 420, 480, 500, 560, 580};
+  for(int i = 0; i < 15; i++)
+  {
+    if(x < edges[i])
+    {
+      return i;
+    }
+  }
+}
+
+int mapToEdge(int x)
+{
+  int edges[15] = {0, 20, 80, 100, 160, 180, 240, 260, 320, 340, 400, 420, 480, 500, 560};
+  return edges[x];
 }
 
 TTF_Font *loadFont(char *path, unsigned char size)
@@ -136,6 +187,10 @@ void loadGrid()
     text = "Blacks turn";
   }
   loadText(text, black, 660, 190, 120, 30);
+  if(queen_mandatory || pawn_mandatory)
+  {
+    loadText("Obligatory move", black, 630, 240, 140, 30);
+  }
 }
 
 void fillBlank()
@@ -379,6 +434,9 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
           *move = 0;
           actual_player = 0;
           *game_over = false;
+          queen_mandatory = false;
+          pawn_mandatory = false;
+          shown = false;
           *actual_matrix = initMat();
           start = true;
           SDL_DestroyTexture(gTexture);
@@ -452,8 +510,9 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
               *move = 0;
               actual_player = 0;
               *game_over = false;
-              *actual_matrix = initMat();
-              start = true;
+              queen_mandatory = false;
+              pawn_mandatory = false;
+              shown = false;
               SDL_DestroyTexture(gTexture);
               for(i = 0; i < 4; i++)
               {
@@ -508,54 +567,6 @@ void gameOver(int **actual_matrix, bool *game_over)
   SDL_RenderPresent(gRenderer);
 }
 
-void getSize(int x, int y)
-{
-  if((y/20) % 4 == 0)
-  {
-    if((x/20) % 4 == 0)
-    {
-      size[0] = 20;
-      size[1] = 20;
-    }
-    else
-    {
-      size[0] = 60;
-      size[1] = 20;
-    }
-  }
-  else
-  {
-    if((x/20) % 4 == 0)
-    {
-      size[0] = 20;
-      size[1] = 60;
-    }
-    else
-    {
-      size[0] = 60;
-      size[1] = 60;
-    }
-  }
-}
-
-int mapToInt(int x)
-{
-  int edges[15] = {20, 80, 100, 160, 180, 240, 260, 320, 340, 400, 420, 480, 500, 560, 580};
-  for(int i = 0; i < 15; i++)
-  {
-    if(x < edges[i])
-    {
-      return i;
-    }
-  }
-}
-
-int mapToEdge(int x)
-{
-  int edges[15] = {0, 20, 80, 100, 160, 180, 240, 260, 320, 340, 400, 420, 480, 500, 560};
-  return edges[x];
-}
-
 void setBlendMode(SDL_BlendMode blendMode)
 {
   SDL_SetTextureBlendMode(gTexture, blendMode);
@@ -570,16 +581,19 @@ bool indicator(int x, int y, int **actual_matrix)
 {
   if((actual_player % 2 == 0 && (actual_matrix[y][x] / 100 == 2 || actual_matrix[y][x] / 10 == 2)) || (actual_player % 2 == 1 && (actual_matrix[y][x] / 100 == 1 || actual_matrix[y][x] / 10 == 1)))
   {
-    SDL_Delay(50);
-    int temp_x = mapToEdge(x);
-    int temp_y = mapToEdge(y);
-    SDL_Rect fillRect = {temp_x, temp_y, size[0], size[1]};
-    gTexture = loadTexture("Sprites/_Indicator.png");
-    setBlendMode(SDL_BLENDMODE_BLEND);
-    setAlpha(120);
-    SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
-    SDL_DestroyTexture(gTexture);
-    gTexture = NULL;
+    if(!queen_mandatory && !pawn_mandatory && x == mandatory_x && y == mandatory_y)
+    {
+      SDL_Delay(50);
+      int temp_x = mapToEdge(x);
+      int temp_y = mapToEdge(y);
+      SDL_Rect fillRect = {temp_x, temp_y, size[0], size[1]};
+      gTexture = loadTexture("Sprites/_Indicator.png");
+      setBlendMode(SDL_BLENDMODE_BLEND);
+      setAlpha(120);
+      SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+      SDL_DestroyTexture(gTexture);
+      gTexture = NULL;
+    }
     gTexture = loadTexture("Sprites/Indicator.png");
     setAlpha(150);
     for(int u = 0; u < 15; u++)
@@ -605,7 +619,28 @@ bool indicator(int x, int y, int **actual_matrix)
   return false;
 }
 
-// Still needs to implement mandatory moves && add sounds && finally finish the main menu ...
+void mandatoryIndicator()
+{
+  if((queen_mandatory || pawn_mandatory) && !shown)
+  {
+    int temp_x = mapToEdge(mandatory_y);
+    int temp_y = mapToEdge(mandatory_x);
+    getSize(temp_x, temp_y);
+    SDL_Rect fillRect = {temp_x, temp_y, size[0], size[1]};
+    gTexture = loadTexture("Sprites/_Mandatory.png");
+    setBlendMode(SDL_BLENDMODE_BLEND);
+    setAlpha(180);
+    SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+    SDL_DestroyTexture(gTexture);
+    gTexture = NULL;
+    SDL_RenderPresent(gRenderer);
+    shown = true;
+  }
+}
+
+// To-do: -- Fix the save/load feature ...
+//        -- Add sounds ...
+//        -- Finish the main menu ...
 
 void createBoard(int ***actual_matrix)
 {
@@ -652,6 +687,8 @@ void createBoard(int ***actual_matrix)
                     move = 0;
                     actual_player = 0;
                     game_over = false;
+                    queen_mandatory = false;
+                    pawn_mandatory = false;
                     *actual_matrix = initMat();
                     SDL_Delay(50);
                     draw(*actual_matrix);
@@ -756,6 +793,9 @@ void createBoard(int ***actual_matrix)
         }
         if(x <= 580 && y <= 580 && event.type == SDL_MOUSEBUTTONDOWN && move % 2 == 0 && !game_over)
         {
+          check_queen(*actual_matrix);
+          check_pawn(*actual_matrix);
+          mandatoryIndicator();
           SDL_GetMouseState(&y, &x);
           getSize(y, x);
           x = mapToInt(x);
@@ -775,6 +815,7 @@ void createBoard(int ***actual_matrix)
             u = mapToInt(u);
             apply_move(x, y, u, v, actual_matrix);
             move++;
+            shown = false;
             draw(*actual_matrix);
             gameOver(*actual_matrix, &game_over);
           }

@@ -491,6 +491,7 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
           if(loadGame(actual_matrix, *game_over) == true)
           {
             start = true;
+            shown = false;
             SDL_DestroyTexture(gTexture);
             for(i = 0; i < 4; i++)
             {
@@ -679,7 +680,8 @@ void mandatoryIndicator()
 }
 
 // To-do: -- Fix the save/load feature ...
-//        -- Add sounds ...
+//        -- Add a null game options ...
+//        -- Add more sounds ...
 //        -- Finish the main menu ...
 
 void createBoard(int ***actual_matrix)

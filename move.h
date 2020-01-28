@@ -34,7 +34,6 @@ int mandatory_x, mandatory_y;
 winner check_mat(int **);
 void check_pawn(int **);
 void check_queen(int **);
-int *check_mandatory_move(int **, int, int *);
 mstate check_move(int, int, int, int, int **);
 void apply_move(int, int, int, int, int ***);
 

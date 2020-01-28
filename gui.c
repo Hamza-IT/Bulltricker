@@ -391,6 +391,7 @@ bool loadGame(int ***actual_matrix, bool game_over)
   if(fptr != NULL)
   {
     fread(&saved, 1, sizeof(bool), fptr);
+    printf("Element read ...\n");
     if(saved)
     {
       fread(actual_matrix, sizeof(*actual_matrix), 1, fptr);

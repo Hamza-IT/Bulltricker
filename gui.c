@@ -10,7 +10,7 @@
 int SCREEN_WIDTH;
 int SCREEN_HEIGHT;
 int size[2] = {0};
-bool shown;
+bool shown, saved;
 
 SDL_Window *gWindow = NULL;
 SDL_Surface *gSurface = NULL;
@@ -377,6 +377,8 @@ void draw(int **actual_matrix)
 void saveGame(int **actual_matrix, bool game_over)
 {
   FILE *fptr = fopen("Saves/save.bin", "wb");
+  saved = true;
+  fwrite(&saved, 1, sizeof(saved), fptr);
   fwrite(&actual_matrix, 1, sizeof(actual_matrix), fptr);
   fwrite(&actual_player, 1, sizeof(int), fptr);
   fwrite(&game_over, 1, sizeof(bool), fptr);
@@ -388,9 +390,13 @@ bool loadGame(int ***actual_matrix, bool game_over)
   FILE *fptr = fopen("Saves/save.bin", "rb");
   if(fptr != NULL)
   {
-    fread(actual_matrix, sizeof(actual_matrix), 1, fptr);
-    fread(&actual_player, sizeof(int), 1, fptr);
-    fread(&game_over, sizeof(bool), 1, fptr);
+    fread(&saved, 1, sizeof(bool), fptr);
+    if(saved)
+    {
+      fread(actual_matrix, sizeof(*actual_matrix), 1, fptr);
+      fread(&actual_player, sizeof(int), 1, fptr);
+      fread(&game_over, sizeof(bool), 1, fptr);
+    }
     fclose(fptr);
     return true;
   }
@@ -683,6 +689,8 @@ void mandatoryIndicator()
 //        -- Add a null game options ...
 //        -- Add more sounds ...
 //        -- Finish the main menu ...
+//        -- Add fading animations ...
+//        -- Rework UI ...
 
 void createBoard(int ***actual_matrix)
 {

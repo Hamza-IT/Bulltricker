@@ -681,7 +681,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
               }
               else if(y+6 < 15 && actual_matrix[x][y+5] % 10 != 3 && actual_matrix[x][y+6] / 100 != 1)
               {
-                if(v - y == 6 && actual_matrix[x][y+4] == 0 && actual_matrix[x][y+2] == 0 && actual_matrix[x][y+4] == 0 && !queen_mandatory && !pawn_mandatory)
+                if(v - y == 6 && actual_matrix[x][y+4] == 0 && actual_matrix[x][y+2] == 0 && !queen_mandatory && !pawn_mandatory)
                 {
                   return normal;
                 }
@@ -691,7 +691,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
                 }
                 else if(y+8 < 15 && actual_matrix[x][y+7] % 10 != 3 && ((actual_matrix[x][y+6] == 0 && actual_matrix[x][y+8] / 100 == 2) || ((actual_matrix[x][y+4] == 0 || actual_matrix[x][y+6] == 0) && actual_matrix[x][y+8] == 0)))
                 {
-                  if(v - y == 8 && actual_matrix[x][y+6] == 0 && actual_matrix[x][y+4] == 0 && actual_matrix[x][y+2] == 0 && actual_matrix[x][y+4] == 0 && !queen_mandatory && !pawn_mandatory)
+                  if(v - y == 8 && actual_matrix[x][y+6] == 0 && actual_matrix[x][y+4] == 0 && actual_matrix[x][y+2] == 0 && !queen_mandatory && !pawn_mandatory)
                   {
                     return normal;
                   }
@@ -701,7 +701,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
                   }
                   else if(y+10 < 15 && actual_matrix[x][y+9] % 10 != 3 && actual_matrix[x][y+10] / 100 != 1)
                   {
-                    if(v - y == 10 && actual_matrix[x][y+8] == 0 && actual_matrix[x][y+6] == 0 && actual_matrix[x][y+4] == 0 && actual_matrix[x][y+2] == 0 && actual_matrix[x][y+4] == 0 && !queen_mandatory && !pawn_mandatory)
+                    if(v - y == 10 && actual_matrix[x][y+8] == 0 && actual_matrix[x][y+6] == 0 && actual_matrix[x][y+4] == 0 && actual_matrix[x][y+2] == 0 && !queen_mandatory && !pawn_mandatory)
                     {
                       return normal;
                     }
@@ -711,7 +711,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
                     }
                     else if(y+12 < 15 && actual_matrix[x][y+11] % 10 != 3 && ((actual_matrix[x][y+10] == 0 && actual_matrix[x][y+12] / 100 == 2) || ((actual_matrix[x][y+8] == 0 || actual_matrix[x][y+10] == 0) && actual_matrix[x][y+12] == 0)))
                     {
-                      if(v - y == 12 && actual_matrix[x][y+10] == 0 && actual_matrix[x][y+8] == 0 && actual_matrix[x][y+6] == 0 && actual_matrix[x][y+4] == 0 && actual_matrix[x][y+2] == 0 && actual_matrix[x][y+4] == 0 && !queen_mandatory && !pawn_mandatory)
+                      if(v - y == 12 && actual_matrix[x][y+10] == 0 && actual_matrix[x][y+8] == 0 && actual_matrix[x][y+6] == 0 && actual_matrix[x][y+4] == 0 && actual_matrix[x][y+2] == 0 && !queen_mandatory && !pawn_mandatory)
                       {
                         return normal;
                       }
@@ -782,7 +782,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
                   {
                     return destroy;
                   }
-                  else if(y-10 >= 0 && actual_matrix[x][y-9] % 10 != 3 && actual_matrix[x][y-10] / 100 != 0)
+                  else if(y-10 >= 0 && actual_matrix[x][y-9] % 10 != 3 && actual_matrix[x][y-10] / 100 != 1)
                   {
                     if(y - v == 10 && actual_matrix[x][y-8] == 0 && actual_matrix[x][y-6] == 0 && actual_matrix[x][y-4] == 0 && actual_matrix[x][y-2] == 0 && !queen_mandatory && !pawn_mandatory)
                     {
@@ -798,7 +798,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
                       {
                         return normal;
                       }
-                      if(y - v == 12 && (actual_matrix[x][y-10] / 100 == 2 && actual_matrix[x][y-8] / 100 == 2 || actual_matrix[x][y-6] / 100 == 2 || actual_matrix[x][y-4] / 100 == 2 || actual_matrix[x][y-2] / 100 == 2))
+                      if(y - v == 12 && (actual_matrix[x][y-10] / 100 == 2 || actual_matrix[x][y-8] / 100 == 2 || actual_matrix[x][y-6] / 100 == 2 || actual_matrix[x][y-4] / 100 == 2 || actual_matrix[x][y-2] / 100 == 2))
                       {
                         return destroy;
                       }
@@ -927,7 +927,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
                     }
                     else if(x+12 < 15 && actual_matrix[x+11][y] % 10 != 3 && ((actual_matrix[x+10][y] == 0 && actual_matrix[x+12][y] / 100 == 2) || ((actual_matrix[x+8][y] == 0 || actual_matrix[x+10][y] == 0) && actual_matrix[x+12][y] == 0)))
                     {
-                      if(u - x == 12 && actual_matrix[x+10][y] / 100 == 2 && actual_matrix[x+8][y] == 0 && actual_matrix[x+6][y] == 0 && actual_matrix[x+4][y] == 0 && actual_matrix[x+2][y] == 0 && !queen_mandatory && !pawn_mandatory)
+                      if(u - x == 12 && actual_matrix[x+10][y] == 0 && actual_matrix[x+8][y] == 0 && actual_matrix[x+6][y] == 0 && actual_matrix[x+4][y] == 0 && actual_matrix[x+2][y] == 0 && !queen_mandatory && !pawn_mandatory)
                       {
                         return normal;
                       }
@@ -1446,7 +1446,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
                     }
                     else if(x-12 >= 0 && actual_matrix[x-11][y] % 10 != 3 && ((actual_matrix[x-10][y] == 0 && actual_matrix[x-12][y] / 100 == 1) || ((actual_matrix[x-8][y] == 0 || actual_matrix[x-10][y] == 0) && actual_matrix[x-12][y] == 0)))
                     {
-                      if(x - u == 12 && actual_matrix[x-10][y] == 0 && actual_matrix[x-6][y] / 100 == 1 || actual_matrix[x-4][y] / 100 == 1 || actual_matrix[x-2][y] / 100 == 1)
+                      if(x - u == 12 && actual_matrix[x-10][y] == 0 && actual_matrix[x-8][y] == 0 && actual_matrix[x-6][y] == 0 && actual_matrix[x-4][y] == 0 && actual_matrix[x-2][y] == 0 && !queen_mandatory && !pawn_mandatory)
                       {
                         return normal;
                       }

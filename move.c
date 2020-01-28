@@ -100,13 +100,22 @@ winner check_mat(int **actual_matrix)
   return player;
 }
 
-void check_null(int **actual_matrix)
+bool check_null(int **actual_matrix)
 {
+  bool black_found = false, white_found = false, null_1 = true, null_2 = true, null_3 = true;
+  int w_number = 0, b_number = 0;
   for(int i = 0; i < 15; i++)
   {
     for(int j = 0; j < 15; j++)
     {
-      
+      if(actual_matrix[i][j] / 100 == 2)
+      {
+        return false;
+      }
+      if(actual_matrix[i][j] % 10 == 3 && !check_move(i, j, i-1, j, actual_matrix))
+      {
+        return false;
+      }
     }
   }
 }
@@ -120,7 +129,7 @@ void check_pawn(int **actual_matrix)
     {
       for(int y = 0; y < 15; y++)
       {
-        if(actual_matrix[x][y] == 211 && x-4 >= 0 && actual_matrix[x-1][y] == -2 && actual_matrix[x-2][y] / 100 == 1 && actual_matrix[x-4][y] == 0)
+        if(actual_matrix[x][y] == 211 && x-4 >= 0 && actual_matrix[x-1][y] == -2 && actual_matrix[x-2][y] / 100 == 1 && actual_matrix[x-3][y] == -2 && actual_matrix[x-4][y] == 0)
         {
           pawn_mandatory = true;
           found = true;
@@ -142,7 +151,7 @@ void check_pawn(int **actual_matrix)
     {
       for(int y = 0; y < 15; y++)
       {
-        if(actual_matrix[x][y] == 111 && x+4 < 15 && actual_matrix[x+1][y] == -2 && actual_matrix[x+2][y] / 100 == 2 && actual_matrix[x+4][y] == 0)
+        if(actual_matrix[x][y] == 111 && x+4 < 15 && actual_matrix[x+1][y] == -2 && actual_matrix[x+2][y] / 100 == 2 && actual_matrix[x+3][y] == -2 && actual_matrix[x+4][y] == 0)
         {
           pawn_mandatory = true;
           found = true;

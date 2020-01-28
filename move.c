@@ -1662,8 +1662,8 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
     {
       SDL_Delay(400);
       Mix_PlayChannel(-1, sMove[1], 0);
-      (*actual_matrix)[u][v] = temp;
     }
+    (*actual_matrix)[u][v] = temp;
     queen_mandatory = false;
   }
   if(apply != impossible)

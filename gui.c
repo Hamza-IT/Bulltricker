@@ -10,7 +10,7 @@
 int SCREEN_WIDTH;
 int SCREEN_HEIGHT;
 int size[2] = {0};
-bool shown, saved;
+bool shown;
 
 SDL_Window *gWindow = NULL;
 SDL_Surface *gSurface = NULL;
@@ -377,27 +377,33 @@ void draw(int **actual_matrix)
 void saveGame(int **actual_matrix, bool game_over)
 {
   FILE *fptr = fopen("Saves/save.bin", "wb");
-  saved = true;
-  fwrite(&saved, 1, sizeof(saved), fptr);
-  fwrite(&actual_matrix, 1, sizeof(actual_matrix), fptr);
-  fwrite(&actual_player, 1, sizeof(int), fptr);
-  fwrite(&game_over, 1, sizeof(bool), fptr);
+  for(int i = 0; i < 15; i++)
+  {
+    for(int j = 0; j < 15; j++)
+    {
+      fwrite(&actual_matrix[i][j], sizeof(int), 1, fptr);
+    }
+  }
+  fwrite(&actual_player, sizeof(int), 1, fptr);
+  fwrite(&game_over, sizeof(bool), 1, fptr);
   fclose(fptr);
 }
 
 bool loadGame(int ***actual_matrix, bool game_over)
 {
+  *actual_matrix = initMat();
   FILE *fptr = fopen("Saves/save.bin", "rb");
   if(fptr != NULL)
   {
-    fread(&saved, 1, sizeof(bool), fptr);
-    printf("Element read ...\n");
-    if(saved)
+    for(int i = 0; i < 15; i++)
     {
-      fread(actual_matrix, sizeof(*actual_matrix), 1, fptr);
-      fread(&actual_player, sizeof(int), 1, fptr);
-      fread(&game_over, sizeof(bool), 1, fptr);
+      for(int j = 0; j < 15; j++)
+      {
+        fread(&((*actual_matrix)[i][j]), sizeof(int), 1, fptr);
+      }
     }
+    fread(&actual_player, sizeof(int), 1, fptr);
+    fread(&game_over, sizeof(bool), 1, fptr);
     fclose(fptr);
     return true;
   }
@@ -408,8 +414,8 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
 {
   SDL_RenderClear(gRenderer);
   SDL_Rect fillRect = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
-  SDL_Texture *textureList[4] = {loadTexture("Sprites/Main_Menu_1.png"), loadTexture("Sprites/Main_Menu_2.png"), loadTexture("Sprites/Main_Menu_3.png"), loadTexture("Sprites/Main_Menu_4.png")};
-  int i = 0;
+  SDL_Texture *textureList[5] = {loadTexture("Sprites/Main_Menu_1.png"), loadTexture("Sprites/Main_Menu_2.png"), loadTexture("Sprites/Main_Menu_3.png"), loadTexture("Sprites/Main_Menu_4.png"), loadTexture("Sprites/Main_Menu_0.png")};
+  int i = 4;
   gTexture = textureList[i];
   SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
   SDL_RenderPresent(gRenderer);
@@ -427,7 +433,7 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
       {
         int x, y;
         SDL_GetMouseState(&x, &y);
-        if(y >= 389 && y < 440 && i != 0)
+        if(y >= 375 && y < 420 && i != 0)
         {
           SDL_Delay(50);
           Mix_PlayChannel(-1, sBip[0], 0);
@@ -437,7 +443,7 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
           SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
           SDL_RenderPresent(gRenderer);
         }
-        else if(y >= 440 && y < 493 && i != 1)
+        else if(y >= 420 && y < 475 && i != 1)
         {
           SDL_Delay(50);
           Mix_PlayChannel(-1, sBip[0], 0);
@@ -447,7 +453,7 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
           SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
           SDL_RenderPresent(gRenderer);
         }
-        else if(y >= 493 && y < 548 && i != 2)
+        else if(y >= 475 && y < 525 && i != 2)
         {
           SDL_Delay(50);
           Mix_PlayChannel(-1, sBip[0], 0);
@@ -457,7 +463,7 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
           SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
           SDL_RenderPresent(gRenderer);
         }
-        else if(y >= 548 && i != 3)
+        else if(y >= 525 && i != 3)
         {
           SDL_Delay(50);
           Mix_PlayChannel(-1, sBip[0], 0);
@@ -472,7 +478,7 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
       {
         int x, y;
         SDL_GetMouseState(&x, &y);
-        if(i == 0 && y >= 389 && y < 440)
+        if(i == 0 && y >= 375 && y < 420)
         {
           SDL_Delay(150);
           *move = 0;
@@ -492,7 +498,7 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
           gTexture = NULL;
           draw(*actual_matrix);
         }
-        else if(i == 1 && y >= 440 && y < 493)
+        else if(i == 1 && y >= 420 && y < 475)
         {
           SDL_Delay(150);
           if(loadGame(actual_matrix, *game_over) == true)
@@ -509,13 +515,13 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
             draw(*actual_matrix);
           }
         }
-        else if(i == 2 && y >= 493 && y < 548)
+        else if(i == 2 && y >= 475 && y < 525)
         {
-
+          printf("Settings under construction ...\n");
         }
-        else if(i == 3 && y >= 548)
+        else if(i == 3 && y >= 525)
         {
-
+          printf("Instructions under construction ...\n");
         }
       }
       else if(event.type == SDL_KEYDOWN)
@@ -526,8 +532,15 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
           {
             SDL_Delay(50);
             Mix_PlayChannel(-1, sBip[0], 0);
-            i++;
-            i = i % 4;
+            if(i != 4)
+            {
+              i++;
+              i = i % 4;
+            }
+            else
+            {
+              i = 0;
+            }
             gTexture = textureList[i];
             SDL_RenderClear(gRenderer);
             SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
@@ -585,6 +598,14 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
                 gTexture = NULL;
                 draw(*actual_matrix);
               }
+            }
+            else if(i == 2)
+            {
+              printf("Settings under construction ...\n");
+            }
+            else if(i == 3)
+            {
+              printf("Instructions under construction ...\n");
             }
             break;
           }
@@ -686,8 +707,7 @@ void mandatoryIndicator()
   }
 }
 
-// To-do: -- Fix the save/load feature ...
-//        -- Add a null game options ...
+// To-do: -- Add a null game options ...
 //        -- Add more sounds ...
 //        -- Finish the main menu ...
 //        -- Add fading animations ...

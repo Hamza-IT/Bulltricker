@@ -502,6 +502,10 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
                 {
                   return destroy111;
                 }
+                else if(u - x == 12 && actual_matrix[x+10][y] / 100 == 2)
+                {
+                  return destroy_max11;
+                }
                 return impossible;
               }
               return impossible;
@@ -564,6 +568,10 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
                 if(((x - 10 >= 0 && actual_matrix[x-10][y] / 100 != 1) || (x - 10 < 0) || (actual_matrix[x-9][y] % 10 == 3)) && x - u == 8)
                 {
                   return destroy211;
+                }
+                else if(x - u == 12 && actual_matrix[x-10][y] / 100 == 1)
+                {
+                  return destroy_max21;
                 }
                 return impossible;
               }
@@ -1340,12 +1348,12 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
       (*actual_matrix)[x][y] = 0;
     }
   }
-  else if(apply == destroy110 || apply == destroy111)
+  else if(apply == destroy110 || apply == destroy111 || apply == destroy_max11)
   {
     (*actual_matrix)[x+2][y] = 0;
     (*actual_matrix)[x+4][y] = (*actual_matrix)[x][y];
     (*actual_matrix)[x][y] = 0;
-    if(apply == destroy111)
+    if(apply == destroy111 || apply == destroy_max11)
     {
       draw(*actual_matrix);
       SDL_Delay(200);
@@ -1354,14 +1362,23 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
       (*actual_matrix)[x+6][y] = 0;
       (*actual_matrix)[x+8][y] = temp;
     }
+    if(apply == destroy_max11)
+    {
+      draw(*actual_matrix);
+      SDL_Delay(200);
+      (*actual_matrix)[x+8][y] = 0;
+      SDL_Delay(200);
+      (*actual_matrix)[x+10][y] = 0;
+      (*actual_matrix)[x+12][y] = temp;
+    }
     pawn_mandatory = false;
   }
-  else if(apply == destroy210 || apply == destroy211)
+  else if(apply == destroy210 || apply == destroy211 || apply == destroy_max21)
   {
     (*actual_matrix)[x-2][y] = 0;
     (*actual_matrix)[x-4][y] = (*actual_matrix)[x][y];
     (*actual_matrix)[x][y] = 0;
-    if(apply == destroy211)
+    if(apply == destroy211 || apply == destroy_max21)
     {
       draw(*actual_matrix);
       SDL_Delay(200);
@@ -1369,6 +1386,15 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
       SDL_Delay(200);
       (*actual_matrix)[x-6][y] = 0;
       (*actual_matrix)[x-8][y] = temp;
+    }
+    if(apply == destroy_max21)
+    {
+      draw(*actual_matrix);
+      SDL_Delay(200);
+      (*actual_matrix)[x-8][y] = 0;
+      SDL_Delay(200);
+      (*actual_matrix)[x-10][y] = 0;
+      (*actual_matrix)[x-12][y] = temp;
     }
     pawn_mandatory = false;
   }

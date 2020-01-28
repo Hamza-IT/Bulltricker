@@ -23,6 +23,8 @@ typedef enum _mstate
   destroy111,
   destroy210,
   destroy211,
+  destroy_max11,
+  destroy_max21,
   destroy
 } mstate;
 

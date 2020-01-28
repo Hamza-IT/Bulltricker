@@ -1,7 +1,6 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
-#include <SDL2/SDL_mixer.h>
 #include <stdio.h>
 #include "gui.h"
 #include "move.h"
@@ -18,8 +17,7 @@ SDL_Texture *gTexture = NULL;
 SDL_Renderer *gRenderer = NULL;
 TTF_Font *gFont = NULL;
 SDL_Color black = {50, 50, 50}, white = {255, 255, 255}, grey = {127, 127, 127}, light_grey = {241, 241, 241};
-Mix_Chunk *sBip[2] = {NULL, NULL};
-Mix_Chunk *sMove[2] = {NULL, NULL};
+Mix_Chunk *sBip[2] = {NULL, NULL}, *sMove[2] = {NULL, NULL}, *sMandatory = NULL, *sPup = NULL, *sGameOver = NULL, *sError = NULL;
 
 void init()
 {
@@ -65,17 +63,27 @@ void loadSound()
   sBip[0] = Mix_LoadWAV("Sounds/menu_select.wav");
   if(sBip[0] == NULL)
   {
-    printf( "Failed to load sound effect!\n%s\n", Mix_GetError());
+    printf("Failed to load sound effect!\n%s\n", Mix_GetError());
+  }
+  sBip[1] = Mix_LoadWAV("Sounds/menu_click.wav");
+  if(sBip[0] == NULL)
+  {
+    printf("Failed to load sound effect!\n%s\n", Mix_GetError());
   }
   sMove[0] = Mix_LoadWAV("Sounds/move_1.wav");
   if(sMove[0] == NULL)
   {
-    printf( "Failed to load sound effect!\n%s\n", Mix_GetError());
+    printf("Failed to load sound effect!\n%s\n", Mix_GetError());
   }
   sMove[1] = Mix_LoadWAV("Sounds/move_2.wav");
   if(sMove[1] == NULL)
   {
-    printf( "Failed to load sound effect!\n%s\n", Mix_GetError());
+    printf("Failed to load sound effect!\n%s\n", Mix_GetError());
+  }
+  sMandatory = Mix_LoadWAV("Sounds/mandatory.wav");
+  if(sMandatory == NULL)
+  {
+    printf("Failed to load sound effect!\n%s\n", Mix_GetError());
   }
 }
 
@@ -89,6 +97,8 @@ void close()
   sMove[0] = NULL;
   Mix_FreeChunk(sMove[1]);
   sMove[1] = NULL;
+  Mix_FreeChunk(sMandatory);
+  sMandatory = NULL;
   TTF_CloseFont(gFont);
   gFont = NULL;
   SDL_DestroyRenderer(gRenderer);
@@ -481,6 +491,7 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
         if(i == 0 && y >= 375 && y < 420)
         {
           SDL_Delay(150);
+          Mix_PlayChannel(-1, sBip[1], 0);
           *move = 0;
           actual_player = 0;
           *game_over = false;
@@ -501,6 +512,7 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
         else if(i == 1 && y >= 420 && y < 475)
         {
           SDL_Delay(150);
+          Mix_PlayChannel(-1, sBip[1], 0);
           if(loadGame(actual_matrix, *game_over) == true)
           {
             start = true;
@@ -518,10 +530,12 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
         else if(i == 2 && y >= 475 && y < 525)
         {
           printf("Settings under construction ...\n");
+          Mix_PlayChannel(-1, sBip[1], 0);
         }
         else if(i == 3 && y >= 525)
         {
           printf("Instructions under construction ...\n");
+          Mix_PlayChannel(-1, sBip[1], 0);
         }
       }
       else if(event.type == SDL_KEYDOWN)
@@ -567,6 +581,7 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
             if(i == 0)
             {
               SDL_Delay(150);
+              Mix_PlayChannel(-1, sBip[1], 0);
               *move = 0;
               actual_player = 0;
               *game_over = false;
@@ -586,6 +601,7 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
             else if(i == 1)
             {
               SDL_Delay(150);
+              Mix_PlayChannel(-1, sBip[1], 0);
               if(loadGame(actual_matrix, *game_over) == true)
               {
                 start = true;
@@ -602,10 +618,12 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
             else if(i == 2)
             {
               printf("Settings under construction ...\n");
+              Mix_PlayChannel(-1, sBip[1], 0);
             }
             else if(i == 3)
             {
               printf("Instructions under construction ...\n");
+              Mix_PlayChannel(-1, sBip[1], 0);
             }
             break;
           }
@@ -708,7 +726,6 @@ void mandatoryIndicator()
 }
 
 // To-do: -- Add a null game options ...
-//        -- Add more sounds ...
 //        -- Finish the main menu ...
 //        -- Add fading animations ...
 //        -- Rework UI ...
@@ -749,6 +766,7 @@ void createBoard(int ***actual_matrix)
             }
             if(event.type == SDL_MOUSEBUTTONDOWN)
             {
+              Mix_PlayChannel(-1, sBip[1], 0);
               restart = false;
               for(int i = 0; i < 15; i++)
               {
@@ -786,6 +804,7 @@ void createBoard(int ***actual_matrix)
             }
             if(event.type == SDL_MOUSEBUTTONDOWN)
             {
+              Mix_PlayChannel(-1, sBip[1], 0);
               saveGame(*actual_matrix, game_over);
               SDL_Delay(100);
               SDL_Rect fillRect = {630, 318, 140, 30};
@@ -809,6 +828,7 @@ void createBoard(int ***actual_matrix)
             }
             if(event.type == SDL_MOUSEBUTTONDOWN)
             {
+              Mix_PlayChannel(-1, sBip[1], 0);
               if(loadGame(actual_matrix, game_over))
               {
                 move = 0;
@@ -836,6 +856,7 @@ void createBoard(int ***actual_matrix)
             }
             if(event.type == SDL_MOUSEBUTTONDOWN)
             {
+              Mix_PlayChannel(-1, sBip[1], 0);
               SDL_Delay(125);
               mainMenu(actual_matrix, &game_over, &quit, &move);
             }
@@ -872,11 +893,14 @@ void createBoard(int ***actual_matrix)
           {
             loadText("Obligatory move", black, 630, 240, 140, 30);
           }
-          Mix_PlayChannel(-1, sMove[0], 0);
           SDL_GetMouseState(&y, &x);
           getSize(y, x);
           x = mapToInt(x);
           y = mapToInt(y);
+          if((!queen_mandatory && !pawn_mandatory) || (x == mandatory_x && y == mandatory_y))
+          {
+            Mix_PlayChannel(-1, sMove[0], 0);
+          }
           if(indicator(y, x, *actual_matrix))
           {
             move++;
@@ -884,7 +908,10 @@ void createBoard(int ***actual_matrix)
         }
         else if(event.type == SDL_MOUSEBUTTONDOWN && move % 2 == 1)
         {
-          Mix_PlayChannel(-1, sMove[1], 0);
+          if((!queen_mandatory && !pawn_mandatory) || (x == mandatory_x && y == mandatory_y))
+          {
+            Mix_PlayChannel(-1, sMove[1], 0);
+          }
           SDL_GetMouseState(&v, &u);
           if(u <= 580 && v <= 580)
           {

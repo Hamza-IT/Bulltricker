@@ -100,6 +100,17 @@ winner check_mat(int **actual_matrix)
   return player;
 }
 
+void check_null(int **actual_matrix)
+{
+  for(int i = 0; i < 15; i++)
+  {
+    for(int j = 0; j < 15; j++)
+    {
+      
+    }
+  }
+}
+
 void check_pawn(int **actual_matrix)
 {
   bool found = false;
@@ -115,6 +126,7 @@ void check_pawn(int **actual_matrix)
           found = true;
           mandatory_x = x;
           mandatory_y = y;
+          Mix_PlayChannel(-1, sMandatory, 0);
           break;
         }
       }
@@ -136,6 +148,7 @@ void check_pawn(int **actual_matrix)
           found = true;
           mandatory_x = x;
           mandatory_y = y;
+          Mix_PlayChannel(-1, sMandatory, 0);
           break;
         }
       }
@@ -170,6 +183,7 @@ void check_queen(int **actual_matrix)
                 queen_mandatory = true;
                 mandatory_x = x;
                 mandatory_y = y;
+                Mix_PlayChannel(-1, sMandatory, 0);
               }
             }
           }
@@ -186,6 +200,7 @@ void check_queen(int **actual_matrix)
                 queen_mandatory = true;
                 mandatory_x = x;
                 mandatory_y = y;
+                Mix_PlayChannel(-1, sMandatory, 0);
               }
             }
           }
@@ -205,6 +220,7 @@ void check_queen(int **actual_matrix)
                 queen_mandatory = true;
                 mandatory_x = x;
                 mandatory_y = y;
+                Mix_PlayChannel(-1, sMandatory, 0);
               }
             }
           }
@@ -221,6 +237,7 @@ void check_queen(int **actual_matrix)
                 queen_mandatory = true;
                 mandatory_x = x;
                 mandatory_y = y;
+                Mix_PlayChannel(-1, sMandatory, 0);
               }
             }
           }
@@ -249,6 +266,7 @@ void check_queen(int **actual_matrix)
                 queen_mandatory = true;
                 mandatory_x = x;
                 mandatory_y = y;
+                Mix_PlayChannel(-1, sMandatory, 0);
               }
             }
           }
@@ -265,6 +283,7 @@ void check_queen(int **actual_matrix)
                 queen_mandatory = true;
                 mandatory_x = x;
                 mandatory_y = y;
+                Mix_PlayChannel(-1, sMandatory, 0);
               }
             }
           }
@@ -284,6 +303,7 @@ void check_queen(int **actual_matrix)
                 queen_mandatory = true;
                 mandatory_x = x;
                 mandatory_y = y;
+                Mix_PlayChannel(-1, sMandatory, 0);
               }
             }
           }
@@ -300,6 +320,7 @@ void check_queen(int **actual_matrix)
                 queen_mandatory = true;
                 mandatory_x = x;
                 mandatory_y = y;
+                Mix_PlayChannel(-1, sMandatory, 0);
               }
             }
           }
@@ -1572,7 +1593,7 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
         {
           if((*actual_matrix)[x][z] / 100 != temp / 100 && (*actual_matrix)[x][z] != 0)
           {
-            if(z != y+2)
+            if(z != y+2 && (*actual_matrix)[z][y] != 0)
             {
               SDL_Delay(400);
               Mix_PlayChannel(-1, sMove[1], 0);
@@ -1594,7 +1615,7 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
         {
           if((*actual_matrix)[x][z] / 100 != temp / 100 && (*actual_matrix)[x][z] != 0)
           {
-            if(z != y-2)
+            if(z != y-2 && (*actual_matrix)[z][y] != 0)
             {
               SDL_Delay(400);
               Mix_PlayChannel(-1, sMove[1], 0);
@@ -1619,7 +1640,7 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
         {
           if((*actual_matrix)[z][y] / 100 != temp / 100 && (*actual_matrix)[z][y] != 0)
           {
-            if(z != x+2)
+            if(z != x+2 && (*actual_matrix)[z][y] != 0)
             {
               SDL_Delay(400);
               Mix_PlayChannel(-1, sMove[1], 0);
@@ -1641,7 +1662,7 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
         {
           if((*actual_matrix)[z][y] / 100 != temp / 100 && (*actual_matrix)[z][y] != 0)
           {
-            if(z != x-2)
+            if(z != x-2 && z != x - 4)
             {
               SDL_Delay(400);
               Mix_PlayChannel(-1, sMove[1], 0);

@@ -149,7 +149,7 @@ void check_pawn(int **actual_matrix)
           found = true;
           mandatory_x = x;
           mandatory_y = y;
-          Mix_PlayChannel(-1, sMandatory, 0);
+          playSound(sMandatory);
           break;
         }
       }
@@ -171,7 +171,7 @@ void check_pawn(int **actual_matrix)
           found = true;
           mandatory_x = x;
           mandatory_y = y;
-          Mix_PlayChannel(-1, sMandatory, 0);
+          playSound(sMandatory);
           break;
         }
       }
@@ -206,7 +206,7 @@ void check_queen(int **actual_matrix)
                 queen_mandatory = true;
                 mandatory_x = x;
                 mandatory_y = y;
-                Mix_PlayChannel(-1, sMandatory, 0);
+                playSound(sMandatory);
               }
             }
           }
@@ -223,7 +223,7 @@ void check_queen(int **actual_matrix)
                 queen_mandatory = true;
                 mandatory_x = x;
                 mandatory_y = y;
-                Mix_PlayChannel(-1, sMandatory, 0);
+                playSound(sMandatory);
               }
             }
           }
@@ -243,7 +243,7 @@ void check_queen(int **actual_matrix)
                 queen_mandatory = true;
                 mandatory_x = x;
                 mandatory_y = y;
-                Mix_PlayChannel(-1, sMandatory, 0);
+                playSound(sMandatory);
               }
             }
           }
@@ -260,7 +260,7 @@ void check_queen(int **actual_matrix)
                 queen_mandatory = true;
                 mandatory_x = x;
                 mandatory_y = y;
-                Mix_PlayChannel(-1, sMandatory, 0);
+                playSound(sMandatory);
               }
             }
           }
@@ -289,7 +289,7 @@ void check_queen(int **actual_matrix)
                 queen_mandatory = true;
                 mandatory_x = x;
                 mandatory_y = y;
-                Mix_PlayChannel(-1, sMandatory, 0);
+                playSound(sMandatory);
               }
             }
           }
@@ -306,7 +306,7 @@ void check_queen(int **actual_matrix)
                 queen_mandatory = true;
                 mandatory_x = x;
                 mandatory_y = y;
-                Mix_PlayChannel(-1, sMandatory, 0);
+                playSound(sMandatory);
               }
             }
           }
@@ -326,7 +326,7 @@ void check_queen(int **actual_matrix)
                 queen_mandatory = true;
                 mandatory_x = x;
                 mandatory_y = y;
-                Mix_PlayChannel(-1, sMandatory, 0);
+                playSound(sMandatory);
               }
             }
           }
@@ -343,7 +343,7 @@ void check_queen(int **actual_matrix)
                 queen_mandatory = true;
                 mandatory_x = x;
                 mandatory_y = y;
-                Mix_PlayChannel(-1, sMandatory, 0);
+                playSound(sMandatory);
               }
             }
           }
@@ -1565,6 +1565,7 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
       SDL_Delay(200);
       (*actual_matrix)[x+6][y] = 0;
       (*actual_matrix)[x+8][y] = temp;
+      playSound(sMove[1]);
     }
     if(apply == destroy_max11)
     {
@@ -1574,6 +1575,7 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
       SDL_Delay(200);
       (*actual_matrix)[x+10][y] = 0;
       (*actual_matrix)[x+12][y] = temp;
+      playSound(sMove[1]);
     }
     pawn_mandatory = false;
   }
@@ -1590,7 +1592,7 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
       SDL_Delay(200);
       (*actual_matrix)[x-6][y] = 0;
       (*actual_matrix)[x-8][y] = temp;
-      Mix_PlayChannel(-1, sMove[1], 0);
+      playSound(sMove[1]);
     }
     if(apply == destroy_max21)
     {
@@ -1600,7 +1602,7 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
       SDL_Delay(200);
       (*actual_matrix)[x-10][y] = 0;
       (*actual_matrix)[x-12][y] = temp;
-      Mix_PlayChannel(-1, sMove[1], 0);
+      playSound(sMove[1]);
     }
     pawn_mandatory = false;
   }
@@ -1619,7 +1621,7 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
             if(z != y+2 && (*actual_matrix)[z][y] != 0)
             {
               SDL_Delay(400);
-              Mix_PlayChannel(-1, sMove[1], 0);
+              playSound(sMove[1]);
             }
             (*actual_matrix)[x][z-2] = 0;
             (*actual_matrix)[x][z] = 0;
@@ -1641,7 +1643,7 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
             if(z != y-2 && (*actual_matrix)[z][y] != 0)
             {
               SDL_Delay(400);
-              Mix_PlayChannel(-1, sMove[1], 0);
+              playSound(sMove[1]);
             }
             (*actual_matrix)[x][z+2] = 0;
             (*actual_matrix)[x][z] = 0;
@@ -1666,7 +1668,7 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
             if(z != x+2 && (*actual_matrix)[z][y] != 0)
             {
               SDL_Delay(400);
-              Mix_PlayChannel(-1, sMove[1], 0);
+              playSound(sMove[1]);
             }
             (*actual_matrix)[z-2][y] = 0;
             (*actual_matrix)[z][y] = 0;
@@ -1688,7 +1690,7 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
             if(z != x-2 && z != x - 4)
             {
               SDL_Delay(400);
-              Mix_PlayChannel(-1, sMove[1], 0);
+              playSound(sMove[1]);
             }
             (*actual_matrix)[z+2][y] = 0;
             (*actual_matrix)[z][y] = 0;
@@ -1705,7 +1707,7 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
     if(((u == 14 || u == 0) && y == v) || ((v == 14 || v == 0) && x == u))
     {
       SDL_Delay(400);
-      Mix_PlayChannel(-1, sMove[1], 0);
+      playSound(sMove[1]);
     }
     (*actual_matrix)[u][v] = temp;
     queen_mandatory = false;
@@ -1716,14 +1718,14 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
     {
       draw(*actual_matrix);
       SDL_Delay(600);
-      Mix_PlayChannel(-1, sPup, 0);
+      playSound(sPup);
       (*actual_matrix)[u][v] = 121;
     }
     else if(temp / 100 == 2 && u == 0)
     {
       draw(*actual_matrix);
       SDL_Delay(600);
-      Mix_PlayChannel(-1, sPup, 0);
+      playSound(sPup);
       (*actual_matrix)[u][v] = 221;
     }
     actual_player++;

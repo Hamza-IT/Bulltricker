@@ -451,8 +451,8 @@ void settingScreen(bool *quit)
   SDL_DestroyTexture(gTexture);
   gTexture = NULL;
   SDL_Texture *buttonList[6] = {loadTexture("Sprites/Sound_On.png"), loadTexture("Sprites/Sound_On_Hover.png"), loadTexture("Sprites/Sound_On_Click.png"), loadTexture("Sprites/Sound_Off.png"), loadTexture("Sprites/Sound_Off_Hover.png"), loadTexture("Sprites/Sound_Off_Click.png")};
-  SDL_Rect buttonRect = {400 - 138/2, 200, 138, 46};
-  SDL_Rect buttonRectClick = {400 - 140/2, 199, 140, 48};
+  SDL_Rect soundButtonRect = {400 - 138/2, 200, 138, 46};
+  SDL_Rect soundButtonRectClick = {400 - 140/2, 199, 140, 48};
   if(!mute)
   {
     gTexture = buttonList[0];
@@ -461,7 +461,7 @@ void settingScreen(bool *quit)
   {
     gTexture = buttonList[3];
   }
-  SDL_RenderCopy(gRenderer, gTexture, NULL, &buttonRect);
+  SDL_RenderCopy(gRenderer, gTexture, NULL, &soundButtonRect);
   SDL_RenderPresent(gRenderer);
   SDL_Event event;
   while(!quit_settings && !*quit)
@@ -505,7 +505,7 @@ void settingScreen(bool *quit)
           {
             gTexture = buttonList[4];
           }
-          SDL_RenderCopy(gRenderer, gTexture, NULL, &buttonRect);
+          SDL_RenderCopy(gRenderer, gTexture, NULL, &soundButtonRect);
           SDL_RenderPresent(gRenderer);
         }
         else if(hover && (x < 400 - 138/2 || y < 200 || x > 400 + 138/2 || y > 246))
@@ -519,7 +519,7 @@ void settingScreen(bool *quit)
           {
             gTexture = buttonList[3];
           }
-          SDL_RenderCopy(gRenderer, gTexture, NULL, &buttonRect);
+          SDL_RenderCopy(gRenderer, gTexture, NULL, &soundButtonRect);
           SDL_RenderPresent(gRenderer);
         }
       }
@@ -529,6 +529,7 @@ void settingScreen(bool *quit)
         SDL_GetMouseState(&x, &y);
         if(x >= 400 - 140/2 && y >= 199 && x <= 400 + 140/2 && y <= 247)
         {
+          playSound(sBip[1]);
           if(!mute)
           {
             gTexture = buttonList[2];
@@ -537,7 +538,7 @@ void settingScreen(bool *quit)
           {
             gTexture = buttonList[5];
           }
-          SDL_RenderCopy(gRenderer, gTexture, NULL, &buttonRectClick);
+          SDL_RenderCopy(gRenderer, gTexture, NULL, &soundButtonRectClick);
           SDL_RenderPresent(gRenderer);
           if(SDL_WaitEvent(&event) && event.type == SDL_MOUSEBUTTONUP)
           {
@@ -555,7 +556,7 @@ void settingScreen(bool *quit)
               gTexture = buttonList[0];
               mute = false;
             }
-            SDL_RenderCopy(gRenderer, gTexture, NULL, &buttonRect);
+            SDL_RenderCopy(gRenderer, gTexture, NULL, &soundButtonRect);
             SDL_RenderPresent(gRenderer);
           }
         }
@@ -566,13 +567,15 @@ void settingScreen(bool *quit)
 
 void instructionScreen(bool *quit)
 {
+  int w, h;
   int y = 0;
   SDL_RenderClear(gRenderer);
   bool quit_instruct = false;
-  SDL_Texture *instructionList[9] = {loadTexture("Sprites/reglew95_1.png"), loadTexture("Sprites/reglew95_2.png"), loadTexture("Sprites/reglew95_3.png"), loadTexture("Sprites/reglew95_4.png"), loadTexture("Sprites/reglew95_5.png"), loadTexture("Sprites/reglew95_6.png"), loadTexture("Sprites/reglew95_7.png"), loadTexture("Sprites/reglew95_8.png"), loadTexture("Sprites/reglew95_9.png")};
-  SDL_Rect fillRect = {188, 0, 424, 600};
+  SDL_Texture *instructionList[13] = {loadTexture("Sprites/reglew95_1.png"), loadTexture("Sprites/reglew95_2.png"), loadTexture("Sprites/reglew95_3.png"), loadTexture("Sprites/reglew95_4.png"), loadTexture("Sprites/reglew95_5.png"), loadTexture("Sprites/reglew95_6.png"), loadTexture("Sprites/reglew95_7.png"), loadTexture("Sprites/reglew95_8.png"), loadTexture("Sprites/reglew95_9.png"), loadTexture("Sprites/reglew95_10.png"), loadTexture("Sprites/reglew95_11.png"), loadTexture("Sprites/reglew95_12.png"), loadTexture("Sprites/reglew95_13.png")};
   int i = 0;
   gTexture = instructionList[i];
+  SDL_QueryTexture(gTexture, NULL, NULL, &w, &h);
+  SDL_Rect fillRect = {(SCREEN_WIDTH - w)/2, (SCREEN_HEIGHT - h)/2, w, h};
   SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
   SDL_RenderPresent(gRenderer);
   SDL_Event event;
@@ -589,7 +592,7 @@ void instructionScreen(bool *quit)
         if(event.key.keysym.sym == SDLK_ESCAPE)
         {
           quit_instruct = true;
-          for(int i = 0; i < 9; i++)
+          for(int i = 0; i < 13; i++)
           {
             SDL_DestroyTexture(instructionList[i]);
             instructionList[i] = NULL;
@@ -610,7 +613,7 @@ void instructionScreen(bool *quit)
           {
             y = 0;
           }
-          else if(i > 0 && y >= 10)
+          else if(i > 0 && y >= 12)
           {
             i--;
             SDL_RenderClear(gRenderer);
@@ -623,11 +626,11 @@ void instructionScreen(bool *quit)
         else if(event.wheel.y < 0)
         {
           y+= event.wheel.y;
-          if(i == 8)
+          if(i == 12)
           {
             y = 0;
           }
-          else if(i < 8 && y <= -10)
+          else if(i < 13 && y <= -10)
           {
             i++;
             SDL_RenderClear(gRenderer);

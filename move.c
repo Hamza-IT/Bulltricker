@@ -102,7 +102,6 @@ winner check_mat(int **actual_matrix)
 
 bool check_null(int **actual_matrix)
 {
-  bool black_found = false, white_found = false, null_1 = true, null_2 = true, null_3 = true;
   int w_number = 0, b_number = 0;
   for(int i = 0; i < 15; i++)
   {
@@ -110,14 +109,29 @@ bool check_null(int **actual_matrix)
     {
       if(actual_matrix[i][j] / 100 == 2)
       {
-        return false;
+        w_number++;
       }
-      if(actual_matrix[i][j] % 10 == 3 && !check_move(i, j, i-1, j, actual_matrix))
+      else if(actual_matrix[i][j] / 100 == 1)
       {
-        return false;
+        b_number++;
       }
     }
   }
+  for(int i = 0; i < 15; i++)
+  {
+    for(int j = 0; j < 15; j++)
+    {
+      if(((actual_matrix[i][j] == 23 && w_number == 0) || (actual_matrix[i][j] == 13 && b_number == 0)) && !check_move(i, j, i-1, j, actual_matrix) && !check_move(i, j, i+1, j, actual_matrix) && !check_move(i, j, i, j+1, actual_matrix) && !check_move(i, j, i, j-1, actual_matrix))
+      {
+        return true;
+      }
+      else if(w_number < 4 && b_number < 4)
+      {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 void check_pawn(int **actual_matrix)
@@ -1702,12 +1716,14 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
     {
       draw(*actual_matrix);
       SDL_Delay(600);
+      Mix_PlayChannel(-1, sPup, 0);
       (*actual_matrix)[u][v] = 121;
     }
     else if(temp / 100 == 2 && u == 0)
     {
       draw(*actual_matrix);
       SDL_Delay(600);
+      Mix_PlayChannel(-1, sPup, 0);
       (*actual_matrix)[u][v] = 221;
     }
     actual_player++;

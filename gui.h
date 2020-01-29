@@ -7,6 +7,7 @@ int SCREEN_WIDTH;
 int SCREEN_HEIGHT;
 Mix_Chunk *sMove[2];
 Mix_Chunk *sMandatory;
+Mix_Chunk *sPup;
 
 void draw(int **);
 void createBoard(int ***);

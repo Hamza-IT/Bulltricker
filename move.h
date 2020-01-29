@@ -32,6 +32,7 @@ int actual_player;
 bool pawn_mandatory, queen_mandatory;
 int mandatory_x, mandatory_y;
 winner check_mat(int **);
+bool check_null(int **);
 void check_pawn(int **);
 void check_queen(int **);
 mstate check_move(int, int, int, int, int **);

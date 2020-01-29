@@ -57,34 +57,16 @@ void init()
   }
 }
 
-
 void loadSound()
 {
   sBip[0] = Mix_LoadWAV("Sounds/menu_select.wav");
-  if(sBip[0] == NULL)
-  {
-    printf("Failed to load sound effect!\n%s\n", Mix_GetError());
-  }
   sBip[1] = Mix_LoadWAV("Sounds/menu_click.wav");
-  if(sBip[0] == NULL)
-  {
-    printf("Failed to load sound effect!\n%s\n", Mix_GetError());
-  }
   sMove[0] = Mix_LoadWAV("Sounds/move_1.wav");
-  if(sMove[0] == NULL)
-  {
-    printf("Failed to load sound effect!\n%s\n", Mix_GetError());
-  }
   sMove[1] = Mix_LoadWAV("Sounds/move_2.wav");
-  if(sMove[1] == NULL)
-  {
-    printf("Failed to load sound effect!\n%s\n", Mix_GetError());
-  }
   sMandatory = Mix_LoadWAV("Sounds/mandatory.wav");
-  if(sMandatory == NULL)
-  {
-    printf("Failed to load sound effect!\n%s\n", Mix_GetError());
-  }
+  sPup = Mix_LoadWAV("Sounds/pawn_powerup.wav");
+  sGameOver = Mix_LoadWAV("Sounds/game_over.wav");
+  sError = Mix_LoadWAV("Sounds/error.wav");
 }
 
 void close()
@@ -420,8 +402,127 @@ bool loadGame(int ***actual_matrix, bool game_over)
   return false;
 }
 
+void gameOver(int **actual_matrix, bool *game_over)
+{
+  if(check_mat(actual_matrix) == whites)
+  {
+    Mix_PlayChannel(-1, sGameOver, 0);
+    *game_over = true;
+    char *text = "Game Over";
+    loadText(text, black, 640, 240, 120, 30);
+    text = "Player 1 Wins";
+    loadText(text, black, 620, 280, 160, 30);
+  }
+  else if(check_mat(actual_matrix) == blacks)
+  {
+    Mix_PlayChannel(-1, sGameOver, 0);
+    *game_over = true;
+    char *text = "Game Over";
+    loadText(text, black, 640, 240, 120, 30);
+    text = "Player 2 Wins";
+    loadText(text, black, 620, 280, 160, 30);
+  }
+  else if(check_null(actual_matrix))
+  {
+    Mix_PlayChannel(-1, sGameOver, 0);
+    *game_over = true;
+    char *text = "Game Over";
+    loadText(text, black, 640, 240, 120, 30);
+    text = "It's a tie";
+    loadText(text, black, 640, 280, 120, 30);
+  }
+  SDL_RenderPresent(gRenderer);
+}
+
+void settingScreen(bool *quit)
+{
+  SDL_RenderClear(gRenderer);
+  bool quit_settings = false;
+  gTexture = loadTexture("Sprites/Menu_Settings.png");
+  
+}
+
+void instructionScreen(bool *quit)
+{
+  int y = 0;
+  SDL_RenderClear(gRenderer);
+  bool quit_instruct = false;
+  SDL_Texture *instructionList[9] = {loadTexture("Sprites/reglew95_1.png"), loadTexture("Sprites/reglew95_2.png"), loadTexture("Sprites/reglew95_3.png"), loadTexture("Sprites/reglew95_4.png"), loadTexture("Sprites/reglew95_5.png"), loadTexture("Sprites/reglew95_6.png"), loadTexture("Sprites/reglew95_7.png"), loadTexture("Sprites/reglew95_8.png"), loadTexture("Sprites/reglew95_9.png")};
+  SDL_Rect fillRect = {188, 0, 424, 600};
+  int i = 0;
+  gTexture = instructionList[i];
+  SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+  SDL_RenderPresent(gRenderer);
+  SDL_Event event;
+  while(!quit_instruct && !*quit)
+  {
+    if(SDL_WaitEvent(&event))
+    {
+      if(event.type == SDL_QUIT)
+      {
+        *quit = true;
+      }
+      else if(event.type == SDL_KEYDOWN)
+      {
+        if(event.key.keysym.sym == SDLK_ESCAPE)
+        {
+          quit_instruct = true;
+          for(int i = 0; i < 9; i++)
+          {
+            SDL_DestroyTexture(instructionList[i]);
+            instructionList[i] = NULL;
+          }
+          gTexture = loadTexture("Sprites/Main_Menu_0.png");
+          SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
+          SDL_DestroyTexture(gTexture);
+          gTexture = NULL;
+          SDL_RenderPresent(gRenderer);
+        }
+      }
+      else if(event.type == SDL_MOUSEWHEEL)
+      {
+        if(event.wheel.y > 0)
+        {
+          y += event.wheel.y;
+          if(i == 0)
+          {
+            y = 0;
+          }
+          else if(i > 0 && y >= 5)
+          {
+            i--;
+            SDL_RenderClear(gRenderer);
+            gTexture = instructionList[i];
+            SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+            SDL_RenderPresent(gRenderer);
+            y = 0;
+          }
+        }
+        else if(event.wheel.y < 0)
+        {
+          y+= event.wheel.y;
+          if(i == 8)
+          {
+            y = 0;
+          }
+          else if(i < 8 && y <= -5)
+          {
+            i++;
+            SDL_RenderClear(gRenderer);
+            gTexture = instructionList[i];
+            SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+            SDL_RenderPresent(gRenderer);
+            y = 0;
+          }
+        }
+      }
+    }
+  }
+}
+
 void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
 {
+  SDL_RenderPresent(gRenderer);
   SDL_RenderClear(gRenderer);
   SDL_Rect fillRect = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
   SDL_Texture *textureList[5] = {loadTexture("Sprites/Main_Menu_1.png"), loadTexture("Sprites/Main_Menu_2.png"), loadTexture("Sprites/Main_Menu_3.png"), loadTexture("Sprites/Main_Menu_4.png"), loadTexture("Sprites/Main_Menu_0.png")};
@@ -512,9 +613,9 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
         else if(i == 1 && y >= 420 && y < 475)
         {
           SDL_Delay(150);
-          Mix_PlayChannel(-1, sBip[1], 0);
           if(loadGame(actual_matrix, *game_over) == true)
           {
+            Mix_PlayChannel(-1, sBip[1], 0);
             start = true;
             shown = false;
             SDL_DestroyTexture(gTexture);
@@ -525,6 +626,11 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
             }
             gTexture = NULL;
             draw(*actual_matrix);
+            gameOver(*actual_matrix, game_over);
+          }
+          else
+          {
+            Mix_PlayChannel(-1, sError, 0);
           }
         }
         else if(i == 2 && y >= 475 && y < 525)
@@ -534,8 +640,12 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
         }
         else if(i == 3 && y >= 525)
         {
-          printf("Instructions under construction ...\n");
           Mix_PlayChannel(-1, sBip[1], 0);
+          instructionScreen(quit);
+          if(!quit)
+          {
+            mainMenu(actual_matrix, game_over, quit, move);
+          }
         }
       }
       else if(event.type == SDL_KEYDOWN)
@@ -613,6 +723,7 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
                 }
                 gTexture = NULL;
                 draw(*actual_matrix);
+                gameOver(*actual_matrix, game_over);
               }
             }
             else if(i == 2)
@@ -622,8 +733,12 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
             }
             else if(i == 3)
             {
-              printf("Instructions under construction ...\n");
               Mix_PlayChannel(-1, sBip[1], 0);
+              instructionScreen(quit);
+              if(!quit)
+              {
+                mainMenu(actual_matrix, game_over, quit, move);
+              }
             }
             break;
           }
@@ -631,27 +746,6 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
       }
     }
   }
-}
-
-void gameOver(int **actual_matrix, bool *game_over)
-{
-  if(check_mat(actual_matrix) == whites)
-  {
-    *game_over = true;
-    char *text = "Game Over";
-    loadText(text, black, 640, 240, 120, 30);
-    text = "Player 1 Wins";
-    loadText(text, black, 620, 280, 160, 30);
-  }
-  else if(check_mat(actual_matrix) == blacks)
-  {
-    *game_over = true;
-    char *text = "Game Over";
-    loadText(text, black, 640, 240, 120, 30);
-    text = "Player 2 Wins";
-    loadText(text, black, 620, 280, 160, 30);
-  }
-  SDL_RenderPresent(gRenderer);
 }
 
 void setBlendMode(SDL_BlendMode blendMode)

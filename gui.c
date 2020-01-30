@@ -233,12 +233,12 @@ void fillBlank()
   SDL_Rect fillRect2 = {0, 580, 800, 20};
   SDL_Texture *newTexture = loadTexture("Bulltricker_Data/Sprites/fill1.png");
   SDL_SetTextureBlendMode(newTexture, SDL_BLENDMODE_BLEND);
-  SDL_SetTextureAlphaMod(newTexture, 200);
+  //SDL_SetTextureAlphaMod(newTexture, 200);
   SDL_RenderCopy(gRenderer, newTexture, NULL, &fillRect1);
   SDL_DestroyTexture(newTexture);
   newTexture = loadTexture("Bulltricker_Data/Sprites/fill2.png");
   SDL_SetTextureBlendMode(newTexture, SDL_BLENDMODE_BLEND);
-  SDL_SetTextureAlphaMod(newTexture, 200);
+  //SDL_SetTextureAlphaMod(newTexture, 200);
   SDL_RenderCopy(gRenderer, newTexture, NULL, &fillRect2);
   SDL_DestroyTexture(newTexture);
   newTexture = NULL;

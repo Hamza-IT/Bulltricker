@@ -21,7 +21,7 @@ Mix_Chunk *sBip[2] = {NULL, NULL}, *sMove[2] = {NULL, NULL}, *sMandatory = NULL,
 
 void init()
 {
-  FILE * fptr = fopen("screen_settings.txt", "r");
+  FILE * fptr = fopen("Bulltricker_Data/screen_settings.txt", "r");
   fscanf(fptr, "%d %d", &SCREEN_WIDTH, &SCREEN_HEIGHT);
   fclose(fptr);
   if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
@@ -59,14 +59,14 @@ void init()
 
 void loadSound()
 {
-  sBip[0] = Mix_LoadWAV("Sounds/menu_select.wav");
-  sBip[1] = Mix_LoadWAV("Sounds/menu_click.wav");
-  sMove[0] = Mix_LoadWAV("Sounds/move_1.wav");
-  sMove[1] = Mix_LoadWAV("Sounds/move_2.wav");
-  sMandatory = Mix_LoadWAV("Sounds/mandatory.wav");
-  sPup = Mix_LoadWAV("Sounds/pawn_powerup.wav");
-  sGameOver = Mix_LoadWAV("Sounds/game_over.wav");
-  sError = Mix_LoadWAV("Sounds/error.wav");
+  sBip[0] = Mix_LoadWAV("Bulltricker_Data/Sounds/menu_select.wav");
+  sBip[1] = Mix_LoadWAV("Bulltricker_Data/Sounds/menu_click.wav");
+  sMove[0] = Mix_LoadWAV("Bulltricker_Data/Sounds/move_1.wav");
+  sMove[1] = Mix_LoadWAV("Bulltricker_Data/Sounds/move_2.wav");
+  sMandatory = Mix_LoadWAV("Bulltricker_Data/ounds/mandatory.wav");
+  sPup = Mix_LoadWAV("Bulltricker_Data/Sounds/pawn_powerup.wav");
+  sGameOver = Mix_LoadWAV("Bulltricker_Data/Sounds/game_over.wav");
+  sError = Mix_LoadWAV("Bulltricker_Data/Sounds/error.wav");
 }
 
 void playSound(Mix_Chunk *sound)
@@ -188,11 +188,11 @@ void loadGrid()
 {
   SDL_Delay(50);
   SDL_Rect fillRect = {600, 0, 200, 580};
-  gTexture = loadTexture("Sprites/Grid.png");
+  gTexture = loadTexture("Bulltricker_Data/Sprites/Grid.png");
   SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
   SDL_DestroyTexture(gTexture);
   gTexture = NULL;
-  SDL_Texture *buttonList[4] = {loadTexture("Sprites/Undo_Button.png"), loadTexture("Sprites/Save_Button.png"), loadTexture("Sprites/Load_Button.png"), loadTexture("Sprites/Menu_Button.png")};
+  SDL_Texture *buttonList[4] = {loadTexture("Bulltricker_Data/Sprites/Undo_Button.png"), loadTexture("Bulltricker_Data/Sprites/Save_Button.png"), loadTexture("Bulltricker_Data/Sprites/Load_Button.png"), loadTexture("Bulltricker_Data/Sprites/Menu_Button.png")};
   SDL_Rect fillRect1 = {617, 360, 30, 30};
   SDL_Rect fillRect2 = {662, 360, 30, 30};
   SDL_Rect fillRect3 = {707, 360, 30, 30};
@@ -231,12 +231,12 @@ void fillBlank()
   SDL_RenderClear(gRenderer);
   SDL_Rect fillRect1 = {580, 0, 20, 580};
   SDL_Rect fillRect2 = {0, 580, 800, 20};
-  SDL_Texture *newTexture = loadTexture("Sprites/fill1.png");
+  SDL_Texture *newTexture = loadTexture("Bulltricker_Data/Sprites/fill1.png");
   SDL_SetTextureBlendMode(newTexture, SDL_BLENDMODE_BLEND);
   SDL_SetTextureAlphaMod(newTexture, 200);
   SDL_RenderCopy(gRenderer, newTexture, NULL, &fillRect1);
   SDL_DestroyTexture(newTexture);
-  newTexture = loadTexture("Sprites/fill2.png");
+  newTexture = loadTexture("Bulltricker_Data/Sprites/fill2.png");
   SDL_SetTextureBlendMode(newTexture, SDL_BLENDMODE_BLEND);
   SDL_SetTextureAlphaMod(newTexture, 200);
   SDL_RenderCopy(gRenderer, newTexture, NULL, &fillRect2);
@@ -255,7 +255,7 @@ void draw(int **actual_matrix)
     {
       if(actual_matrix[l][k] == -1)
       {
-        gTexture = loadTexture("Sprites/NP.png");
+        gTexture = loadTexture("Bulltricker_Data/Sprites/NP.png");
         SDL_Rect fillRect = {i, j, 20, 20};
         SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
         x=20;
@@ -263,7 +263,7 @@ void draw(int **actual_matrix)
       }
       else if(actual_matrix[l][k] == 0 && l % 2 == 1)
       {
-        gTexture = loadTexture("Sprites/P0.png");
+        gTexture = loadTexture("Bulltricker_Data/Sprites/P0.png");
         SDL_Rect fillRect = {i, j, 20, 60};
         SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
         x=20;
@@ -271,7 +271,7 @@ void draw(int **actual_matrix)
       }
       else if(actual_matrix[l][k] == 0 && l % 2 == 0)
       {
-        gTexture = loadTexture("Sprites/P1.png");
+        gTexture = loadTexture("Bulltricker_Data/Sprites/P1.png");
         SDL_Rect fillRect = {i, j, 60, 20};
         SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
         x=60;
@@ -279,7 +279,7 @@ void draw(int **actual_matrix)
       }
       else if(actual_matrix[l][k] == -2)
       {
-        gTexture = loadTexture("Sprites/PK.png");
+        gTexture = loadTexture("Bulltricker_Data/Sprites/PK.png");
         SDL_Rect fillRect = {i, j, 60, 60};
         SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
         x=60;
@@ -287,7 +287,7 @@ void draw(int **actual_matrix)
       }
       else if(actual_matrix[l][k] == 13)
       {
-        gTexture = loadTexture("Sprites/KB.png");
+        gTexture = loadTexture("Bulltricker_Data/Sprites/KB.png");
         SDL_Rect fillRect = {i, j, 60, 60};
         SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
         x=60;
@@ -295,7 +295,7 @@ void draw(int **actual_matrix)
       }
       else if(actual_matrix[l][k] == 23)
       {
-        gTexture = loadTexture("Sprites/KW.png");
+        gTexture = loadTexture("Bulltricker_Data/Sprites/KW.png");
         SDL_Rect fillRect = {i, j, 60, 60};
         SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
         x=60;
@@ -303,7 +303,7 @@ void draw(int **actual_matrix)
       }
       else if(actual_matrix[l][k] == 121)
       {
-        gTexture = loadTexture("Sprites/QBR.png");
+        gTexture = loadTexture("Bulltricker_Data/Sprites/QBR.png");
         SDL_Rect fillRect = {i, j, 60, 20};
         SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
         x=60;
@@ -311,7 +311,7 @@ void draw(int **actual_matrix)
       }
       else if(actual_matrix[l][k] == 120)
       {
-        gTexture = loadTexture("Sprites/QB.png");
+        gTexture = loadTexture("Bulltricker_Data/Sprites/QB.png");
         SDL_Rect fillRect = {i, j, 20, 60};
         SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
         x=20;
@@ -319,7 +319,7 @@ void draw(int **actual_matrix)
       }
       else if(actual_matrix[l][k] == 221)
       {
-        gTexture = loadTexture("Sprites/QWR.png");
+        gTexture = loadTexture("Bulltricker_Data/Sprites/QWR.png");
         SDL_Rect fillRect = {i, j, 60, 20};
         SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
         x=60;
@@ -327,7 +327,7 @@ void draw(int **actual_matrix)
       }
       else if(actual_matrix[l][k] == 220)
       {
-        gTexture = loadTexture("Sprites/QW.png");
+        gTexture = loadTexture("Bulltricker_Data/Sprites/QW.png");
         SDL_Rect fillRect = {i, j, 20, 60};
         SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
         x=20;
@@ -335,7 +335,7 @@ void draw(int **actual_matrix)
       }
       else if(actual_matrix[l][k] == 110)
       {
-        gTexture = loadTexture("Sprites/PBR.png");
+        gTexture = loadTexture("Bulltricker_Data/Sprites/PBR.png");
         SDL_Rect fillRect = {i, j, 20, 60};
         SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
         x=20;
@@ -343,7 +343,7 @@ void draw(int **actual_matrix)
       }
       else if(actual_matrix[l][k] == 210)
       {
-        gTexture = loadTexture("Sprites/PWR.png");
+        gTexture = loadTexture("Bulltricker_Data/Sprites/PWR.png");
         SDL_Rect fillRect = {i, j, 20, 60};
         SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
         x=20;
@@ -351,7 +351,7 @@ void draw(int **actual_matrix)
       }
       else if(actual_matrix[l][k] == 111)
       {
-        gTexture = loadTexture("Sprites/PB.png");
+        gTexture = loadTexture("Bulltricker_Data/Sprites/PB.png");
         SDL_Rect fillRect = {i, j, 60, 20};
         SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
         x=60;
@@ -359,7 +359,7 @@ void draw(int **actual_matrix)
       }
       else if(actual_matrix[l][k] == 211)
       {
-        gTexture = loadTexture("Sprites/PW.png");
+        gTexture = loadTexture("Bulltricker_Data/Sprites/PW.png");
         SDL_Rect fillRect = {i, j, 60, 20};
         SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
         x=60;
@@ -376,7 +376,7 @@ void draw(int **actual_matrix)
 
 void saveGame(int **actual_matrix, bool game_over)
 {
-  FILE *fptr = fopen("Saves/save.bin", "wb");
+  FILE *fptr = fopen("Bulltricker_Data/Saves/save.bin", "wb");
   for(int i = 0; i < 15; i++)
   {
     for(int j = 0; j < 15; j++)
@@ -392,7 +392,7 @@ void saveGame(int **actual_matrix, bool game_over)
 bool loadGame(int ***actual_matrix, bool game_over)
 {
   *actual_matrix = initMat();
-  FILE *fptr = fopen("Saves/save.bin", "rb");
+  FILE *fptr = fopen("Bulltricker_Data/Saves/save.bin", "rb");
   if(fptr != NULL)
   {
     for(int i = 0; i < 15; i++)
@@ -444,7 +444,7 @@ void gameOver(int **actual_matrix, bool *game_over)
 
 void introScreen()
 {
-  gTexture = loadTexture("Sprites/intro_screen.png");
+  gTexture = loadTexture("Bulltricker_Data/Sprites/intro_screen.png");
   for(int i = 0; i < 256; i++)
   {
     SDL_SetTextureAlphaMod(gTexture, i);
@@ -461,12 +461,12 @@ void settingScreen(bool *quit)
   SDL_Delay(100);
   bool quit_settings = false, sound_hover = false, indicator_hover = false, return_hover = false;
   SDL_RenderPresent(gRenderer);
-  gTexture = loadTexture("Sprites/Menu_Settings.png");
+  gTexture = loadTexture("Bulltricker_Data/Sprites/Menu_Settings.png");
   SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
   SDL_DestroyTexture(gTexture);
   gTexture = NULL;
   loadText("Settings", white, 340, 60, 120, 40);
-  SDL_Texture *buttonList[15] = {loadTexture("Sprites/Sound_On.png"), loadTexture("Sprites/Sound_On_Hover.png"), loadTexture("Sprites/Sound_On_Click.png"), loadTexture("Sprites/Sound_Off.png"), loadTexture("Sprites/Sound_Off_Hover.png"), loadTexture("Sprites/Sound_Off_Click.png"), loadTexture("Sprites/Indicator_On.png"), loadTexture("Sprites/Indicator_On_Hover.png"), loadTexture("Sprites/Indicator_On_Click.png"), loadTexture("Sprites/Indicator_Off.png"), loadTexture("Sprites/Indicator_Off_Hover.png"), loadTexture("Sprites/Indicator_Off_Click.png"), loadTexture("Sprites/return_button.png"), loadTexture("Sprites/return_button_hover.png"), loadTexture("Sprites/return_button_click.png")};
+  SDL_Texture *buttonList[15] = {loadTexture("Bulltricker_Data/Sprites/Sound_On.png"), loadTexture("Bulltricker_Data/Sprites/Sound_On_Hover.png"), loadTexture("Bulltricker_Data/Sprites/Sound_On_Click.png"), loadTexture("Bulltricker_Data/Sprites/Sound_Off.png"), loadTexture("Bulltricker_Data/Sprites/Sound_Off_Hover.png"), loadTexture("Bulltricker_Data/Sprites/Sound_Off_Click.png"), loadTexture("Bulltricker_Data/Sprites/Indicator_On.png"), loadTexture("Bulltricker_Data/Sprites/Indicator_On_Hover.png"), loadTexture("Bulltricker_Data/Sprites/Indicator_On_Click.png"), loadTexture("Bulltricker_Data/Sprites/Indicator_Off.png"), loadTexture("Bulltricker_Data/Sprites/Indicator_Off_Hover.png"), loadTexture("Bulltricker_Data/Sprites/Indicator_Off_Click.png"), loadTexture("Bulltricker_Data/Sprites/return_button.png"), loadTexture("Bulltricker_Data/Sprites/return_button_hover.png"), loadTexture("Bulltricker_Data/Sprites/return_button_click.png")};
   SDL_Rect soundButtonRect = {400 - 138/2, 200, 138, 46};
   SDL_Rect soundButtonRectClick = {400 - 140/2, 199, 140, 48};
   SDL_Rect indicatorButtonRect = {400 - 138/2, 300, 138, 46};
@@ -515,7 +515,7 @@ void settingScreen(bool *quit)
             buttonList[i] = NULL;
           }
           SDL_DestroyTexture(gTexture);
-          gTexture = loadTexture("Sprites/Main_Menu_0.png");
+          gTexture = loadTexture("Bulltricker_Data/Sprites/Main_Menu_0.png");
           SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
           SDL_DestroyTexture(gTexture);
           gTexture = NULL;
@@ -619,7 +619,7 @@ void settingScreen(bool *quit)
             sound_hover = false;
             SDL_Delay(50);
             SDL_RenderClear(gRenderer);
-            gTexture = loadTexture("Sprites/Menu_Settings.png");
+            gTexture = loadTexture("Bulltricker_Data/Sprites/Menu_Settings.png");
             SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
             SDL_DestroyTexture(gTexture);
             loadText("Settings", white, 340, 60, 120, 40);
@@ -666,7 +666,7 @@ void settingScreen(bool *quit)
             indicator_hover = false;
             SDL_Delay(50);
             SDL_RenderClear(gRenderer);
-            gTexture = loadTexture("Sprites/Menu_Settings.png");
+            gTexture = loadTexture("Bulltricker_Data/Sprites/Menu_Settings.png");
             SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
             SDL_DestroyTexture(gTexture);
             loadText("Settings", white, 340, 60, 120, 40);
@@ -714,7 +714,7 @@ void settingScreen(bool *quit)
               buttonList[i] = NULL;
             }
             SDL_DestroyTexture(gTexture);
-            gTexture = loadTexture("Sprites/Main_Menu_0.png");
+            gTexture = loadTexture("Bulltricker_Data/Sprites/Main_Menu_0.png");
             SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
             SDL_DestroyTexture(gTexture);
             gTexture = NULL;
@@ -731,8 +731,8 @@ void instructionScreen(bool *quit)
   SDL_Delay(100);
   bool quit_instruct = false, return_hover = false;
   SDL_Event event;
-  SDL_Texture *instructionScreen = loadTexture("Sprites/Instructions.png");
-  SDL_Texture *buttonList[3] = {loadTexture("Sprites/return_button.png"), loadTexture("Sprites/return_button_hover.png"), loadTexture("Sprites/return_button_click.png")};
+  SDL_Texture *instructionScreen = loadTexture("Bulltricker_Data/Sprites/Instructions.png");
+  SDL_Texture *buttonList[3] = {loadTexture("Bulltricker_Data/Sprites/return_button.png"), loadTexture("Bulltricker_Data/Sprites/return_button_hover.png"), loadTexture("Bulltricker_Data/Sprites/return_button_click.png")};
   gTexture = instructionScreen;
   SDL_Rect returnButtonRect = {1, 1, 52, 46};
   SDL_Rect returnButtonRectClick = {0, 0, 54, 48};
@@ -764,7 +764,7 @@ void instructionScreen(bool *quit)
           SDL_DestroyTexture(instructionScreen);
           instructionScreen = NULL;
           SDL_DestroyTexture(gTexture);
-          gTexture = loadTexture("Sprites/Main_Menu_0.png");
+          gTexture = loadTexture("Bulltricker_Data/Sprites/Main_Menu_0.png");
           SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
           SDL_DestroyTexture(gTexture);
           gTexture = NULL;
@@ -885,7 +885,7 @@ void instructionScreen(bool *quit)
           SDL_DestroyTexture(gTexture);
           SDL_DestroyTexture(instructionScreen);
           instructionScreen = NULL;
-          gTexture = loadTexture("Sprites/Main_Menu_0.png");
+          gTexture = loadTexture("Bulltricker_Data/Sprites/Main_Menu_0.png");
           SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
           SDL_DestroyTexture(gTexture);
           gTexture = NULL;
@@ -899,9 +899,10 @@ void instructionScreen(bool *quit)
 void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
 {
   SDL_RenderPresent(gRenderer);
+  SDL_DestroyTexture(gTexture);
   SDL_RenderClear(gRenderer);
   SDL_Rect fillRect = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
-  SDL_Texture *textureList[5] = {loadTexture("Sprites/Main_Menu_1.png"), loadTexture("Sprites/Main_Menu_2.png"), loadTexture("Sprites/Main_Menu_3.png"), loadTexture("Sprites/Main_Menu_4.png"), loadTexture("Sprites/Main_Menu_0.png")};
+  SDL_Texture *textureList[5] = {loadTexture("Bulltricker_Data/Sprites/Main_Menu_1.png"), loadTexture("Bulltricker_Data/Sprites/Main_Menu_2.png"), loadTexture("Bulltricker_Data/Sprites/Main_Menu_3.png"), loadTexture("Bulltricker_Data/Sprites/Main_Menu_4.png"), loadTexture("Bulltricker_Data/Sprites/Main_Menu_0.png")};
   int i = 4;
   gTexture = textureList[i];
   SDL_SetTextureAlphaMod(gTexture, 255);
@@ -1177,14 +1178,14 @@ bool indicator(int x, int y, int **actual_matrix)
       int temp_x = mapToEdge(x);
       int temp_y = mapToEdge(y);
       SDL_Rect fillRect = {temp_x, temp_y, size[0], size[1]};
-      gTexture = loadTexture("Sprites/_Indicator.png");
+      gTexture = loadTexture("Bulltricker_Data/Sprites/_Indicator.png");
       setBlendMode(SDL_BLENDMODE_BLEND);
       setAlpha(120);
       SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
       SDL_DestroyTexture(gTexture);
       gTexture = NULL;
     }
-    gTexture = loadTexture("Sprites/Indicator.png");
+    gTexture = loadTexture("Bulltricker_Data/Sprites/Indicator.png");
     setAlpha(150);
     for(int u = 0; u < 15; u++)
     {
@@ -1217,7 +1218,7 @@ void mandatoryIndicator()
     int temp_y = mapToEdge(mandatory_x);
     getSize(temp_x, temp_y);
     SDL_Rect fillRect = {temp_x, temp_y, size[0], size[1]};
-    gTexture = loadTexture("Sprites/_Mandatory.png");
+    gTexture = loadTexture("Bulltricker_Data/Sprites/_Mandatory.png");
     setBlendMode(SDL_BLENDMODE_BLEND);
     setAlpha(180);
     SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
@@ -1228,7 +1229,8 @@ void mandatoryIndicator()
   }
 }
 
-// To-do: -- Rework UI ...
+// To-do: -- Fix a memory leak (between Main menu and New game/Continue)
+//        -- Rework UI ...
 //        -- Clean code ...
 //        -- Implement VS AI mode ...
 //        -- Host a local network game ...
@@ -1238,7 +1240,7 @@ void createBoard(int ***actual_matrix)
 {
   init();
   loadSound();
-  gFont = loadFont("Fonts/bodoni_mtblack.ttf", 40);
+  gFont = loadFont("Bulltricker_Data/Fonts/bodoni_mtblack.ttf", 40);
   int x, y, u, v, move = 0, p[3];
   bool quit = false, game_over = false, drawn = false, restart;
   SDL_Event event;
@@ -1252,6 +1254,21 @@ void createBoard(int ***actual_matrix)
       {
         quit = true;
       }
+      /*else if(event.type == SDL_KEYDOWN)
+      {
+        if(event.key.keysym.sym == SDLK_ESCAPE)
+        {
+          SDL_Delay(100);
+          SDL_RenderClear(gRenderer);
+          SDL_DestroyTexture(gTexture);
+          gTexture = loadTexture("Bulltricker_Data/Sprites/Main_Menu_0.png");
+          SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
+          SDL_DestroyTexture(gTexture);
+          gTexture = NULL;
+          SDL_RenderPresent(gRenderer);
+          mainMenu(actual_matrix, &game_over, &quit, &move);
+        }
+      }*/
       else if(event.type == SDL_MOUSEMOTION || event.type == SDL_MOUSEBUTTONDOWN)
       {
         if(move % 2 != 1)
@@ -1312,7 +1329,7 @@ void createBoard(int ***actual_matrix)
               saveGame(*actual_matrix, game_over);
               SDL_Delay(100);
               SDL_Rect fillRect = {630, 318, 140, 30};
-              gTexture = loadTexture("Sprites/Hide_Text.png");
+              gTexture = loadTexture("Bulltricker_Data/Sprites/Hide_Text.png");
               SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
               SDL_DestroyTexture(gTexture);
               gTexture = NULL;
@@ -1336,7 +1353,7 @@ void createBoard(int ***actual_matrix)
               {
                 move = 0;
                 SDL_Rect fillRect = {630, 318, 140, 30};
-                gTexture = loadTexture("Sprites/Hide_Text.png");
+                gTexture = loadTexture("Bulltricker_Data/Sprites/Hide_Text.png");
                 SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
                 SDL_DestroyTexture(gTexture);
                 gTexture = NULL;
@@ -1365,7 +1382,7 @@ void createBoard(int ***actual_matrix)
           else if(drawn = true)
           {
             SDL_Rect fillRect = {630, 318, 140, 30};
-            gTexture = loadTexture("Sprites/Hide_Text.png");
+            gTexture = loadTexture("Bulltricker_Data/Sprites/Hide_Text.png");
             SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
             SDL_DestroyTexture(gTexture);
             gTexture = NULL;
@@ -1377,7 +1394,7 @@ void createBoard(int ***actual_matrix)
         {
           SDL_Delay(100);
           SDL_Rect fillRect = {630, 318, 140, 30};
-          gTexture = loadTexture("Sprites/Hide_Text.png");
+          gTexture = loadTexture("Bulltricker_Data/Sprites/Hide_Text.png");
           SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
           SDL_DestroyTexture(gTexture);
           gTexture = NULL;

@@ -4,7 +4,7 @@
 
 int **initMat()
 {
-  FILE *fptr = fopen("general.txt", "r");
+  FILE *fptr = fopen("Bulltricker_Data/general.txt", "r");
   fscanf(fptr, "%d %d %d %d %d", &row_count, &column_count, &king_count, &queen_count, &pawn_count);
   initial_matrix = malloc(row_count * sizeof(int*));
   for(int i = 0; i < row_count; i++)

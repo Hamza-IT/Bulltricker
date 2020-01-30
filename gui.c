@@ -248,6 +248,7 @@ void draw(int **actual_matrix)
 {
   fillBlank();
   loadGrid();
+  SDL_DestroyTexture(gTexture);
   int x, y;
   for(int i = 0, k = 0; i < 580, k < 15; k++)
   {
@@ -980,7 +981,7 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
           *actual_matrix = initMat();
           start = true;
           SDL_DestroyTexture(gTexture);
-          for(i = 0; i < 4; i++)
+          for(i = 0; i < 5; i++)
           {
             SDL_DestroyTexture(textureList[i]);
             textureList[i] = NULL;
@@ -997,7 +998,7 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
             start = true;
             shown = false;
             SDL_DestroyTexture(gTexture);
-            for(i = 0; i < 4; i++)
+            for(i = 0; i < 5; i++)
             {
               SDL_DestroyTexture(textureList[i]);
               textureList[i] = NULL;
@@ -1017,7 +1018,7 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
           settingScreen(quit);
           if(!quit)
           {
-            for(i = 0; i < 4; i++)
+            for(i = 0; i < 5; i++)
             {
               SDL_DestroyTexture(textureList[i]);
               textureList[i] = NULL;
@@ -1032,7 +1033,7 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
           instructionScreen(quit);
           if(!quit)
           {
-            for(i = 0; i < 4; i++)
+            for(i = 0; i < 5; i++)
             {
               SDL_DestroyTexture(textureList[i]);
               textureList[i] = NULL;
@@ -1094,7 +1095,7 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
               shown = false;
               start = true;
               SDL_DestroyTexture(gTexture);
-              for(i = 0; i < 4; i++)
+              for(i = 0; i < 5; i++)
               {
                 SDL_DestroyTexture(textureList[i]);
                 textureList[i] = NULL;
@@ -1110,7 +1111,7 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
               {
                 start = true;
                 SDL_DestroyTexture(gTexture);
-                for(i = 0; i < 4; i++)
+                for(i = 0; i < 5; i++)
                 {
                   SDL_DestroyTexture(textureList[i]);
                   textureList[i] = NULL;
@@ -1126,7 +1127,7 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
               settingScreen(quit);
               if(!quit)
               {
-                for(i = 0; i < 4; i++)
+                for(i = 0; i < 5; i++)
                 {
                   SDL_DestroyTexture(textureList[i]);
                   textureList[i] = NULL;
@@ -1141,7 +1142,7 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
               instructionScreen(quit);
               if(!quit)
               {
-                for(i = 0; i < 4; i++)
+                for(i = 0; i < 5; i++)
                 {
                   SDL_DestroyTexture(textureList[i]);
                   textureList[i] = NULL;
@@ -1229,8 +1230,7 @@ void mandatoryIndicator()
   }
 }
 
-// To-do: -- Fix a memory leak (between Main menu and New game/Continue)
-//        -- Rework UI ...
+// To-do: -- Rework UI ...
 //        -- Clean code ...
 //        -- Implement VS AI mode ...
 //        -- Host a local network game ...
@@ -1254,7 +1254,7 @@ void createBoard(int ***actual_matrix)
       {
         quit = true;
       }
-      /*else if(event.type == SDL_KEYDOWN)
+      else if(event.type == SDL_KEYDOWN)
       {
         if(event.key.keysym.sym == SDLK_ESCAPE)
         {
@@ -1268,7 +1268,7 @@ void createBoard(int ***actual_matrix)
           SDL_RenderPresent(gRenderer);
           mainMenu(actual_matrix, &game_over, &quit, &move);
         }
-      }*/
+      }
       else if(event.type == SDL_MOUSEMOTION || event.type == SDL_MOUSEBUTTONDOWN)
       {
         if(move % 2 != 1)

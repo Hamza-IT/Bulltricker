@@ -1,7 +1,7 @@
-//#ifdef _WIN32
-//#define _WIN32_WINNT 0x0500
-//#include <windows.h>
-//#endif
+#ifdef _WIN32
+#define _WIN32_WINNT 0x0500
+#include <windows.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include "init_mat.h"
@@ -10,8 +10,10 @@
 
 int main(int argc, char **argv)
 {
-  //HWND hWnd = GetConsoleWindow();
-  //ShowWindow( hWnd, SW_HIDE );
+  #ifdef _WIN32
+    HWND hWnd = GetConsoleWindow();
+    ShowWindow( hWnd, SW_HIDE );
+  #endif
   int **actual_matrix = initMat();
   createBoard(&actual_matrix);
   return 0;

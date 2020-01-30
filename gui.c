@@ -63,7 +63,7 @@ void loadSound()
   sBip[1] = Mix_LoadWAV("Bulltricker_Data/Sounds/menu_click.wav");
   sMove[0] = Mix_LoadWAV("Bulltricker_Data/Sounds/move_1.wav");
   sMove[1] = Mix_LoadWAV("Bulltricker_Data/Sounds/move_2.wav");
-  sMandatory = Mix_LoadWAV("Bulltricker_Data/ounds/mandatory.wav");
+  sMandatory = Mix_LoadWAV("Bulltricker_Data/Sounds/mandatory.wav");
   sPup = Mix_LoadWAV("Bulltricker_Data/Sounds/pawn_powerup.wav");
   sGameOver = Mix_LoadWAV("Bulltricker_Data/Sounds/game_over.wav");
   sError = Mix_LoadWAV("Bulltricker_Data/Sounds/error.wav");
@@ -233,12 +233,10 @@ void fillBlank()
   SDL_Rect fillRect2 = {0, 580, 800, 20};
   SDL_Texture *newTexture = loadTexture("Bulltricker_Data/Sprites/fill1.png");
   SDL_SetTextureBlendMode(newTexture, SDL_BLENDMODE_BLEND);
-  //SDL_SetTextureAlphaMod(newTexture, 200);
   SDL_RenderCopy(gRenderer, newTexture, NULL, &fillRect1);
   SDL_DestroyTexture(newTexture);
   newTexture = loadTexture("Bulltricker_Data/Sprites/fill2.png");
   SDL_SetTextureBlendMode(newTexture, SDL_BLENDMODE_BLEND);
-  //SDL_SetTextureAlphaMod(newTexture, 200);
   SDL_RenderCopy(gRenderer, newTexture, NULL, &fillRect2);
   SDL_DestroyTexture(newTexture);
   newTexture = NULL;

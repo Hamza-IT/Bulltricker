@@ -42,7 +42,7 @@ void init()
   {
     printf("Failed to create renderer!\n%s\n", SDL_GetError());
   }
-  SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+  SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0x00);
   if(!IMG_Init(IMG_INIT_PNG))
   {
     printf("Failed to initialize SDL_Image!\n%s\n", IMG_GetError());
@@ -440,6 +440,20 @@ void gameOver(int **actual_matrix, bool *game_over)
     loadText(text, black, 640, 280, 120, 30);
   }
   SDL_RenderPresent(gRenderer);
+}
+
+void introScreen()
+{
+  gTexture = loadTexture("Sprites/intro_screen.png");
+  for(int i = 0; i < 256; i++)
+  {
+    SDL_SetTextureAlphaMod(gTexture, i);
+    SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
+    SDL_RenderPresent(gRenderer);
+  }
+  SDL_DestroyTexture(gTexture);
+  gTexture = NULL;
+  SDL_RenderClear(gRenderer);
 }
 
 void settingScreen(bool *quit)
@@ -890,6 +904,7 @@ void mainMenu(int ***actual_matrix, bool *game_over, bool *quit, int *move)
   SDL_Texture *textureList[5] = {loadTexture("Sprites/Main_Menu_1.png"), loadTexture("Sprites/Main_Menu_2.png"), loadTexture("Sprites/Main_Menu_3.png"), loadTexture("Sprites/Main_Menu_4.png"), loadTexture("Sprites/Main_Menu_0.png")};
   int i = 4;
   gTexture = textureList[i];
+  SDL_SetTextureAlphaMod(gTexture, 255);
   SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
   SDL_RenderPresent(gRenderer);
   SDL_Event event;
@@ -1214,9 +1229,10 @@ void mandatoryIndicator()
 }
 
 // To-do: -- Rework UI ...
-//        -- Add fading animations ...
-//        -- Fix sounds ...
-//          -- Clean code ...
+//        -- Clean code ...
+//        -- Implement VS AI mode ...
+//        -- Host a local network game ...
+//        -- Move on to Unity/Unreal Engine for further development ...
 
 void createBoard(int ***actual_matrix)
 {
@@ -1226,6 +1242,7 @@ void createBoard(int ***actual_matrix)
   int x, y, u, v, move = 0, p[3];
   bool quit = false, game_over = false, drawn = false, restart;
   SDL_Event event;
+  introScreen();
   mainMenu(actual_matrix, &game_over, &quit, &move);
   while(!quit)
   {

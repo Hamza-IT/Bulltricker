@@ -520,11 +520,18 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
   {
     if(y == v)
     {
-      if(actual_matrix[x][y] == 111 && x == 2 && u - x == 4 && !pawn_mandatory)
+      if(actual_matrix[x][y] == 111 && x == 2 && u - x == 4 && actual_matrix[x+1][y] == -2 && actual_matrix[x+2][y] / 100 != 1 && actual_matrix[x+3][y] == -2 && actual_matrix[x+4][y] == 0)
       {
-        if(y == 1 || y == 3 || y == 5 || y == 7 || y == 9 || y == 11 || y == 13)
+        if((y == 1 || y == 3 || y == 5 || y == 7 || y == 9 || y == 11 || y == 13))
         {
-          return normal;
+          if(actual_matrix[x+2][y] == 0 && !pawn_mandatory)
+          {
+            return normal;
+          }
+          else if(actual_matrix[x+2][y] / 100 == 2 && (x+6 >= 15 || actual_matrix[x+6][y] / 100 != 2))
+          {
+            return destroy110;
+          }
         }
       }
       if(y % 2 == 1 && actual_matrix[u][v] == 0)
@@ -594,11 +601,18 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
   {
     if(y == v)
     {
-      if(actual_matrix[x][y] == 211 && x == 12 && x - u == 4 && !pawn_mandatory)
+      if(actual_matrix[x][y] == 211 && x == 12 && x - u == 4 && actual_matrix[x-1][y] == -2 && actual_matrix[x-2][y] / 100 != 2 && actual_matrix[x-3][y] == -2 && actual_matrix[x-4][y] == 0)
       {
         if(y == 1 || y == 3 || y == 5 || y == 7 || y == 9 || y == 11 || y == 13)
         {
-          return normal;
+          if(actual_matrix[x-2][y] == 0 && !pawn_mandatory)
+          {
+            return normal;
+          }
+          else if(actual_matrix[x-2][y] / 100 == 1  && (x-6 < 0 || actual_matrix[x-6][y] / 100 != 1))
+          {
+            return destroy210;
+          }
         }
       }
       if(y % 2 == 1 && actual_matrix[u][v] == 0)

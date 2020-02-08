@@ -1,9 +1,5 @@
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_ttf.h>
 #include <stdio.h>
 #include "gui.h"
-#include "move.h"
 #include "init_mat.h"
 
 int SCREEN_WIDTH;
@@ -1171,19 +1167,16 @@ bool indicator(int x, int y, int **actual_matrix)
 {
   if(indicator_on && ((actual_player % 2 == 0 && (actual_matrix[y][x] / 100 == 2 || actual_matrix[y][x] / 10 == 2)) || (actual_player % 2 == 1 && (actual_matrix[y][x] / 100 == 1 || actual_matrix[y][x] / 10 == 1))))
   {
-    if(!queen_mandatory && !pawn_mandatory && x != mandatory_x && y != mandatory_y)
-    {
-      SDL_Delay(50);
-      int temp_x = mapToEdge(x);
-      int temp_y = mapToEdge(y);
-      SDL_Rect fillRect = {temp_x, temp_y, size[0], size[1]};
-      gTexture = loadTexture("Bulltricker_Data/Sprites/_Indicator.png");
-      setBlendMode(SDL_BLENDMODE_BLEND);
-      setAlpha(120);
-      SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
-      SDL_DestroyTexture(gTexture);
-      gTexture = NULL;
-    }
+    SDL_Delay(50);
+    int temp_x = mapToEdge(x);
+    int temp_y = mapToEdge(y);
+    SDL_Rect fillRect = {temp_x, temp_y, size[0], size[1]};
+    gTexture = loadTexture("Bulltricker_Data/Sprites/_Indicator.png");
+    setBlendMode(SDL_BLENDMODE_BLEND);
+    setAlpha(120);
+    SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
+    SDL_DestroyTexture(gTexture);
+    gTexture = NULL;
     gTexture = loadTexture("Bulltricker_Data/Sprites/Indicator.png");
     setAlpha(150);
     for(int u = 0; u < 15; u++)
@@ -1221,10 +1214,6 @@ void mandatoryIndicator()
     setBlendMode(SDL_BLENDMODE_BLEND);
     setAlpha(180);
     SDL_RenderCopy(gRenderer, gTexture, NULL, &fillRect);
-    SDL_DestroyTexture(gTexture);
-    gTexture = NULL;
-    SDL_RenderPresent(gRenderer);
-    shown = true;
   }
 }
 
@@ -1232,7 +1221,7 @@ void mandatoryIndicator()
 //        -- Clean code ...
 //        -- Implement VS AI mode ...
 //        -- Host a local network game ...
-//        -- Move on to Unity/Unreal Engine for further development ...
+//        -- Move on to Unity for further development ...
 
 void createBoard(int ***actual_matrix)
 {
@@ -1403,19 +1392,11 @@ void createBoard(int ***actual_matrix)
         {
           check_queen(*actual_matrix);
           check_pawn(*actual_matrix);
-          mandatoryIndicator();
-          if(!shown && (queen_mandatory || pawn_mandatory))
-          {
-            loadText("Obligatory move", black, 630, 240, 140, 30);
-          }
           SDL_GetMouseState(&y, &x);
           getSize(y, x);
           x = mapToInt(x);
           y = mapToInt(y);
-          if((!queen_mandatory && !pawn_mandatory) || (x == mandatory_x && y == mandatory_y))
-          {
-            playSound(sMove[0]);
-          }
+          playSound(sMove[0]);
           if(indicator(y, x, *actual_matrix) || !indicator_on)
           {
             move++;
@@ -1423,10 +1404,7 @@ void createBoard(int ***actual_matrix)
         }
         else if(event.type == SDL_MOUSEBUTTONDOWN && move % 2 == 1)
         {
-          if((!queen_mandatory && !pawn_mandatory) || (x == mandatory_x && y == mandatory_y))
-          {
-            playSound(sMove[1]);
-          }
+          playSound(sMove[1]);
           SDL_GetMouseState(&v, &u);
           if(u <= 580 && v <= 580)
           {

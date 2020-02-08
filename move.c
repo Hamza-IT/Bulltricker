@@ -1807,11 +1807,11 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
         {
           if((*actual_matrix)[x][z] / 100 != temp / 100 && (*actual_matrix)[x][z] != 0)
           {
-            if(z != y+2 && z != y+4)
+            /*if(z != y+2 && (*actual_matrix)[x][z-2] != 0)
             {
               SDL_Delay(400);
               playSound(sMove[1]);
-            }
+            }*/
             (*actual_matrix)[x][z-2] = 0;
             (*actual_matrix)[x][z] = 0;
             (*actual_matrix)[x][z+2] = temp;
@@ -1819,9 +1819,16 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
           }
           else if((*actual_matrix)[x][z] == temp)
           {
+            SDL_Delay(400);
+            playSound(sMove[1]);
             (*actual_matrix)[x][z] = 0;
           }
         }
+        /*if((u != 0 && u != 14 && y == v) || (v != 0 && v != 14 && x == u))
+        {
+          SDL_Delay(400);
+          playSound(sMove[1]);
+        }*/
       }
       else if(y > v)
       {
@@ -1829,11 +1836,11 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
         {
           if((*actual_matrix)[x][z] / 100 != temp / 100 && (*actual_matrix)[x][z] != 0)
           {
-            if(z != y-2 && z != y-4)
+            /*if(z != y-2 && (*actual_matrix)[x][z+2] != 0)
             {
               SDL_Delay(400);
               playSound(sMove[1]);
-            }
+            }*/
             (*actual_matrix)[x][z+2] = 0;
             (*actual_matrix)[x][z] = 0;
             (*actual_matrix)[x][z-2] = temp;
@@ -1841,9 +1848,16 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
           }
           else if((*actual_matrix)[x][z] == temp)
           {
+            SDL_Delay(400);
+            playSound(sMove[1]);
             (*actual_matrix)[x][z] = 0;
           }
         }
+        /*if((u != 0 && u != 14 && y == v) || (v != 0 && v != 14 && x == u))
+        {
+          SDL_Delay(400);
+          playSound(sMove[1]);
+        }*/
       }
     }
     else if(y == v)
@@ -1854,11 +1868,11 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
         {
           if((*actual_matrix)[z][y] / 100 != temp / 100 && (*actual_matrix)[z][y] != 0)
           {
-            if(z != x+2 && z != x+4)
+            /*if(z != x+2 && (*actual_matrix)[z-2][y] != 0)
             {
               SDL_Delay(400);
               playSound(sMove[1]);
-            }
+            }*/
             (*actual_matrix)[z-2][y] = 0;
             (*actual_matrix)[z][y] = 0;
             (*actual_matrix)[z+2][y] = temp;
@@ -1866,9 +1880,16 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
           }
           else if((*actual_matrix)[z][y] == temp)
           {
+            SDL_Delay(400);
+            playSound(sMove[1]);
             (*actual_matrix)[z][y] = 0;
           }
         }
+        /*if((u != 0 && u != 14 && y == v) || (v != 0 && v != 14 && x == u))
+        {
+          SDL_Delay(400);
+          playSound(sMove[1]);
+        }*/
       }
       else if(x > u)
       {
@@ -1876,11 +1897,11 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
         {
           if((*actual_matrix)[z][y] / 100 != temp / 100 && (*actual_matrix)[z][y] != 0)
           {
-            if(z != x-2 && z != x-4)
+            /*if(z != x-2 && (*actual_matrix)[z+2][y] != 0)
             {
               SDL_Delay(400);
               playSound(sMove[1]);
-            }
+            }*/
             (*actual_matrix)[z+2][y] = 0;
             (*actual_matrix)[z][y] = 0;
             (*actual_matrix)[z-2][y] = temp;
@@ -1888,14 +1909,17 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
           }
           else if((*actual_matrix)[z][y] == temp)
           {
+            SDL_Delay(400);
+            playSound(sMove[1]);
             (*actual_matrix)[z][y] = 0;
           }
         }
+        /*if((u != 0 && u != 14 && y == v) || (v != 0 && v != 14 && x == u))
+        {
+          SDL_Delay(400);
+          playSound(sMove[1]);
+        }*/
       }
-    }
-    if(((u == 14 || u == 0) && y == v) || ((v == 14 || v == 0) && x == u))
-    {
-      SDL_Delay(400);
     }
     (*actual_matrix)[u][v] = temp;
     queen_mandatory = false;

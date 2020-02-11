@@ -216,10 +216,6 @@ void loadGrid()
     text = "Blacks turn";
   }
   loadText(text, black, 660, 190, 120, 30);
-  if(queen_mandatory || pawn_mandatory)
-  {
-    loadText("Obligatory move", black, 630, 240, 140, 30);
-  }
 }
 
 void fillBlank()
@@ -1217,11 +1213,11 @@ void mandatoryIndicator()
   }
 }
 
-// To-do: -- Rework UI ...
-//        -- Clean code ...
-//        -- Implement VS AI mode ...
-//        -- Host a local network game ...
-//        -- Move on to Unity for further development ...
+// To-do: -- Rework UI --
+//        -- Clean code --
+//        -- Implement VS AI mode --
+//        -- Host a local network game --
+//        -- Switch to Unity for further development --
 
 void createBoard(int ***actual_matrix)
 {

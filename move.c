@@ -119,7 +119,7 @@ bool check_null(int **actual_matrix)
   {
     for(int j = 0; j < 15; j++)
     {
-      if(((actual_matrix[i][j] == 23 && w_number == 0) || (actual_matrix[i][j] == 13 && b_number == 0)) && !check_move(i, j, i-1, j, actual_matrix) && !check_move(i, j, i+1, j, actual_matrix) && !check_move(i, j, i, j+1, actual_matrix) && !check_move(i, j, i, j-1, actual_matrix))
+      if(((w_number == 0 && actual_matrix[i][j] == 23) || (b_number == 0 && actual_matrix[i][j] == 13)) && actual_player % 2 != actual_matrix[i][j] / 20 && !check_move(i, j, i-2, j, actual_matrix) && !check_move(i, j, i+2, j, actual_matrix) && !check_move(i, j, i, j+2, actual_matrix) && !check_move(i, j, i, j-2, actual_matrix))
       {
         return true;
       }
@@ -147,18 +147,8 @@ void check_pawn(int **actual_matrix)
           found = true;
           mandatory_x = x;
           mandatory_y = y;
-          playSound(sMandatory);
           mandatoryIndicator();
-          if(!shown)
-          {
-            loadText("Obligatory move", black, 630, 240, 140, 30);
-          }
-          break;
         }
-      }
-      if(found)
-      {
-        break;
       }
     }
   }
@@ -174,25 +164,23 @@ void check_pawn(int **actual_matrix)
           found = true;
           mandatory_x = x;
           mandatory_y = y;
-          playSound(sMandatory);
           mandatoryIndicator();
-          if(!shown)
-          {
-            loadText("Obligatory move", black, 630, 240, 140, 30);
-          }
-          break;
         }
-      }
-      if(found)
-      {
-        break;
       }
     }
   }
-  SDL_DestroyTexture(gTexture);
-  gTexture = NULL;
-  SDL_RenderPresent(gRenderer);
-  shown = true;
+  if(found)
+  {
+    playSound(sMandatory);
+    if(!shown)
+    {
+      loadText("Obligatory move", black, 630, 240, 140, 30);
+    }
+    shown = true;
+    SDL_DestroyTexture(gTexture);
+    gTexture = NULL;
+    SDL_RenderPresent(gRenderer);
+  }
 }
 
 void check_queen(int **actual_matrix)
@@ -417,18 +405,22 @@ void check_queen(int **actual_matrix)
     SDL_DestroyTexture(gTexture);
     gTexture = NULL;
     SDL_RenderPresent(gRenderer);
-    shown = true;
     if(!shown)
     {
       loadText("Obligatory move", black, 630, 240, 140, 30);
     }
+    shown = true;
     playSound(sMandatory);
   }
 }
 
 mstate check_move(int x, int y, int u, int v, int **actual_matrix)
 {
-  if(actual_matrix[x][y] == 0 || actual_matrix[x][y] == -1 || actual_matrix[x][y] == -2)
+  if(x < 0 || x >= 15 || y < 0 || y >= 15 || u < 0 || u >= 15 || v < 0 || v >= 15)
+  {
+    return impossible;
+  }
+  else if(actual_matrix[x][y] == 0 || actual_matrix[x][y] == -1 || actual_matrix[x][y] == -2)
   {
     return impossible;
   }
@@ -448,91 +440,6 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
   {
     return impossible;
   }
-  /*else if(actual_player == 0)
-  {
-    if(actual_matrix[x][y] == 220)
-    {
-      if(u - x == 1 && abs(y - v) == 1)
-      {
-        return turn;
-      }
-      return impossible;
-    }
-    else if(actual_matrix[x][y] == 210)
-    {
-      if(x - u == 1 && abs(y - v) == 1)
-      {
-        return turn;
-      }
-      else if(x - u == 2 && y == v)
-      {
-        return normal;
-      }
-      else
-      {
-        return impossible;
-      }
-    }
-    else if(actual_matrix[x][y] == 211)
-    {
-      if((x - u == 2 || x - u == 4) && y == v)
-      {
-        return normal;
-      }
-      else
-      {
-        return impossible;
-      }
-    }
-    else
-    {
-      return impossible;
-    }
-  }
-  else if(actual_player == 1)
-  {
-    if(actual_matrix[x][y] == 120)
-    {
-      if(x - u == 1 && abs(y - v) == 1)
-      {
-        return turn;
-      }
-      else
-      {
-        return impossible;
-      }
-    }
-    else if(actual_matrix[x][y] == 110)
-    {
-      if(u - x == 1 && abs(y - v) == 1)
-      {
-        return turn;
-      }
-      else if(u - x == 2 && y == v)
-      {
-        return normal;
-      }
-      else
-      {
-        return impossible;
-      }
-    }
-    else if(actual_matrix[x][y] == 111)
-    {
-      if((u - x == 2 || u - x == 4) && y == v)
-      {
-        return normal;
-      }
-      else
-      {
-        return impossible;
-      }
-    }
-    else
-    {
-      return impossible;
-    }
-  }*/
   else if(actual_matrix[x][y] == 23 && !pawn_mandatory && !queen_mandatory)
   {
     if(actual_matrix[u][v] != -2)
@@ -653,10 +560,6 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
         {
           return normal;
         }
-        /*else if(x + 2 < 15 && actual_matrix[x+2][y] / 100 == 2 && u - x == 2 && !pawn_mandatory)
-        {
-          return normal;
-        }*/
         return impossible;
       }
     }
@@ -734,10 +637,6 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
         {
           return normal;
         }
-        /*if(x-2 >= 0 && actual_matrix[x-2][y] / 100 == 1 && x - u == 2 && !pawn_mandatory)
-        {
-          return normal;
-        }*/
         return impossible;
       }
     }
@@ -761,7 +660,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
       }
       else if(y == v)
       {
-        if(abs(u - x) == 2 && (/*actual_matrix[u][v] / 100 == 2 ||*/ actual_matrix[u][v] == 0) && !queen_mandatory && !pawn_mandatory)
+        if(abs(u - x) == 2 && (actual_matrix[u][v] == 0) && !queen_mandatory && !pawn_mandatory)
         {
           if(u - x == 2 && actual_matrix[x+1][y] % 10 != 3)
           {
@@ -999,7 +898,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
       }
       else if(x == u)
       {
-        if(abs(y - v) == 2 && (/*actual_matrix[u][v] / 100 == 2 ||*/ actual_matrix[u][v] == 0) && !queen_mandatory && !pawn_mandatory)
+        if(abs(y - v) == 2 && (actual_matrix[u][v] == 0) && !queen_mandatory && !pawn_mandatory)
         {
           if(v - y == 2 && actual_matrix[x][y+1] % 10 != 3)
           {
@@ -1241,7 +1140,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
       }
       else if(y == v)
       {
-        if(abs(u - x) == 2 && (/*actual_matrix[u][v] / 100 == 1 ||*/ actual_matrix[u][v] == 0) && !pawn_mandatory && !queen_mandatory)
+        if(abs(u - x) == 2 && (actual_matrix[u][v] == 0) && !pawn_mandatory && !queen_mandatory)
         {
           if(u - x == 2 && actual_matrix[x+1][y] % 10 != 3)
           {
@@ -1479,7 +1378,7 @@ mstate check_move(int x, int y, int u, int v, int **actual_matrix)
       }
       else if(x == u)
       {
-        if(abs(y - v) == 2 && (/*actual_matrix[u][v] / 100 == 1 ||*/ actual_matrix[u][v] == 0) && !queen_mandatory && !pawn_mandatory)
+        if(abs(y - v) == 2 && (actual_matrix[u][v] == 0) && !queen_mandatory && !pawn_mandatory)
         {
           if(v - y == 2 && actual_matrix[x][y+1] % 10 != 3)
           {
@@ -1807,11 +1706,6 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
         {
           if((*actual_matrix)[x][z] / 100 != temp / 100 && (*actual_matrix)[x][z] != 0)
           {
-            /*if(z != y+2 && (*actual_matrix)[x][z-2] != 0)
-            {
-              SDL_Delay(400);
-              playSound(sMove[1]);
-            }*/
             (*actual_matrix)[x][z-2] = 0;
             (*actual_matrix)[x][z] = 0;
             (*actual_matrix)[x][z+2] = temp;
@@ -1824,11 +1718,6 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
             (*actual_matrix)[x][z] = 0;
           }
         }
-        /*if((u != 0 && u != 14 && y == v) || (v != 0 && v != 14 && x == u))
-        {
-          SDL_Delay(400);
-          playSound(sMove[1]);
-        }*/
       }
       else if(y > v)
       {
@@ -1836,11 +1725,6 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
         {
           if((*actual_matrix)[x][z] / 100 != temp / 100 && (*actual_matrix)[x][z] != 0)
           {
-            /*if(z != y-2 && (*actual_matrix)[x][z+2] != 0)
-            {
-              SDL_Delay(400);
-              playSound(sMove[1]);
-            }*/
             (*actual_matrix)[x][z+2] = 0;
             (*actual_matrix)[x][z] = 0;
             (*actual_matrix)[x][z-2] = temp;
@@ -1853,11 +1737,6 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
             (*actual_matrix)[x][z] = 0;
           }
         }
-        /*if((u != 0 && u != 14 && y == v) || (v != 0 && v != 14 && x == u))
-        {
-          SDL_Delay(400);
-          playSound(sMove[1]);
-        }*/
       }
     }
     else if(y == v)
@@ -1868,11 +1747,6 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
         {
           if((*actual_matrix)[z][y] / 100 != temp / 100 && (*actual_matrix)[z][y] != 0)
           {
-            /*if(z != x+2 && (*actual_matrix)[z-2][y] != 0)
-            {
-              SDL_Delay(400);
-              playSound(sMove[1]);
-            }*/
             (*actual_matrix)[z-2][y] = 0;
             (*actual_matrix)[z][y] = 0;
             (*actual_matrix)[z+2][y] = temp;
@@ -1885,11 +1759,6 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
             (*actual_matrix)[z][y] = 0;
           }
         }
-        /*if((u != 0 && u != 14 && y == v) || (v != 0 && v != 14 && x == u))
-        {
-          SDL_Delay(400);
-          playSound(sMove[1]);
-        }*/
       }
       else if(x > u)
       {
@@ -1897,11 +1766,6 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
         {
           if((*actual_matrix)[z][y] / 100 != temp / 100 && (*actual_matrix)[z][y] != 0)
           {
-            /*if(z != x-2 && (*actual_matrix)[z+2][y] != 0)
-            {
-              SDL_Delay(400);
-              playSound(sMove[1]);
-            }*/
             (*actual_matrix)[z+2][y] = 0;
             (*actual_matrix)[z][y] = 0;
             (*actual_matrix)[z-2][y] = temp;
@@ -1914,11 +1778,6 @@ void apply_move(int x, int y, int u, int v, int ***actual_matrix)
             (*actual_matrix)[z][y] = 0;
           }
         }
-        /*if((u != 0 && u != 14 && y == v) || (v != 0 && v != 14 && x == u))
-        {
-          SDL_Delay(400);
-          playSound(sMove[1]);
-        }*/
       }
     }
     (*actual_matrix)[u][v] = temp;

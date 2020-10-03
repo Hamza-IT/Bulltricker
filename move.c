@@ -370,3 +370,16 @@ GameState apply_move(IntTuple move, int **current_board, FloatTuple offset) {
     return switch_turn(*current_board, offset);
   }
 }
+
+void undo_last_move(int **current_board, Bool *game_over, FloatTuple offset) {
+  if (current_states >= 0) {
+    for (int i = 0; i < get_board_size(); i++)
+      (*current_board)[i] = (previous_states[current_states])[i];
+    current_states--;
+    switch_turn(*current_board, offset);
+    *game_over = FALSE;
+    play_sound(sounds[BIP2]);
+    char log[30] = "\t\tUndoing last move. ";
+    log_text(strcat(log, current_player == WHITE_PLAYER ? "Whites turn to play.\n" : "Blacks turn to play.\n"));
+  }
+}

@@ -40,5 +40,6 @@ void get_allowed_actions(int*);
 void get_allowed_piece_actions(int, int*);
 GameState switch_turn(int*, FloatTuple);
 GameState apply_move(IntTuple, int**, FloatTuple);
+void undo_last_move(int **, Bool *, FloatTuple);
 
 #endif

@@ -765,16 +765,8 @@ void start_game(int **current_board) {
         }
       }
       else if (event.type == SDL_MOUSEBUTTONDOWN) {
-        if (current_hover == UNDO_MOVE_BUTTON) {
-          if (current_states >= 0) {
-            for (int i = 0; i < get_board_size(); i++)
-              (*current_board)[i] = (previous_states[current_states])[i];
-            current_states--;
-            switch_turn(*current_board, offset);
-            game_over = FALSE;
-            play_sound(sounds[BIP2]);
-          }
-        }
+        if (current_hover == UNDO_MOVE_BUTTON)
+          undo_last_move(current_board, &game_over, offset);
         else if (current_hover == SAVE_GAME_BUTTON) {
           Bool has_saved = save_game(*current_board, check_game_state(*current_board)); 
           if (has_saved == TRUE) {

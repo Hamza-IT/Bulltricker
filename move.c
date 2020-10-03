@@ -1,1804 +1,372 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "init_mat.h"
+#include <string.h>
+#include "init.h"
 #include "gui.h"
+#include "utilities.h"
 
-int actual_player = 0;
-bool pawn_mandatory = false, queen_mandatory = false;
-int mandatory_x, mandatory_y;
-
-winner check_mat(int **actual_matrix)
-{
-  winner player = none;
-  int around_wk = 0, around_bk = 0, w_pieces = 0, b_pieces = 0;
-  for(int x = 0; x < 15; x++)
-  {
-    for(int y = 0; y < 15; y++)
-    {
-      if(actual_matrix[x][y] == 23)
-      {
-        if(actual_matrix[x+1][y] != 0)
-        {
-          around_wk++;
-          if(actual_matrix[x+1][y] / 100 == 1)
-          {
-            b_pieces++;
-          }
-        }
-        if(actual_matrix[x-1][y] != 0)
-        {
-          around_wk++;
-          if(actual_matrix[x-1][y] / 100 == 1)
-          {
-            b_pieces++;
-          }
-        }
-        if(actual_matrix[x][y+1] != 0)
-        {
-          around_wk++;
-          if(actual_matrix[x][y+1] / 100 == 1)
-          {
-            b_pieces++;
-          }
-        }
-        if(actual_matrix[x][y-1] != 0)
-        {
-          around_wk++;
-          if(actual_matrix[x][y-1] / 100 == 1)
-          {
-            b_pieces++;
-          }
-        }
-      }
-      else if(actual_matrix[x][y] == 13)
-      {
-        if(actual_matrix[x+1][y] != 0)
-        {
-          around_bk++;
-          if(actual_matrix[x+1][y] / 100 == 2)
-          {
-            w_pieces++;
-          }
-        }
-        if(actual_matrix[x-1][y] != 0)
-        {
-          around_bk++;
-          if(actual_matrix[x-1][y] / 100 == 2)
-          {
-            w_pieces++;
-          }
-        }
-        if(actual_matrix[x][y+1] != 0)
-        {
-          around_bk++;
-          if(actual_matrix[x][y+1] / 100 == 2)
-          {
-            w_pieces++;
-          }
-        }
-        if(actual_matrix[x][y-1] != 0)
-        {
-          around_bk++;
-          if(actual_matrix[x][y-1] / 100 == 2)
-          {
-            w_pieces++;
-          }
-        }
-      }
-    }
-  }
-  if(around_bk == 4 && w_pieces >= 1)
-  {
-    player = whites;
-  }
-  else if(around_wk == 4 && b_pieces >= 1)
-  {
-    player = blacks;
-  }
-  return player;
-}
-
-bool check_null(int **actual_matrix)
-{
-  int w_number = 0, b_number = 0;
-  for(int i = 0; i < 15; i++)
-  {
-    for(int j = 0; j < 15; j++)
-    {
-      if(actual_matrix[i][j] / 100 == 2)
-      {
-        w_number++;
-      }
-      else if(actual_matrix[i][j] / 100 == 1)
-      {
-        b_number++;
-      }
-    }
-  }
-  for(int i = 0; i < 15; i++)
-  {
-    for(int j = 0; j < 15; j++)
-    {
-      if(((w_number == 0 && actual_matrix[i][j] == 23) || (b_number == 0 && actual_matrix[i][j] == 13)) && actual_player % 2 != actual_matrix[i][j] / 20 && !check_move(i, j, i-2, j, actual_matrix) && !check_move(i, j, i+2, j, actual_matrix) && !check_move(i, j, i, j+2, actual_matrix) && !check_move(i, j, i, j-2, actual_matrix))
-      {
-        return true;
-      }
-      else if(w_number < 4 && b_number < 4)
-      {
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
-void check_pawn(int **actual_matrix)
-{
-  bool found = false;
-  if(actual_player % 2 == 0)
-  {
-    for(int x = 0; x < 15; x++)
-    {
-      for(int y = 0; y < 15; y++)
-      {
-        if(actual_matrix[x][y] == 211 && x-4 >= 0 && actual_matrix[x-1][y] == -2 && actual_matrix[x-2][y] / 100 == 1 && actual_matrix[x-3][y] == -2 && actual_matrix[x-4][y] == 0 && !queen_mandatory)
-        {
-          pawn_mandatory = true;
-          found = true;
-          mandatory_x = x;
-          mandatory_y = y;
-          mandatoryIndicator();
-        }
-      }
-    }
-  }
+CellState validate_cell(int current_cell, int cell_to_check, int *current_board) {
+  if (cell_to_check < 0 || cell_to_check >= get_board_size())
+    return OUT_OF_BOUNDS;
+  if ((cell_to_check-current_cell) % column_count != 0 && (cell_to_check < (current_cell/column_count)*column_count || cell_to_check >= (current_cell/column_count+1)*column_count))
+    return OUT_OF_BOUNDS;
+  if (current_board[cell_to_check] == EMPTY_NORMAL || current_board[cell_to_check] == BLOCKED || current_board[cell_to_check] == EMPTY_KING)
+    return EMPTY;
+  if (current_board[cell_to_check] / COLOR_DIVIDER == current_board[current_cell] / COLOR_DIVIDER)
+    return FRIENDLY;
   else
-  {
-    for(int x = 0; x < 15; x++)
-    {
-      for(int y = 0; y < 15; y++)
-      {
-        if(actual_matrix[x][y] == 111 && x+4 < 15 && actual_matrix[x+1][y] == -2 && actual_matrix[x+2][y] / 100 == 2 && actual_matrix[x+3][y] == -2 && actual_matrix[x+4][y] == 0 && !queen_mandatory)
-        {
-          pawn_mandatory = true;
-          found = true;
-          mandatory_x = x;
-          mandatory_y = y;
-          mandatoryIndicator();
-        }
-      }
-    }
-  }
-  if(found)
-  {
-    playSound(sMandatory);
-    if(!shown)
-    {
-      loadText("Obligatory move", black, 630, 240, 140, 30);
-    }
-    shown = true;
-    SDL_DestroyTexture(gTexture);
-    gTexture = NULL;
-    SDL_RenderPresent(gRenderer);
-  }
+    return ENEMY;
 }
 
-void check_queen(int **actual_matrix)
-{
-  bool found = false, perma_found = false;
-  if(actual_player % 2 == 0)
-  {
-    for(int x = 0; x < 15; x++)
-    {
-      for(int y = 0; y < 15; y++)
-      {
-        if(actual_matrix[x][y] == 221)
-        {
-          for(int z = x-2; z > 0; z -= 2)
-          {
-            if(actual_matrix[z][y] / 100 == 2 || actual_matrix[z+1][y] % 10 == 3 || (actual_matrix[z][y] / 100 == 1 && z-2 > 0 && actual_matrix[z-2][y] / 100 == 1))
-            {
-              break;
-            }
-            else if(actual_matrix[z][y] / 100 == 1)
-            {
-              if(actual_matrix[z-2][y] == 0 && actual_matrix[z-1][y] == -2 && (z + 2 == x || actual_matrix[z+2][y] == 0))
-              {
-                queen_mandatory = true;
-                perma_found = found = true;
-                mandatory_x = x;
-                mandatory_y = y;
-                mandatoryIndicator();
-              }
-            }
-            if(found)
-            {
-              found = false;
-              break;
-            }
-          }
-          for(int z = x+2; z < 14; z += 2)
-          {
-            if(actual_matrix[z][y] / 100 == 2 || actual_matrix[z-1][y] % 10 == 3 || (actual_matrix[z][y] / 100 == 1 && z+2 < 14 && actual_matrix[z+2][y] / 100 == 1))
-            {
-              break;
-            }
-            else if(actual_matrix[z][y] / 100 == 1)
-            {
-              if(actual_matrix[z+2][y] == 0 && actual_matrix[z+1][y] == -2 && (z - 2 == x || actual_matrix[z-2][y] == 0))
-              {
-                queen_mandatory = true;
-                perma_found = found = true;
-                mandatory_x = x;
-                mandatory_y = y;
-                mandatoryIndicator();
-              }
-            }
-            if(found)
-            {
-              found = false;
-              break;
-            }
-          }
-        }
-        else if(actual_matrix[x][y] == 220)
-        {
-          for(int z = y-2; z > 0; z -= 2)
-          {
-            if(actual_matrix[x][z] / 100 == 2 || actual_matrix[x][z+1] % 10 == 3 || (actual_matrix[x][z] / 100 == 1 && z-2 > 0 && actual_matrix[x][z-2] / 100 == 1))
-            {
-              break;
-            }
-            else if(actual_matrix[x][z] / 100 == 1)
-            {
-              if(actual_matrix[x][z-2] == 0 && actual_matrix[x][z-1] == -2 && (z + 2 == y || actual_matrix[x][z+2] == 0))
-              {
-                queen_mandatory = true;
-                perma_found = found = true;
-                mandatory_x = x;
-                mandatory_y = y;
-                mandatoryIndicator();
-              }
-            }
-            if(found)
-            {
-              found = false;
-              break;
-            }
-          }
-          for(int z = y+2; z < 14; z += 2)
-          {
-            if(actual_matrix[x][z] / 100 == 2 || actual_matrix[x][z-1] % 10 == 3 || (actual_matrix[x][z] / 100 == 1 && z+2 < 14 && actual_matrix[x][z+2] / 100 == 1))
-            {
-              break;
-            }
-            else if(actual_matrix[x][z] / 100 == 1)
-            {
-              if(actual_matrix[x][z+2] == 0 && actual_matrix[x][z+1] == -2 && (z - 2 == y || actual_matrix[x][z-2] == 0))
-              {
-                queen_mandatory = true;
-                perma_found = found = true;
-                mandatory_x = x;
-                mandatory_y = y;
-                mandatoryIndicator();
-              }
-            }
-            if(found)
-            {
-              found = false;
-              break;
-            }
-          }
-        }
+GameState check_game_state(int *current_board) {
+  for (int i = 0; i < get_board_size(); i++) {
+    if (current_board[i] == WHITE_KING || current_board[i] == BLACK_KING) {
+      int surrounding_pieces = 0;
+      int opponent_pieces = 0;
+      if (validate_cell(i, i-column_count, current_board) != EMPTY)
+        surrounding_pieces++;
+        if (validate_cell(i, i-column_count, current_board) == ENEMY)
+          opponent_pieces++;
+      if (validate_cell(i, i+column_count, current_board) != EMPTY)
+        surrounding_pieces++;
+        if (validate_cell(i, i+column_count, current_board) == ENEMY)
+          opponent_pieces++;
+      if (validate_cell(i, i-1, current_board) != EMPTY)
+        surrounding_pieces++;
+        if (validate_cell(i, i-1, current_board) == ENEMY)
+          opponent_pieces++;
+      if (validate_cell(i, i+1, current_board) != EMPTY)
+        surrounding_pieces++;
+        if (validate_cell(i, i+1, current_board) == ENEMY)
+          opponent_pieces++;
+      if (surrounding_pieces == 4 && opponent_pieces > 0) {
+        GameState state = current_board[i]/COLOR_DIVIDER == BLACK_PIECE ? WHITE_WIN : BLACK_WIN;
+        char winner[50] = "\n\t---------- Game Ended with a ";
+        log_text(strcat(winner, state == WHITE_WIN ? "Whites Win ----------\n\n" : "Blacks Win ----------\n\n"));
+        return current_board[i]/COLOR_DIVIDER == BLACK_PIECE ? WHITE_WIN : BLACK_WIN;
       }
     }
   }
-  else if(actual_player % 2 == 1)
-  {
-    for(int x = 0; x < 15; x++)
-    {
-      for(int y = 0; y < 15; y++)
-      {
-        if(actual_matrix[x][y] == 121)
-        {
-          for(int z = x-2; z > 0; z -= 2)
-          {
-            if(actual_matrix[z][y] / 100 == 1 || actual_matrix[z+1][y] % 10 == 3 || (actual_matrix[z][y] / 100 == 2 && z-2 > 0 && actual_matrix[z-2][y] / 100 == 2))
-            {
-              break;
-            }
-            else if(actual_matrix[z][y] / 100 == 2)
-            {
-              if(actual_matrix[z-2][y] == 0 && actual_matrix[z-1][y] == -2 && (z+2 == x || actual_matrix[z+2][y] == 0))
-              {
-                queen_mandatory = true;
-                perma_found = found = true;
-                mandatory_x = x;
-                mandatory_y = y;
-                mandatoryIndicator();
-              }
-            }
-            if(found)
-            {
-              found = false;
-              break;
-            }
-          }
-          for(int z = x+2; z < 14; z += 2)
-          {
-            if(actual_matrix[z][y] / 100 == 1 || actual_matrix[z-1][y] % 10 == 3 || (actual_matrix[z][y] / 100 == 2 && z+2 < 14 && actual_matrix[z+2][y] / 100 == 2))
-            {
-              break;
-            }
-            else if(actual_matrix[z][y] / 100 == 2)
-            {
-              if(actual_matrix[z+2][y] == 0 && actual_matrix[z+1][y] == -2 && (z - 2 == x || actual_matrix[z-2][y] == 0))
-              {
-                queen_mandatory = true;
-                perma_found = found = true;
-                mandatory_x = x;
-                mandatory_y = y;
-                mandatoryIndicator();
-              }
-            }
-            if(found)
-            {
-              found = false;
-              break;
-            }
-          }
-        }
-        else if(actual_matrix[x][y] == 120)
-        {
-          for(int z = y-2; z > 0; z -= 2)
-          {
-            if(actual_matrix[x][z] / 100 == 1 || actual_matrix[x][z+1] % 10 == 3 || (actual_matrix[x][z] / 100 == 2 && z-2 > 0 && actual_matrix[x][z-2] / 100 == 2))
-            {
-              break;
-            }
-            else if(actual_matrix[x][z] / 100 == 2)
-            {
-              if(actual_matrix[x][z-2] == 0 && actual_matrix[x][z-1] == -2 && (z + 2 == y || actual_matrix[x][z+2] == 0))
-              {
-                queen_mandatory = true;
-                perma_found = found = true;
-                mandatory_x = x;
-                mandatory_y = y;
-                mandatoryIndicator();
-              }
-            }
-            if(found)
-            {
-              found = false;
-              break;
-            }
-          }
-          for(int z = y+2; z < 14; z += 2)
-          {
-            if(actual_matrix[x][z] / 100 == 1 || actual_matrix[x][z-1] % 10 == 3 || (actual_matrix[x][z] / 100 == 2 && z+2 < 14 && actual_matrix[x][z+2] / 100 == 2))
-            {
-              break;
-            }
-            else if(actual_matrix[x][z] / 100 == 2)
-            {
-              if(actual_matrix[x][z+2] == 0 && actual_matrix[x][z+1] == -2 && (z - 2 == y || actual_matrix[x][z-2] == 0))
-              {
-                queen_mandatory = true;
-                perma_found = found = true;
-                mandatory_x = x;
-                mandatory_y = y;
-                mandatoryIndicator();
-              }
-            }
-            if(found)
-            {
-              found = false;
-              break;
-            }
-          }
-        }
-      }
-    }
+  if (allowed_count == 0 || (WHITE_PIECES_COUNT <= 5 && BLACK_PIECES_COUNT <= 5)) {
+    log_text("\n\t---------- Game Ended with a Draw ----------\n\n");
+    return DRAW;
   }
-  if(perma_found)
-  {
-    SDL_DestroyTexture(gTexture);
-    gTexture = NULL;
-    SDL_RenderPresent(gRenderer);
-    if(!shown)
-    {
-      loadText("Obligatory move", black, 630, 240, 140, 30);
-    }
-    shown = true;
-    playSound(sMandatory);
-  }
+  return ONGOING;
 }
 
-mstate check_move(int x, int y, int u, int v, int **actual_matrix)
-{
-  if(x < 0 || x >= 15 || y < 0 || y >= 15 || u < 0 || u >= 15 || v < 0 || v >= 15)
-  {
-    return impossible;
-  }
-  else if(actual_matrix[x][y] == 0 || actual_matrix[x][y] == -1 || actual_matrix[x][y] == -2)
-  {
-    return impossible;
-  }
-  else if((actual_matrix[x][y] / 100 == 1 || actual_matrix[x][y] / 10 == 1) && actual_player % 2 == 0)
-  {
-    return impossible;
-  }
-  else if((actual_matrix[x][y] / 100 == 2 || actual_matrix[x][y] / 10 == 2) && actual_player % 2 == 1)
-  {
-    return impossible;
-  }
-  else if(actual_matrix[u][v] == -1 || (x == u && y == v) || (actual_matrix[x][y] / 100 == actual_matrix[u][v] / 100 && actual_matrix[x][y] % 10 != 3))
-  {
-    return impossible;
-  }
-  else if(actual_matrix[x][y] != 13 && actual_matrix[x][y] != 23 && actual_matrix[u][v] == -2)
-  {
-    return impossible;
-  }
-  else if(actual_matrix[x][y] == 23 && !pawn_mandatory && !queen_mandatory)
-  {
-    if(actual_matrix[u][v] != -2)
-    {
-      return impossible;
-    }
-    else if(((u+2 < 15 && actual_matrix[u+2][v] != 13) || u+2 >= 15) && ((v+2 < 15 && actual_matrix[u][v+2] != 13) || v+2 >= 15) && ((u+2 < 15 && v+2 < 15 && actual_matrix[u+2][v+2] != 13) || u+2 >= 15 || v+2 >= 15) && ((u-2 >= 0 && actual_matrix[u-2][v] != 13) || u-2 < 0) && ((v-2 >= 0 && actual_matrix[u][v-2] != 13) || v-2 < 0) && ((u-2 >= 0 && v-2 >= 0 && actual_matrix[u-2][v-2] != 13) || u-2 < 0 || v - 2 < 0) && ((u+2 < 15 && v-2 >= 0 && actual_matrix[u+2][v-2] != 13) || u+2 >= 15 || v-2 < 0) && ((u-2 >= 0 && v+2 < 15 && actual_matrix[u-2][v+2] != 13) || u-2 < 0 || v+2 >= 15))
-    {
-      if(x == u)
-      {
-        if((v - y == 2 && actual_matrix[x][y + 1] == 0) || (y - v == 2 && actual_matrix[x][y - 1] == 0))
-        {
-          return normal;
-        }
-        return impossible;
-      }
-      else if(y == v)
-      {
-        if((x - u == 2 && actual_matrix[x - 1][y] == 0) || (u - x == 2 && actual_matrix[x + 1][y] == 0))
-        {
-          return normal;
-        }
-        return impossible;
-      }
-      return impossible;
-    }
-    return impossible;
-  }
-  else if(actual_matrix[x][y] == 13 && !queen_mandatory && !pawn_mandatory)
-  {
-    if(actual_matrix[u][v] != -2)
-    {
-      return impossible;
-    }
-    else if(((u+2 < 15 && actual_matrix[u+2][v] != 23) || u+2 >= 15) && ((v+2 < 15 && actual_matrix[u][v+2] != 23) || v+2 >= 15) && ((u+2 < 15 && v+2 < 15 && actual_matrix[u+2][v+2] != 23) || u+2 >= 15 || v+2 >= 15) && ((u-2 >= 0 && actual_matrix[u-2][v] != 23) || u-2 < 0) && ((v-2 >= 0 && actual_matrix[u][v-2] != 23) || v-2 < 0) && ((u-2 >= 0 && v-2 >= 0 && actual_matrix[u-2][v-2] != 23) || u-2 < 0 || v - 2 < 0) && ((u+2 < 15 && v-2 >= 0 && actual_matrix[u+2][v-2] != 23) || u+2 >= 15 || v-2 < 0) && ((u-2 >= 0 && v+2 < 15 && actual_matrix[u-2][v+2] != 23) || u-2 < 0 || v+2 >= 15))
-    {
-      if(x == u)
-      {
-        if((v - y == 2 && actual_matrix[x][y + 1] == 0) || (y - v == 2 && actual_matrix[x][y - 1] == 0))
-        {
-          return normal;
-        }
-        return impossible;
-      }
-      else if(y == v)
-      {
-        if((x - u == 2 && actual_matrix[x - 1][y] == 0) || (u - x == 2 && actual_matrix[x + 1][y] == 0))
-        {
-          return normal;
-        }
-        return impossible;
-      }
-      return impossible;
-    }
-    return impossible;
-  }
-  else if((actual_matrix[x][y] == 110 || actual_matrix[x][y] == 111) && !queen_mandatory)
-  {
-    if(y == v)
-    {
-      if(actual_matrix[x][y] == 111 && x == 2 && u - x == 4 && actual_matrix[x+1][y] == -2 && actual_matrix[x+2][y] / 100 != 1 && actual_matrix[x+3][y] == -2 && actual_matrix[x+4][y] == 0)
-      {
-        if((y == 1 || y == 3 || y == 5 || y == 7 || y == 9 || y == 11 || y == 13))
-        {
-          if(actual_matrix[x+2][y] == 0 && !pawn_mandatory)
-          {
-            return normal;
-          }
-          else if(actual_matrix[x+2][y] / 100 == 2 && (x+6 >= 15 || actual_matrix[x+6][y] / 100 != 2))
-          {
-            return destroy110;
+void get_allowed_actions(int *current_board) {
+  free(current_allowed);
+  IntTuple *allowed = malloc(get_board_size()*(get_board_size()-1)*sizeof(IntTuple));
+  mandatory_pawn_move = FALSE; mandatory_queen_move = FALSE;
+  int k = 0;
+  for (int i = 0; i < get_board_size(); i++) {
+    if (current_board[i] / COLOR_DIVIDER == current_player) {
+      if ((current_board[i] == WHITE_PAWN || current_board[i] == BLACK_PAWN) && mandatory_queen_move == FALSE) {
+        // Pawn Logic Here
+        PieceColor color_mult = current_board[i] / COLOR_DIVIDER; // Piece Color Identification
+        if (mandatory_pawn_move == FALSE) {
+          if (validate_cell(i-column_count*color_mult, i-(column_count-1)*color_mult, current_board) == EMPTY)
+            allowed[k++] = (IntTuple) { i, i-(column_count-1)*color_mult };
+          if (validate_cell(i-column_count*color_mult, i-(column_count+1)*color_mult, current_board) == EMPTY)
+            allowed[k++] = (IntTuple) { i, i-(column_count+1)*color_mult };
+          if (validate_cell(i, i-(column_count*2)*color_mult, current_board) == EMPTY && validate_cell(i, i-column_count*color_mult, current_board) == EMPTY) {
+            allowed[k++] = (IntTuple) { i, i-(column_count*2)*color_mult };
+            // Pawn Double Starting Step
+            if (((color_mult == WHITE_PIECE && i/column_count == row_count-3) || (color_mult == BLACK_PIECE && i/column_count == 2)) && validate_cell(i, i-(column_count*4)*color_mult, current_board) == EMPTY && validate_cell(i, i-(column_count*3)*color_mult, current_board) == EMPTY)
+              allowed[k++] = (IntTuple) { i, i-(column_count*4)*color_mult };
           }
         }
-      }
-      if(y % 2 == 1 && actual_matrix[u][v] == 0)
-      {
-        if(u - x == 2 && actual_matrix[x+1][v] % 10 != 3 && !pawn_mandatory)
-        {
-          return normal;
-        }
-        else if(x + 2 < 15 && actual_matrix[x+2][y] / 100 == 2 && u - x > 2 && actual_matrix[x+1][y] % 10 != 3)
-        {
-          if(x + 4 < 15 && actual_matrix[x+4][y] == 0 && actual_matrix[x+3][y] % 10 != 3)
-          {
-            if(((x + 6 < 14 && actual_matrix[x+6][y] / 100 != 2) || (x + 6 >= 14) || (actual_matrix[x+5][y] % 10 == 3)) && u - x == 4)
-            {
-              return destroy110;
-            }
-            else if(x + 6 < 15 && actual_matrix[x+6][y] / 100 == 2 && actual_matrix[x+5][y] % 10 != 3)
-            {
-              if(x + 8 < 15 && (actual_matrix[x+7][y] % 10 == 3 || actual_matrix[x+8][y] != 0) && u - x == 4)
-              {
-                return destroy110;
+        // Non Rotated Pawn Identification
+        if ((i/column_count) % 2 == 0) {
+          IntTuple possible_move = { 0, 0 };
+          for (int j = 2; j < row_count; j += 4) {
+            if (validate_cell(i, i-(j-1)*column_count*color_mult, current_board) == EMPTY && validate_cell(i, i-j*column_count*color_mult, current_board) == ENEMY && validate_cell(i, i-(j+1)*column_count*color_mult, current_board) == EMPTY && validate_cell(i, i-(j+2)*column_count*color_mult, current_board) == EMPTY) {
+              possible_move.x = i; possible_move.y = i-(j+2)*column_count*color_mult;
+              if (mandatory_pawn_move == FALSE) {
+                for (int x = 0; x < k; x++) { allowed[x] = (IntTuple) { 0, 0 }; }
+                k = 0;
               }
-              else if(x + 8 < 15 && actual_matrix[x+8][y] == 0 && actual_matrix[x+7][y] % 10 != 3)
-              {
-                if(((x + 10 < 14 && actual_matrix[x+10][y] / 100 != 2) || (x + 10 >= 14) || (actual_matrix[x+9][y] % 10 == 3) || (actual_matrix[x+10][y] / 100 == 2 && ((x + 11 < 14 && actual_matrix[x+11][y] != -2) || (x + 12 < 15 && actual_matrix[x+12][y] / 100 == 2)))) && u - x == 8)
-                {
-                  return destroy111;
-                }
-                else if(u - x == 12 && actual_matrix[x+10][y] / 100 == 2 && actual_matrix[x+9][y] == -2 && actual_matrix[x+11][y] == -2)
-                {
-                  return destroy_max11;
-                }
-                return impossible;
-              }
-              return impossible;
+              mandatory_pawn_move = TRUE;
             }
-            return impossible;
-          }
-          return impossible;
-        }
-        return impossible;
-      }
-      else if(y % 2 == 0)
-      {
-        if(u - x == 2 && actual_matrix[u][v] == 0 && !pawn_mandatory)
-        {
-          return normal;
-        }
-        return impossible;
-      }
-    }
-    else if(abs(y - v) == 1 && u - x == 1 && !pawn_mandatory)
-    {
-      if(actual_matrix[u][v] == 0)
-      {
-        return turn;
-      }
-      return impossible;
-    }
-    return impossible;
-  }
-  else if((actual_matrix[x][y] == 210 || actual_matrix[x][y] == 211) && !queen_mandatory)
-  {
-    if(y == v)
-    {
-      if(actual_matrix[x][y] == 211 && x == 12 && x - u == 4 && actual_matrix[x-1][y] == -2 && actual_matrix[x-2][y] / 100 != 2 && actual_matrix[x-3][y] == -2 && actual_matrix[x-4][y] == 0)
-      {
-        if(y == 1 || y == 3 || y == 5 || y == 7 || y == 9 || y == 11 || y == 13)
-        {
-          if(actual_matrix[x-2][y] == 0 && !pawn_mandatory)
-          {
-            return normal;
-          }
-          else if(actual_matrix[x-2][y] / 100 == 1  && (x-6 < 0 || actual_matrix[x-6][y] / 100 != 1))
-          {
-            return destroy210;
-          }
-        }
-      }
-      if(y % 2 == 1 && actual_matrix[u][v] == 0)
-      {
-        if(x - u == 2 && actual_matrix[x-1][v] % 10 != 3 && !pawn_mandatory)
-        {
-          return normal;
-        }
-        else if(x - 2 >= 0 && actual_matrix[x-2][y] / 100 == 1 && x - u > 2 && actual_matrix[x-1][y] % 10 != 3)
-        {
-          if(x - 4 >= 0 && actual_matrix[x-4][y] == 0 && actual_matrix[x-3][y] % 10 != 3)
-          {
-            if(((x - 6 > 0 && actual_matrix[x-6][y] / 100 != 1) || (x - 6 <= 0) || (actual_matrix[x-5][y] % 10 == 3)) && x - u == 4)
-            {
-              return destroy210;
-            }
-            else if(x - 6 >= 0 && actual_matrix[x-6][y] / 100 == 1 && actual_matrix[x-5][y] % 10 != 3)
-            {
-              if(x - 8 >= 0 && (actual_matrix[x-7][y] % 10 == 3 || actual_matrix[x-8][y] != 0) && x - u == 4)
-              {
-                return destroy210;
-              }
-              else if(x - 8 >= 0 && actual_matrix[x-8][y] == 0 && actual_matrix[x-7][y] % 10 != 3)
-              {
-                if(((x - 10 > 0 && actual_matrix[x-10][y] / 100 != 1) || (x - 10 <= 0) || (actual_matrix[x-9][y] % 10 == 3) || (actual_matrix[x-10][y] / 100 == 1 && ((x - 11 > 0 && actual_matrix[x-11][y] != -2) || (x - 12 >= 0 && actual_matrix[x-12][y] / 100 == 1)))) && x - u == 8)
-                {
-                  return destroy211;
-                }
-                else if(x - u == 12 && actual_matrix[x-10][y] / 100 == 1 && actual_matrix[x-9][y] == -2 && actual_matrix[x-11][y] == -2)
-                {
-                  return destroy_max21;
-                }
-                return impossible;
-              }
-              return impossible;
-            }
-            return impossible;
-          }
-          return impossible;
-        }
-        return impossible;
-      }
-      else if(y % 2 == 0)
-      {
-        if(x - u == 2 && actual_matrix[u][v] == 0 && !pawn_mandatory)
-        {
-          return normal;
-        }
-        return impossible;
-      }
-    }
-    else if(abs(y - v) == 1 && x - u == 1 && !pawn_mandatory)
-    {
-      if(actual_matrix[u][v] == 0)
-      {
-        return turn;
-      }
-      return impossible;
-    }
-    return impossible;
-  }
-  else if(actual_matrix[x][y] == 120 || actual_matrix[x][y] == 121)
-  {
-    if(actual_matrix[x][y] == 120)
-    {
-      if(abs(x - u) == 1 && abs(y - v) == 1 && actual_matrix[u][v] == 0 && !queen_mandatory && !pawn_mandatory)
-      {
-        return turn;
-      }
-      else if(y == v)
-      {
-        if(abs(u - x) == 2 && (actual_matrix[u][v] == 0) && !queen_mandatory && !pawn_mandatory)
-        {
-          if(u - x == 2 && actual_matrix[x+1][y] % 10 != 3)
-          {
-            return normal;
-          }
-          else if(x - u == 2 && actual_matrix[x-1][y] % 10 != 3)
-          {
-            return normal;
-          }
-          return impossible;
-        }
-        else if(u - x > 2 && actual_matrix[u][v] == 0 && !queen_mandatory && !pawn_mandatory)
-        {
-          for(int z = x+2; z <= u; z += 2)
-          {
-            if(actual_matrix[z-1][y] % 10 == 3 || actual_matrix[z][y] != 0)
-            {
-              return impossible;
-            }
-          }
-          return normal;
-        }
-        else if(x - u > 2 && actual_matrix[u][v] == 0 && !queen_mandatory && !pawn_mandatory)
-        {
-          for(int z = x-2; z >= u; z -= 2)
-          {
-            if(actual_matrix[z+1][y] % 10 == 3 || actual_matrix[z][y] != 0)
-            {
-              return impossible;
-            }
-          }
-          return normal;
-        }
-        return impossible;
-      }
-      else if(x == u && actual_matrix[u][v] == 0)
-      {
-        if(v > y)
-        {
-          for(int z = v+2; z < 14; z += 2)
-          {
-            if(actual_matrix[x][z-1] % 10 != 3 && actual_matrix[x][z] / 100 == 2 && actual_matrix[x][z+2] == 0 && actual_matrix[x][z+1] == -2 && actual_matrix[x][z-2] == 0)
-            {
-              return impossible;
-            }
-            else if(actual_matrix[x][z] / 100 == 1)
-            {
+            else {
+              if (possible_move.x != 0 || possible_move.y != 0)
+                allowed[k++] = possible_move;
               break;
             }
           }
-          if(v - y == 2 && actual_matrix[x][y+1] % 10 != 3 && !queen_mandatory && !pawn_mandatory)
-          {
-            return normal;
-          }
-          else if(y+2 < 15 && actual_matrix[x][y+1] % 10 != 3 && actual_matrix[x][y+2] / 100 != 1)
-          {
-            if(y+4 < 15 && actual_matrix[x][y+3] % 10 != 3 && ((actual_matrix[x][y+2] == 0 && actual_matrix[x][y+4] / 100 == 2) || actual_matrix[x][y+4] == 0))
-            {
-              if(v - y == 4 && actual_matrix[x][y+2] == 0 && actual_matrix[x][y+4] == 0 && !queen_mandatory && !pawn_mandatory)
-              {
-                return normal;
-              }
-              else if(v - y == 4 && actual_matrix[x][y+2] / 100 == 2)
-              {
-                return destroy;
-              }
-              else if(y+6 < 15 && actual_matrix[x][y+5] % 10 != 3 && actual_matrix[x][y+6] / 100 != 1)
-              {
-                if(v - y == 6 && actual_matrix[x][y+4] == 0 && actual_matrix[x][y+2] == 0 && !queen_mandatory && !pawn_mandatory)
-                {
-                  return normal;
-                }
-                else if(v - y == 6 && (actual_matrix[x][y+4] / 100 == 2 || actual_matrix[x][y+2] / 100 == 2))
-                {
-                  return destroy;
-                }
-                else if(y+8 < 15 && actual_matrix[x][y+7] % 10 != 3 && ((actual_matrix[x][y+6] == 0 && actual_matrix[x][y+8] / 100 == 2) || ((actual_matrix[x][y+4] == 0 || actual_matrix[x][y+6] == 0) && actual_matrix[x][y+8] == 0)))
-                {
-                  if(v - y == 8 && actual_matrix[x][y+6] == 0 && actual_matrix[x][y+4] == 0 && actual_matrix[x][y+2] == 0 && !queen_mandatory && !pawn_mandatory)
-                  {
-                    return normal;
-                  }
-                  else if(v - y == 8 && (actual_matrix[x][y+6] / 100 == 2 || actual_matrix[x][y+4] / 100 == 2 || actual_matrix[x][y+2] / 100 == 2))
-                  {
-                    return destroy;
-                  }
-                  else if(y+10 < 15 && actual_matrix[x][y+9] % 10 != 3 && actual_matrix[x][y+10] / 100 != 1)
-                  {
-                    if(v - y == 10 && actual_matrix[x][y+8] == 0 && actual_matrix[x][y+6] == 0 && actual_matrix[x][y+4] == 0 && actual_matrix[x][y+2] == 0 && !queen_mandatory && !pawn_mandatory)
-                    {
-                      return normal;
-                    }
-                    else if(v - y == 10 && (actual_matrix[x][y+8] / 100 == 2 || actual_matrix[x][y+6] / 100 == 2 || actual_matrix[x][y+4] / 100 == 2 || actual_matrix[x][y+2] / 100 == 2))
-                    {
-                      return destroy;
-                    }
-                    else if(y+12 < 15 && actual_matrix[x][y+11] % 10 != 3 && ((actual_matrix[x][y+10] == 0 && actual_matrix[x][y+12] / 100 == 2) || ((actual_matrix[x][y+8] == 0 || actual_matrix[x][y+10] == 0) && actual_matrix[x][y+12] == 0)))
-                    {
-                      if(v - y == 12 && actual_matrix[x][y+10] == 0 && actual_matrix[x][y+8] == 0 && actual_matrix[x][y+6] == 0 && actual_matrix[x][y+4] == 0 && actual_matrix[x][y+2] == 0 && !queen_mandatory && !pawn_mandatory)
-                      {
-                        return normal;
-                      }
-                      else if(v - y == 12 && (actual_matrix[x][y+10] / 100 == 2 || actual_matrix[x][y+8] / 100 == 2 || actual_matrix[x][y+6] / 100 == 2 || actual_matrix[x][y+4] / 100 == 2 || actual_matrix[x][y+2] / 100 == 2))
-                      {
-                        return destroy;
-                      }
-                      else if(v - y == 14 && actual_matrix[x][y+13] % 10 != 3)
-                      {
-                        if(actual_matrix[x][y+12] == 0 && actual_matrix[x][y+10] == 0 && actual_matrix[x][y+8] == 0 && actual_matrix[x][y+6] == 0 && actual_matrix[x][y+4] == 0 && actual_matrix[x][y+2] == 0 && !queen_mandatory && !pawn_mandatory)
-                        {
-                          return normal;
-                        }
-                        else if(actual_matrix[x][y+12] / 100 == 2 || actual_matrix[x][y+10] / 100 == 2 || actual_matrix[x][y+8] / 100 == 2 || actual_matrix[x][y+6] / 100 == 2 || actual_matrix[x][y+4] / 100 == 2 || actual_matrix[x][y+2] / 100 == 2)
-                        {
-                          return destroy;
-                        }
-                      }
-                      return impossible;
-                    }
-                    return impossible;
-                  }
-                  return impossible;
-                }
-                return impossible;
-              }
-              return impossible;
-            }
-            return impossible;
-          }
-          return impossible;
         }
-        else if(y > v)
-        {
-          for(int z = v-2; z > 0; z -= 2)
-          {
-            if(actual_matrix[x][z+1] % 10 != 3 && actual_matrix[x][z] / 100 == 2 && actual_matrix[x][z-2] == 0 && actual_matrix[x][z-1] == -2 && actual_matrix[x][z+2] == 0)
-            {
-              return impossible;
-            }
-            else if(actual_matrix[x][z] / 100 == 1)
-            {
-              break;
-            }
-          }
-          if(y - v == 2 && actual_matrix[x][y-1] % 10 != 3 && !queen_mandatory && !pawn_mandatory)
-          {
-            return normal;
-          }
-          else if(y-2 >= 0 && actual_matrix[x][y-1] % 10 != 3 && actual_matrix[x][y-2] / 100 != 1)
-          {
-            if(y-4 >= 0 && actual_matrix[x][y-3] % 10 != 3 && ((actual_matrix[x][y-2] == 0 && actual_matrix[x][y-4] / 100 == 2) || actual_matrix[x][y-4] == 0))
-            {
-              if(y - v == 4 && actual_matrix[x][y-2] == 0 && !queen_mandatory && !pawn_mandatory)
-              {
-                return normal;
-              }
-              else if(y - v == 4 && actual_matrix[x][y-2] / 100 == 2)
-              {
-                return destroy;
-              }
-              else if(y-6 >= 0 && actual_matrix[x][y-5] % 10 != 3 && actual_matrix[x][y-6] / 100 != 1)
-              {
-                if(y - v == 6 && actual_matrix[x][y-4] == 0 && actual_matrix[x][y-2] == 0 && !queen_mandatory && !pawn_mandatory)
-                {
-                  return normal;
-                }
-                else if(y - v == 6 && (actual_matrix[x][y-4] / 100 == 2 || actual_matrix[x][y-2] / 100 == 2))
-                {
-                  return destroy;
-                }
-                else if(y-8 >= 0 && actual_matrix[x][y-7] % 10 != 3 && ((actual_matrix[x][y-6] == 0 && actual_matrix[x][y-8] / 100 == 2) || ((actual_matrix[x][y-4] == 0 || actual_matrix[x][y-6] == 0) && actual_matrix[x][y-8] == 0)))
-                {
-                  if(y - v == 8 && actual_matrix[x][y-6] == 0 && actual_matrix[x][y-4] == 0 && actual_matrix[x][y-2] == 0 && !queen_mandatory && !pawn_mandatory)
-                  {
-                    return normal;
-                  }
-                  else if(y - v == 8 && (actual_matrix[x][y-6] / 100 == 2 || actual_matrix[x][y-4] / 100 == 2 || actual_matrix[x][y-2] / 100 == 2))
-                  {
-                    return destroy;
-                  }
-                  else if(y-10 >= 0 && actual_matrix[x][y-9] % 10 != 3 && actual_matrix[x][y-10] / 100 != 1)
-                  {
-                    if(y - v == 10 && actual_matrix[x][y-8] == 0 && actual_matrix[x][y-6] == 0 && actual_matrix[x][y-4] == 0 && actual_matrix[x][y-2] == 0 && !queen_mandatory && !pawn_mandatory)
-                    {
-                      return normal;
-                    }
-                    if(y - v == 10 && (actual_matrix[x][y-8] / 100 == 2 || actual_matrix[x][y-6] / 100 == 2 || actual_matrix[x][y-4] / 100 == 2 || actual_matrix[x][y-2] / 100 == 2))
-                    {
-                      return destroy;
-                    }
-                    else if(y-12 >= 0 && actual_matrix[x][y-11] % 10 != 3 && ((actual_matrix[x][y-10] == 0 && actual_matrix[x][y-12] / 100 == 2) || ((actual_matrix[x][y-8] == 0 || actual_matrix[x][y-10] == 0) && actual_matrix[x][y-12] == 0)))
-                    {
-                      if(y - v == 12 && actual_matrix[x][y-10] == 0 && actual_matrix[x][y-8] == 0 && actual_matrix[x][y-6] == 0 && actual_matrix[x][y-4] == 0 && actual_matrix[x][y-2] == 0 && !queen_mandatory && !pawn_mandatory)
-                      {
-                        return normal;
-                      }
-                      if(y - v == 12 && (actual_matrix[x][y-10] / 100 == 2 || actual_matrix[x][y-8] / 100 == 2 || actual_matrix[x][y-6] / 100 == 2 || actual_matrix[x][y-4] / 100 == 2 || actual_matrix[x][y-2] / 100 == 2))
-                      {
-                        return destroy;
-                      }
-                      else if(y - v == 14 && actual_matrix[x][y-13] % 10 != 3)
-                      {
-                        if(actual_matrix[x][y-12] == 0 && actual_matrix[x][y-10] == 0 && actual_matrix[x][y-8] == 0 && actual_matrix[x][y-6] == 0 && actual_matrix[x][y-4] == 0 && actual_matrix[x][y-2] == 0 && !queen_mandatory && !pawn_mandatory)
-                        {
-                          return normal;
-                        }
-                        else if(actual_matrix[x][y-12] / 100 == 2 || actual_matrix[x][y-10] / 100 == 2 || actual_matrix[x][y-8] / 100 == 2 || actual_matrix[x][y-6] / 100 == 2 || actual_matrix[x][y-4] / 100 == 2 || actual_matrix[x][y-2] / 100 == 2)
-                        {
-                          return destroy;
-                        }
-                      }
-                      return impossible;
-                    }
-                    return impossible;
-                  }
-                  return impossible;
-                }
-                return impossible;
-              }
-              return impossible;
-            }
-            return impossible;
-          }
-          return impossible;
-        }
-        return impossible;
       }
-      return impossible;
+      if (current_board[i] == WHITE_QUEEN || current_board[i] == BLACK_QUEEN) {
+        // Queen Logic Here
+        int l = 0;
+        IntTuple *tmp = malloc((get_board_size()-1)*get_board_size()*sizeof(IntTuple));
+        Bool checking_up = TRUE, checking_down = TRUE, checking_left = TRUE, checking_right = TRUE;
+        Bool mandatory_up = FALSE, mandatory_down = FALSE, mandatory_left = FALSE, mandatory_right = FALSE;
+        if (mandatory_queen_move == FALSE && mandatory_pawn_move == FALSE) {
+          if (validate_cell(i-column_count, i-(column_count-1), current_board) == EMPTY)
+            tmp[l++] = (IntTuple) { i, i-(column_count-1) };
+          if (validate_cell(i-column_count, i-(column_count+1), current_board) == EMPTY)
+            tmp[l++] = (IntTuple) { i, i-(column_count+1) };
+          if (validate_cell(i+column_count, i+(column_count-1), current_board) == EMPTY)
+            tmp[l++] = (IntTuple) { i, i+(column_count-1) };
+          if (validate_cell(i+column_count, i+(column_count+1), current_board) == EMPTY)
+            tmp[l++] = (IntTuple) { i, i+(column_count+1) };
+        }
+        for (int j = 2; j < row_count; j += 2) {
+          if (mandatory_left == FALSE && mandatory_right == FALSE) {
+            if (checking_up == TRUE) {
+              // Rotated Queen Identification
+              if ((i/column_count) % 2 == 1) {
+                if (mandatory_queen_move == FALSE && mandatory_pawn_move == FALSE) {
+                  if (validate_cell(i, i-column_count*j, current_board) == EMPTY)
+                    tmp[l++] = (IntTuple) { i, i-column_count*j };
+                  else
+                    checking_up = FALSE;
+                }
+              }
+              // Non Rotated Queen Identification
+              else {
+                if (validate_cell(i, i-(j-1)*column_count, current_board) == EMPTY) {
+                  if (validate_cell(i, i-j*column_count, current_board) == EMPTY && mandatory_pawn_move == FALSE && (mandatory_queen_move == FALSE || mandatory_up == TRUE))
+                    tmp[l++] = (IntTuple) { i, i-column_count*j };
+                  else if (validate_cell(i, i-j*column_count, current_board) == ENEMY && validate_cell(i, i-(j+1)*column_count, current_board) == EMPTY && validate_cell(i, i-(j+2)*column_count, current_board) == EMPTY) {
+                    for (int x = 0; x < l; x++) { tmp[x] = (IntTuple) { 0, 0 }; }
+                    l = 0;
+                    if (mandatory_queen_move == FALSE) {
+                      for (int x = 0; x < k; x++) { allowed[x] = (IntTuple) { 0, 0 }; }
+                      k = 0;
+                    }
+                    mandatory_queen_move = mandatory_up = TRUE;
+                  }
+                  else
+                    checking_up = FALSE;
+                }
+                else
+                  checking_up = FALSE;
+              }
+            }
+            if (checking_down == TRUE) {
+              // Rotated Queen Identification
+              if ((i/column_count) % 2 == 1) {
+                if (mandatory_queen_move == FALSE && mandatory_pawn_move == FALSE) {
+                  if (validate_cell(i, i+column_count*j, current_board) == EMPTY)
+                    tmp[l++] = (IntTuple) { i, i+column_count*j };
+                  else
+                    checking_down = FALSE;
+                }
+              }
+              // Non Rotated Queen Identification
+              else {
+                if (validate_cell(i, i+(j-1)*column_count, current_board) == EMPTY) {
+                  if (validate_cell(i, i+j*column_count, current_board) == EMPTY && mandatory_pawn_move == FALSE && (mandatory_queen_move == FALSE || mandatory_down == TRUE))
+                    tmp[l++] = (IntTuple) { i, i+column_count*j };
+                  else if (validate_cell(i, i+j*column_count, current_board) == ENEMY && validate_cell(i, i+(j+1)*column_count, current_board) == EMPTY && validate_cell(i, i+(j+2)*column_count, current_board) == EMPTY) {
+                    for (int x = 0; x < l; x++) { tmp[x] = (IntTuple) { 0, 0 }; }
+                    l = 0;
+                    if (mandatory_queen_move == FALSE) {
+                      for (int x = 0; x < k; x++) { allowed[x] = (IntTuple) { 0, 0 }; }
+                      k = 0;
+                    }
+                    mandatory_queen_move = mandatory_down = TRUE;
+                  }
+                  else
+                    checking_down = FALSE;
+                }
+                else
+                  checking_down = FALSE;
+              }
+            }
+          }
+          if (mandatory_up == FALSE && mandatory_down == FALSE) {
+            if (checking_left == TRUE) {
+              // Non Rotated Queen Identification
+              if ((i/column_count) % 2 == 0) {
+                if (mandatory_queen_move == FALSE && mandatory_pawn_move == FALSE) {
+                  if (validate_cell(i, i-j, current_board) == EMPTY)
+                    tmp[l++] = (IntTuple) { i, i-j };
+                  else
+                    checking_left = FALSE;
+                }
+              }
+              // Rotated Queen Identification
+              else {
+                if (validate_cell(i, i-(j-1), current_board) == EMPTY) {
+                  if (validate_cell(i, i-j, current_board) == EMPTY && mandatory_pawn_move == FALSE && (mandatory_queen_move == FALSE || mandatory_left == TRUE))
+                    tmp[l++] = (IntTuple) { i, i-j };
+                  else if (validate_cell(i, i-j, current_board) == ENEMY && validate_cell(i, i-(j+1), current_board) == EMPTY && validate_cell(i, i-(j+2), current_board) == EMPTY) {
+                    for (int x = 0; x < l; x++) { tmp[x] = (IntTuple) { 0, 0 }; }
+                    l = 0;
+                    if (mandatory_queen_move == FALSE) {
+                      for (int x = 0; x < k; x++) { allowed[x] = (IntTuple) { 0, 0 }; }
+                      k = 0;
+                    }
+                    mandatory_queen_move = mandatory_left = TRUE;
+                  }
+                  else
+                    checking_left = FALSE;
+                }
+                else
+                  checking_left = FALSE;
+              }
+            }
+            if (checking_right == TRUE) {
+              // Non Rotated Queen Identification
+              if ((i/column_count) % 2 == 0) {
+                if (mandatory_queen_move == FALSE && mandatory_pawn_move == FALSE) {
+                  if (validate_cell(i, i+j, current_board) == EMPTY)
+                    tmp[l++] = (IntTuple) { i, i+j };
+                  else
+                    checking_right = FALSE;
+                }
+              }
+              // Rotated Queen Identification
+              else {
+                if (validate_cell(i, i+(j-1), current_board) == EMPTY) {
+                  if (validate_cell(i, i+j, current_board) == EMPTY && mandatory_pawn_move == FALSE && (mandatory_queen_move == FALSE || mandatory_right == TRUE))
+                    tmp[l++] = (IntTuple) { i, i+j };
+                  else if (validate_cell(i, i+j, current_board) == ENEMY && validate_cell(i, i+(j+1), current_board) == EMPTY && validate_cell(i, i+(j+2), current_board) == EMPTY) {
+                    for (int x = 0; x < l; x++) { tmp[x] = (IntTuple) { 0, 0 }; }
+                    l = 0;
+                    if (mandatory_queen_move == FALSE) {
+                      for (int x = 0; x < k; x++) { allowed[x] = (IntTuple) { 0, 0 }; }
+                      k = 0;
+                    }
+                    mandatory_queen_move = mandatory_right = TRUE;
+                  }
+                  else
+                    checking_right = FALSE;
+                }
+                else
+                  checking_right = FALSE;
+              }
+            }
+          }
+        }
+        for (int j = 0; j < l; j++)
+          allowed[k++] = tmp[j];
+      }
+      if (current_board[i] == WHITE_KING || current_board[i] == BLACK_KING) {
+        // King Logic Here
+        if (mandatory_pawn_move == FALSE && mandatory_queen_move == FALSE) {
+          if (validate_cell(i, i+(column_count*2), current_board) == EMPTY && validate_cell(i, i+column_count, current_board) == EMPTY && (validate_cell(i, i+(column_count*4), current_board) == OUT_OF_BOUNDS || validate_cell(i, i+(column_count*4), current_board) == EMPTY) && (validate_cell(i+(column_count*4), i+(column_count*4+2), current_board) == OUT_OF_BOUNDS || validate_cell(i+(column_count*4), i+(column_count*4+2), current_board) == EMPTY) && (validate_cell(i+(column_count*4), i+(column_count*4-2), current_board) == OUT_OF_BOUNDS || validate_cell(i+(column_count*4), i+(column_count*4-2), current_board) == EMPTY))
+            allowed[k++] = (IntTuple) { i, i+(column_count*2) };
+          if (validate_cell(i, i-(column_count*2), current_board) == EMPTY && validate_cell(i, i-column_count, current_board) == EMPTY && (validate_cell(i, i-(column_count*4), current_board) == OUT_OF_BOUNDS || validate_cell(i, i-(column_count*4), current_board) == EMPTY) && (validate_cell(i-(column_count*4), i-(column_count*4-2), current_board) == OUT_OF_BOUNDS || validate_cell(i-(column_count*4), i-(column_count*4-2), current_board) == EMPTY) && (validate_cell(i-(column_count*4), i-(column_count*4+2), current_board) == OUT_OF_BOUNDS || validate_cell(i-(column_count*4), i-(column_count*4+2), current_board) == EMPTY))
+            allowed[k++] = (IntTuple) { i, i-(column_count*2) };
+          if (validate_cell(i, i+2, current_board) == EMPTY && validate_cell(i, i+1, current_board) == EMPTY && (validate_cell(i, i+4, current_board) == OUT_OF_BOUNDS || validate_cell(i, i+4, current_board) == EMPTY) && (validate_cell(i+column_count, i+4+column_count, current_board) == OUT_OF_BOUNDS || validate_cell(i+column_count, i+4+column_count, current_board) == EMPTY) && (validate_cell(i-column_count, i+4-column_count, current_board) == OUT_OF_BOUNDS || validate_cell(i-column_count, i+4-column_count, current_board) == EMPTY))
+            allowed[k++] = (IntTuple) { i, i+2 };
+          if (validate_cell(i, i-2, current_board) == EMPTY && validate_cell(i, i-1, current_board) == EMPTY && (validate_cell(i, i-4, current_board) == OUT_OF_BOUNDS || validate_cell(i, i-4, current_board) == EMPTY) && (validate_cell(i+column_count, i-4+column_count, current_board) == OUT_OF_BOUNDS || validate_cell(i+column_count, i-4+column_count, current_board) == EMPTY) && (validate_cell(i-column_count, i-4-column_count, current_board) == OUT_OF_BOUNDS || validate_cell(i-column_count, i-4-column_count, current_board) == EMPTY))
+            allowed[k++] = (IntTuple) { i, i-2 };
+        }
+      }
     }
-    else if(actual_matrix[x][y] == 121)
-    {
-      if(abs(x - u) == 1 && abs(y - v) == 1 && actual_matrix[u][v] == 0 && !queen_mandatory && !pawn_mandatory)
-      {
-        return turn;
-      }
-      else if(x == u)
-      {
-        if(abs(y - v) == 2 && (actual_matrix[u][v] == 0) && !queen_mandatory && !pawn_mandatory)
-        {
-          if(v - y == 2 && actual_matrix[x][y+1] % 10 != 3)
-          {
-            return normal;
-          }
-          else if(y - v == 2 && actual_matrix[x][y-1] % 10 != 3)
-          {
-            return normal;
-          }
-          return impossible;
-        }
-        else if(v - y > 2 && actual_matrix[u][v] == 0 && !queen_mandatory && !pawn_mandatory)
-        {
-          for(int z = y+2; z <= v; z += 2)
-          {
-            if(actual_matrix[x][z-1] % 10 == 3 || actual_matrix[x][z] != 0)
-            {
-              return impossible;
-            }
-          }
-          return normal;
-        }
-        else if(y - v > 2 && actual_matrix[u][v] == 0 && !queen_mandatory && !pawn_mandatory)
-        {
-          for(int z = y-2; z >= v; z -= 2)
-          {
-            if(actual_matrix[x][z+1] % 10 == 3 || actual_matrix[x][z] != 0)
-            {
-              return impossible;
-            }
-          }
-          return normal;
-        }
-        return impossible;
-      }
-      else if(y == v && actual_matrix[u][v] == 0)
-      {
-        if(u > x)
-        {
-          for(int z = u+2; z < 14; z += 2)
-          {
-            if(actual_matrix[z-1][y] % 10 != 3 && actual_matrix[z][y] / 100 == 2 && actual_matrix[z+2][y] == 0 && actual_matrix[z+1][y] == -2 && actual_matrix[z-2][y] == 0)
-            {
-              return impossible;
-            }
-            else if(actual_matrix[z][y] / 100 == 1)
-            {
-              break;
-            }
-          }
-          if(u - x == 2 && actual_matrix[x+1][y] % 10 != 3 && !queen_mandatory && !pawn_mandatory)
-          {
-            return normal;
-          }
-          else if(x+2 < 15 && actual_matrix[x+1][y] % 10 != 3 && actual_matrix[x+2][y] / 100 != 1)
-          {
-            if(x+4 < 15 && actual_matrix[x+3][y] % 10 != 3 && ((actual_matrix[x+2][y] == 0 && actual_matrix[x+4][y] / 100 == 2) || actual_matrix[x+4][y] == 0))
-            {
-              if(u - x == 4 && actual_matrix[x+2][y] == 0 && !queen_mandatory && !pawn_mandatory)
-              {
-                return normal;
-              }
-              else if(u - x == 4 && actual_matrix[x+2][y] / 100 == 2)
-              {
-                return destroy;
-              }
-              else if(x+6 < 15 && actual_matrix[x+5][y] % 10 != 3 && actual_matrix[x+6][y] / 100 != 1)
-              {
-                if(u - x == 6 && actual_matrix[x+4][y] == 0 && actual_matrix[x+2][y] == 0 && !queen_mandatory && !pawn_mandatory)
-                {
-                  return normal;
-                }
-                else if(u - x == 6 && (actual_matrix[x+4][y] / 100 == 2 || actual_matrix[x+2][y] / 100 == 2))
-                {
-                  return destroy;
-                }
-                else if(x+8 < 15 && actual_matrix[x+7][y] % 10 != 3 && ((actual_matrix[x+6][y] == 0 && actual_matrix[x+8][y] / 100 == 2) || ((actual_matrix[x+4][y] == 0 || actual_matrix[x+6][y] == 0) && actual_matrix[x+8][y] == 0)))
-                {
-                  if(u - x == 8 && actual_matrix[x+6][y] == 0 && actual_matrix[x+4][y] == 0 && actual_matrix[x+2][y] == 0 && !queen_mandatory && !pawn_mandatory)
-                  {
-                    return normal;
-                  }
-                  else if(u - x == 8 && (actual_matrix[x+6][y] / 100 == 2 || actual_matrix[x+4][y] / 100 == 2 || actual_matrix[x+2][y] / 100 == 2))
-                  {
-                    return destroy;
-                  }
-                  else if(x+10 < 15 && actual_matrix[x+9][y] % 10 != 3 && actual_matrix[x+10][y] / 100 != 1)
-                  {
-                    if(u - x == 10 && actual_matrix[x+8][y] == 0 && actual_matrix[x+6][y] == 0 && actual_matrix[x+4][y] == 0 && actual_matrix[x+2][y] == 0 && !queen_mandatory && !pawn_mandatory)
-                    {
-                      return normal;
-                    }
-                    else if(u - x == 10 && (actual_matrix[x+8][y] / 100 == 2 || actual_matrix[x+6][y] / 100 == 2 || actual_matrix[x+4][y] / 100 == 2 || actual_matrix[x+2][y] / 100 == 2))
-                    {
-                      return destroy;
-                    }
-                    else if(x+12 < 15 && actual_matrix[x+11][y] % 10 != 3 && ((actual_matrix[x+10][y] == 0 && actual_matrix[x+12][y] / 100 == 2) || ((actual_matrix[x+8][y] == 0 || actual_matrix[x+10][y] == 0) && actual_matrix[x+12][y] == 0)))
-                    {
-                      if(u - x == 12 && actual_matrix[x+10][y] == 0 && actual_matrix[x+8][y] == 0 && actual_matrix[x+6][y] == 0 && actual_matrix[x+4][y] == 0 && actual_matrix[x+2][y] == 0 && !queen_mandatory && !pawn_mandatory)
-                      {
-                        return normal;
-                      }
-                      else if(u - x == 12 && (actual_matrix[x+10][y] / 100 == 2 || actual_matrix[x+8][y] / 100 == 2 || actual_matrix[x+6][y] / 100 == 2 || actual_matrix[x+4][y] / 100 == 2 || actual_matrix[x+2][y] / 100 == 2))
-                      {
-                        return destroy;
-                      }
-                      else if(u - x == 14 && actual_matrix[x+13][y] % 10 != 3)
-                      {
-                        if(actual_matrix[x+12][y] == 0 && actual_matrix[x+10][y] == 0 && actual_matrix[x+8][y] == 0 && actual_matrix[x+6][y] == 0 && actual_matrix[x+4][y] == 0 && actual_matrix[x+2][y] == 0 && !queen_mandatory && !pawn_mandatory)
-                        {
-                          return normal;
-                        }
-                        else if(actual_matrix[x+12][y] / 100 == 2 || actual_matrix[x+10][y] / 100 == 2 || actual_matrix[x+8][y] / 100 == 2 || actual_matrix[x+6][y] / 100 == 2 || actual_matrix[x+4][y] / 100 == 2 || actual_matrix[x+2][y] / 100 == 2)
-                        {
-                          return destroy;
-                        }
-                      }
-                      return impossible;
-                    }
-                    return impossible;
-                  }
-                  return impossible;
-                }
-                return impossible;
-              }
-              return impossible;
-            }
-            return impossible;
-          }
-          return impossible;
-        }
-        else if(x > u)
-        {
-          for(int z = u-2; z > 0; z -= 2)
-          {
-            if(actual_matrix[z+1][y] % 10 != 3 && actual_matrix[z][y] / 100 == 2 && actual_matrix[z-2][y] == 0 && actual_matrix[z-1][y] == -2 && actual_matrix[z+2][y] == 0)
-            {
-              return impossible;
-            }
-            else if(actual_matrix[z][y] / 100 == 1)
-            {
-              break;
-            }
-          }
-          if(x - u == 2 && actual_matrix[x-1][y] % 10 != 3 && !queen_mandatory && !pawn_mandatory)
-          {
-            return normal;
-          }
-          else if(x-2 >= 0 && actual_matrix[x-1][y] % 10 != 3 && actual_matrix[x-2][y] / 100 != 1)
-          {
-            if(x-4 >= 0 && actual_matrix[x-3][y] % 10 != 3 && ((actual_matrix[x-2][y] == 0 && actual_matrix[x-4][y] / 100 == 2) || actual_matrix[x-4][y] == 0))
-            {
-              if(x - u == 4 && actual_matrix[x-2][y] == 0 && !queen_mandatory && !pawn_mandatory)
-              {
-                return normal;
-              }
-              else if(x - u == 4 && actual_matrix[x-2][y] / 100 == 2)
-              {
-                return destroy;
-              }
-              else if(x-6 >= 0 && actual_matrix[x-5][y] % 10 != 3 && actual_matrix[x-6][y] / 100 != 1)
-              {
-                if(x - u == 6 && actual_matrix[x-4][y] == 0 && actual_matrix[x-2][y] == 0 && !queen_mandatory && !pawn_mandatory)
-                {
-                  return normal;
-                }
-                else if(x - u == 6 && (actual_matrix[x-4][y] / 100 == 2 || actual_matrix[x-2][y] / 100 == 2))
-                {
-                  return destroy;
-                }
-                else if(x-8 >= 0 && actual_matrix[x-7][y] % 10 != 3 && ((actual_matrix[x-6][y] == 0 && actual_matrix[x-8][y] / 100 == 2) || ((actual_matrix[x-4][y] == 0 || actual_matrix[x-6][y] == 0) && actual_matrix[x-8][y] == 0)))
-                {
-                  if(x - u == 8 && actual_matrix[x-6][y] == 0 && actual_matrix[x-4][y] == 0 && actual_matrix[x-2][y] == 0 && !queen_mandatory && !pawn_mandatory)
-                  {
-                    return normal;
-                  }
-                  else if(x - u == 8 && (actual_matrix[x-6][y] / 100 == 2 || actual_matrix[x-4][y] / 100 == 2 || actual_matrix[x-2][y] / 100 == 2))
-                  {
-                    return destroy;
-                  }
-                  else if(x-10 >= 0 && actual_matrix[x-9][y] % 10 != 3 && actual_matrix[x-10][y] / 100 != 1)
-                  {
-                    if(x - u == 10 && actual_matrix[x-8][y] == 0 && actual_matrix[x-6][y] == 0 && actual_matrix[x-4][y] == 0 && actual_matrix[x-2][y] == 0 && !queen_mandatory && !pawn_mandatory)
-                    {
-                      return normal;
-                    }
-                    else if(x - u == 10 && (actual_matrix[x-8][y] / 100 == 2 || actual_matrix[x-6][y] / 100 == 2 || actual_matrix[x-4][y] / 100 == 2 || actual_matrix[x-2][y] / 100 == 2))
-                    {
-                      return destroy;
-                    }
-                    else if(x-12 >= 0 && actual_matrix[x-11][y] % 10 != 3 && ((actual_matrix[x-10][y] == 0 && actual_matrix[x-12][y] / 100 == 2) || ((actual_matrix[x-8][y] == 0 || actual_matrix[x-10][y] == 0) && actual_matrix[x-12][y] == 0)))
-                    {
-                      if(x - u == 12 && actual_matrix[x-10][y] == 0 && actual_matrix[x-8][y] == 0 && actual_matrix[x-6][y] == 0 && actual_matrix[x-4][y] == 0 && actual_matrix[x-2][y] == 0 && !queen_mandatory && !pawn_mandatory)
-                      {
-                        return normal;
-                      }
-                      else if(x - u == 12 && (actual_matrix[x-10][y] / 100 == 2 || actual_matrix[x-8][y] / 100 == 2 || actual_matrix[x-6][y] / 100 == 2 || actual_matrix[x-4][y] / 100 == 2 || actual_matrix[x-2][y] / 100 == 2))
-                      {
-                        return destroy;
-                      }
-                      else if(x - u == 14 && actual_matrix[x-13][y] % 10 != 3)
-                      {
-                        if(actual_matrix[x-12][y] == 0 && actual_matrix[x-10][y] == 0 && actual_matrix[x-8][y] == 0 && actual_matrix[x-6][y] == 0 && actual_matrix[x-4][y] == 0 && actual_matrix[x-2][y] == 0 && !queen_mandatory && !pawn_mandatory)
-                        {
-                          return normal;
-                        }
-                        else if(actual_matrix[x-12][y] / 100 == 2 || actual_matrix[x-10][y] / 100 == 2 || actual_matrix[x-8][y] / 100 == 2 || actual_matrix[x-6][y] / 100 == 2 || actual_matrix[x-4][y] / 100 == 2 || actual_matrix[x-2][y] / 100 == 2)
-                        {
-                          return destroy;
-                        }
-                      }
-                      return impossible;
-                    }
-                    return impossible;
-                  }
-                  return impossible;
-                }
-                return impossible;
-              }
-              return impossible;
-            }
-            return impossible;
-          }
-          return impossible;
-        }
-        return impossible;
-      }
-      return impossible;
-    }
-    return impossible;
   }
-  else if(actual_matrix[x][y] == 220 || actual_matrix[x][y] == 221)
-  {
-    if(actual_matrix[x][y] == 220)
-    {
-      if(abs(x - u) == 1 && abs(y - v) == 1 && actual_matrix[u][v] == 0 && !queen_mandatory && !pawn_mandatory)
-      {
-        return turn;
-      }
-      else if(y == v)
-      {
-        if(abs(u - x) == 2 && (actual_matrix[u][v] == 0) && !pawn_mandatory && !queen_mandatory)
-        {
-          if(u - x == 2 && actual_matrix[x+1][y] % 10 != 3)
-          {
-            return normal;
-          }
-          else if(x - u == 2 && actual_matrix[x-1][y] % 10 != 3)
-          {
-            return normal;
-          }
-          return impossible;
-        }
-        else if(u - x > 2 && actual_matrix[u][v] == 0 && !queen_mandatory && !pawn_mandatory)
-        {
-          for(int z = x+2; z <= u; z += 2)
-          {
-            if(actual_matrix[z-1][y] % 10 == 3 || actual_matrix[z][y] != 0)
-            {
-              return impossible;
-            }
-          }
-          return normal;
-        }
-        else if(x - u > 2 && actual_matrix[u][v] == 0 && !queen_mandatory && !pawn_mandatory)
-        {
-          for(int z = x-2; z >= u; z -= 2)
-          {
-            if(actual_matrix[z+1][y] % 10 == 3 || actual_matrix[z][y] != 0)
-            {
-              return impossible;
-            }
-          }
-          return normal;
-        }
-        return impossible;
-      }
-      else if(x == u && actual_matrix[u][v] == 0)
-      {
-        if(v > y)
-        {
-          for(int z = v+2; z < 14; z += 2)
-          {
-            if(actual_matrix[x][z-1] % 10 != 3 && actual_matrix[x][z] / 100 == 1 && actual_matrix[x][z+2] == 0 && actual_matrix[x][z+1] == -2 && actual_matrix[x][z-2] == 0)
-            {
-              return impossible;
-            }
-            else if(actual_matrix[x][z] / 100 == 2)
-            {
-              break;
-            }
-          }
-          if(v - y == 2 && actual_matrix[x][y+1] % 10 != 3 && !queen_mandatory && !pawn_mandatory)
-          {
-            return normal;
-          }
-          else if(y+2 < 15 && actual_matrix[x][y+1] % 10 != 3 && actual_matrix[x][y+2] / 100 != 2)
-          {
-            if(y+4 < 15 && actual_matrix[x][y+3] % 10 != 3 && ((actual_matrix[x][y+2] == 0 && actual_matrix[x][y+4] / 100 == 1) || actual_matrix[x][y+4] == 0))
-            {
-              if(v - y == 4 && actual_matrix[x][y+2] == 0 && !queen_mandatory && !pawn_mandatory)
-              {
-                return normal;
-              }
-              else if(v - y == 4 && actual_matrix[x][y+2] / 100 == 1)
-              {
-                return destroy;
-              }
-              else if(y+6 < 15 && actual_matrix[x][y+5] % 10 != 3 && actual_matrix[x][y+6] / 100 != 2)
-              {
-                if(v - y == 6 && actual_matrix[x][y+4] == 0 && actual_matrix[x][y+2] == 0 && !queen_mandatory && !pawn_mandatory)
-                {
-                  return normal;
-                }
-                else if(v - y == 6 && (actual_matrix[x][y+4] / 100 == 1 || actual_matrix[x][y+2] / 100 == 1))
-                {
-                  return destroy;
-                }
-                else if(y+8 < 15 && actual_matrix[x][y+7] % 10 != 3 && ((actual_matrix[x][y+6] == 0 && actual_matrix[x][y+8] / 100 == 1) || ((actual_matrix[x][y+4] == 0 || actual_matrix[x][y+6] == 0) && actual_matrix[x][y+8] == 0)))
-                {
-                  if(v - y == 8 && actual_matrix[x][y+6] == 0 && actual_matrix[x][y+4] == 0 && actual_matrix[x][y+2] == 0 && !queen_mandatory && !pawn_mandatory)
-                  {
-                    return normal;
-                  }
-                  else if(v - y == 8 && (actual_matrix[x][y+6] / 100 == 1 || actual_matrix[x][y+4] / 100 == 1 || actual_matrix[x][y+2] / 100 == 1))
-                  {
-                    return destroy;
-                  }
-                  else if(y+10 < 15 && actual_matrix[x][y+9] % 10 != 3 && actual_matrix[x][y+10] / 100 != 2)
-                  {
-                    if(v - y == 10 && actual_matrix[x][y+8] == 0 && actual_matrix[x][y+6] == 0 && actual_matrix[x][y+4] == 0 && actual_matrix[x][y+2] == 0 && !queen_mandatory && !pawn_mandatory)
-                    {
-                      return normal;
-                    }
-                    else if(v - y == 10 && (actual_matrix[x][y+8] / 100 == 1 || actual_matrix[x][y+6] / 100 == 1 || actual_matrix[x][y+4] / 100 == 1 || actual_matrix[x][y+2] / 100 == 1))
-                    {
-                      return destroy;
-                    }
-                    else if(y+12 < 15 && actual_matrix[x][y+11] % 10 != 3 && ((actual_matrix[x][y+10] == 0 && actual_matrix[x][y+12] / 100 == 1) || ((actual_matrix[x][y+8] == 0 || actual_matrix[x][y+10] == 0) && actual_matrix[x][y+12] == 0)))
-                    {
-                      if(v - y == 12 && actual_matrix[x][y+10] == 0 && actual_matrix[x][y+8] == 0 && actual_matrix[x][y+6] == 0 && actual_matrix[x][y+4] == 0 && actual_matrix[x][y+2] == 0 && !queen_mandatory && !pawn_mandatory)
-                      {
-                        return normal;
-                      }
-                      else if(v - y == 12 && (actual_matrix[x][y+10] / 100 == 1 || actual_matrix[x][y+8] / 100 == 1 || actual_matrix[x][y+6] / 100 == 1 || actual_matrix[x][y+4] / 100 == 1 || actual_matrix[x][y+2] / 100 == 1))
-                      {
-                        return destroy;
-                      }
-                      else if(v - y == 14 && actual_matrix[x][y+13] % 10 != 3)
-                      {
-                        if(actual_matrix[x][y+12] == 0 && actual_matrix[x][y+10] == 0 && actual_matrix[x][y+8] == 0 && actual_matrix[x][y+6] == 0 && actual_matrix[x][y+4] == 0 && actual_matrix[x][y+2] == 0 && !queen_mandatory && !pawn_mandatory)
-                        {
-                          return normal;
-                        }
-                        else if(actual_matrix[x][y+12] / 100 == 1 || actual_matrix[x][y+10] / 100 == 1 || actual_matrix[x][y+8] / 100 == 1 || actual_matrix[x][y+6] / 100 == 1 || actual_matrix[x][y+4] / 100 == 1 || actual_matrix[x][y+2] / 100 == 1)
-                        {
-                          return destroy;
-                        }
-                      }
-                      return impossible;
-                    }
-                    return impossible;
-                  }
-                  return impossible;
-                }
-                return impossible;
-              }
-              return impossible;
-            }
-            return impossible;
-          }
-          return impossible;
-        }
-        else if(y > v)
-        {
-          for(int z = v-2; z > 0; z -= 2)
-          {
-            if(actual_matrix[x][z+1] % 10 != 3 && actual_matrix[x][z] / 100 == 1 && actual_matrix[x][z-2] == 0 && actual_matrix[x][z-1] == -2 && actual_matrix[x][z+2] == 0)
-            {
-              return impossible;
-            }
-            else if(actual_matrix[x][z] / 100 == 2)
-            {
-              break;
-            }
-          }
-          if(y - v == 2 && actual_matrix[x][y-1] % 10 != 3 && !queen_mandatory && !pawn_mandatory)
-          {
-            return normal;
-          }
-          else if(y-2 >= 0 && actual_matrix[x][y-1] % 10 != 3 && actual_matrix[x][y-2] / 100 != 2)
-          {
-            if(y-4 >= 0 && actual_matrix[x][y-3] % 10 != 3 && ((actual_matrix[x][y-2] == 0 && actual_matrix[x][y-4] / 100 == 1) || actual_matrix[x][y-4] == 0))
-            {
-              if(y - v == 4 && actual_matrix[x][y-2] == 0 && !queen_mandatory && !pawn_mandatory)
-              {
-                return normal;
-              }
-              else if(y - v == 4 && actual_matrix[x][y-2] / 100 == 1)
-              {
-                return destroy;
-              }
-              else if(y-6 >= 0 && actual_matrix[x][y-5] % 10 != 3 && actual_matrix[x][y-6] / 100 != 2)
-              {
-                if(y - v == 6 && actual_matrix[x][y-4] == 0 && actual_matrix[x][y-2] == 0 && !queen_mandatory && !pawn_mandatory)
-                {
-                  return normal;
-                }
-                else if(y - v == 6 && (actual_matrix[x][y-4] / 100 == 1 || actual_matrix[x][y-2] / 100 == 1))
-                {
-                  return destroy;
-                }
-                else if(y-8 >= 0 && actual_matrix[x][y-7] % 10 != 3 && ((actual_matrix[x][y-6] == 0 && actual_matrix[x][y-8] / 100 == 1) || ((actual_matrix[x][y-4] == 0 || actual_matrix[x][y-6] == 0) && actual_matrix[x][y-8] == 0)))
-                {
-                  if(y - v == 8 && actual_matrix[x][y-6] == 0 && actual_matrix[x][y-4] == 0 && actual_matrix[x][y-2] == 0 && !queen_mandatory && !pawn_mandatory)
-                  {
-                    return normal;
-                  }
-                  else if(y - v == 8 && (actual_matrix[x][y-6] / 100 == 1 || actual_matrix[x][y-4] / 100 == 1 || actual_matrix[x][y-2] / 100 == 1))
-                  {
-                    return destroy;
-                  }
-                  else if(y-10 >= 0 && actual_matrix[x][y-9] % 10 != 3 && actual_matrix[x][y-10] / 100 != 2)
-                  {
-                    if(y - v == 10 && actual_matrix[x][y-8] == 0 && actual_matrix[x][y-6] == 0 && actual_matrix[x][y-4] == 0 && actual_matrix[x][y-2] == 0 && !queen_mandatory && !pawn_mandatory)
-                    {
-                      return normal;
-                    }
-                    else if(y - v == 10 && (actual_matrix[x][y-8] / 100 == 1 || actual_matrix[x][y-6] / 100 == 1 || actual_matrix[x][y-4] / 100 == 1 || actual_matrix[x][y-2] / 100 == 1))
-                    {
-                      return destroy;
-                    }
-                    else if(y-12 >= 0 && actual_matrix[x][y-11] % 10 != 3 && ((actual_matrix[x][y-10] == 0 && actual_matrix[x][y-12] / 100 == 1) || ((actual_matrix[x][y-8] == 0 || actual_matrix[x][y-6] == 0) && actual_matrix[x][y-12] == 0)))
-                    {
-                      if(y - v == 12 && actual_matrix[x][y-10] == 0 && actual_matrix[x][y-8] == 0 && actual_matrix[x][y-6] == 0 && actual_matrix[x][y-4] == 0 && actual_matrix[x][y-2] == 0 && !queen_mandatory && !pawn_mandatory)
-                      {
-                        return normal;
-                      }
-                      else if(y - v == 12 && (actual_matrix[x][y-10] / 100 == 1 || actual_matrix[x][y-8] / 100 == 1 || actual_matrix[x][y-6] / 100 == 1 || actual_matrix[x][y-4] / 100 == 1 || actual_matrix[x][y-2] / 100 == 1))
-                      {
-                        return destroy;
-                      }
-                      else if(y - v == 14 && actual_matrix[x][y-13] % 10 != 3)
-                      {
-                        if(actual_matrix[x][y-12] == 0 && actual_matrix[x][y-10] == 0 && actual_matrix[x][y-8] == 0 && actual_matrix[x][y-6] == 0 && actual_matrix[x][y-4] == 0 && actual_matrix[x][y-2] == 0 && !queen_mandatory && !pawn_mandatory)
-                        {
-                          return normal;
-                        }
-                        else if(actual_matrix[x][y-12] / 100 == 1 || actual_matrix[x][y-10] / 100 == 1 || actual_matrix[x][y-8] / 100 == 1 || actual_matrix[x][y-6] / 100 == 1 || actual_matrix[x][y-4] / 100 == 1 || actual_matrix[x][y-2] / 100 == 1)
-                        {
-                          return destroy;
-                        }
-                      }
-                      return impossible;
-                    }
-                    return impossible;
-                  }
-                  return impossible;
-                }
-                return impossible;
-              }
-              return impossible;
-            }
-            return impossible;
-          }
-          return impossible;
-        }
-        return impossible;
-      }
-      return impossible;
-    }
-    else if(actual_matrix[x][y] == 221)
-    {
-      if(abs(x - u) == 1 && abs(y - v) == 1 && actual_matrix[u][v] == 0 && !pawn_mandatory && !queen_mandatory)
-      {
-        return turn;
-      }
-      else if(x == u)
-      {
-        if(abs(y - v) == 2 && (actual_matrix[u][v] == 0) && !queen_mandatory && !pawn_mandatory)
-        {
-          if(v - y == 2 && actual_matrix[x][y+1] % 10 != 3)
-          {
-            return normal;
-          }
-          else if(y - v == 2 && actual_matrix[x][y-1] % 10 != 3)
-          {
-            return normal;
-          }
-          return impossible;
-        }
-        else if(v - y > 2 && actual_matrix[u][v] == 0 && !queen_mandatory && !pawn_mandatory)
-        {
-          for(int z = y+2; z <= v; z += 2)
-          {
-            if(actual_matrix[x][z-1] % 10 == 3 || actual_matrix[x][z] != 0)
-            {
-              return impossible;
-            }
-          }
-          return normal;
-        }
-        else if(y - v > 2 && actual_matrix[u][v] == 0 && !queen_mandatory && !pawn_mandatory)
-        {
-          for(int z = y-2; z >= v; z -= 2)
-          {
-            if(actual_matrix[x][z+1] % 10 == 3 || actual_matrix[x][z] != 0)
-            {
-              return impossible;
-            }
-          }
-          return normal;
-        }
-        return impossible;
-      }
-      else if(y == v && actual_matrix[u][v] == 0)
-      {
-        if(u > x)
-        {
-          for(int z = u+2; z < 14; z += 2)
-          {
-            if(actual_matrix[z-1][y] % 10 != 3 && actual_matrix[z][y] / 100 == 1 && actual_matrix[z+2][y] == 0 && actual_matrix[z+1][y] == -2 && actual_matrix[z-2][y] == 0)
-            {
-              return impossible;
-            }
-            else if(actual_matrix[z][y] / 100 == 2)
-            {
-              break;
-            }
-          }
-          if(u - x == 2 && actual_matrix[x+1][y] % 10 != 3 && !queen_mandatory && !pawn_mandatory)
-          {
-            return normal;
-          }
-          else if(x+2 < 15 && actual_matrix[x+1][y] % 10 != 3 && actual_matrix[x+2][y] / 100 != 2)
-          {
-            if(x+4 < 15 && actual_matrix[x+3][y] % 10 != 3 && ((actual_matrix[x+2][y] == 0 && actual_matrix[x+4][y] / 100 == 1) || actual_matrix[x+4][y] == 0))
-            {
-              if(u - x == 4 && actual_matrix[x+2][y] == 0 && !queen_mandatory && !pawn_mandatory)
-              {
-                return normal;
-              }
-              else if(u - x == 4 && actual_matrix[x+2][y] / 100 == 1)
-              {
-                return destroy;
-              }
-              else if(x+6 < 15 && actual_matrix[x+5][y] % 10 != 3 && actual_matrix[x+6][y] / 100 != 2)
-              {
-                if(u - x == 6 && actual_matrix[x+4][y] == 0 && actual_matrix[x+2][y] == 0 && !queen_mandatory && !pawn_mandatory)
-                {
-                  return normal;
-                }
-                else if(u - x == 6 && (actual_matrix[x+4][y] / 100 == 1 || actual_matrix[x+2][y] / 100 == 1))
-                {
-                  return destroy;
-                }
-                else if(x+8 < 15 && actual_matrix[x+7][y] % 10 != 3 && ((actual_matrix[x+6][y] == 0 && actual_matrix[x+8][y] / 100 == 1) || ((actual_matrix[x+4][y] == 0 || actual_matrix[x+6][y] == 0) && actual_matrix[x+8][y] == 0)))
-                {
-                  if(u - x == 8 && actual_matrix[x+6][y] == 0 && actual_matrix[x+4][y] == 0 && actual_matrix[x+2][y] == 0 && !queen_mandatory && !pawn_mandatory)
-                  {
-                    return normal;
-                  }
-                  if(u - x == 8 && (actual_matrix[x+6][y] / 100 == 1 || actual_matrix[x+4][y] / 100 == 1 || actual_matrix[x+2][y] / 100 == 1))
-                  {
-                    return destroy;
-                  }
-                  else if(x+10 < 15 && actual_matrix[x+9][y] % 10 != 3 && actual_matrix[x+10][y] / 100 != 2)
-                  {
-                    if(u - x == 10 && actual_matrix[x+8][y] == 0 && actual_matrix[x+6][y] == 0 && actual_matrix[x+4][y] == 0 && actual_matrix[x+2][y] == 0 && !queen_mandatory && !pawn_mandatory)
-                    {
-                      return normal;
-                    }
-                    else if(u - x == 10 && (actual_matrix[x+8][y] / 100 == 1 || actual_matrix[x+6][y] / 100 == 1 || actual_matrix[x+4][y] / 100 == 1 || actual_matrix[x+2][y] / 100 == 1))
-                    {
-                      return destroy;
-                    }
-                    else if(x+12 < 15 && actual_matrix[x+11][y] % 10 != 3 && ((actual_matrix[x+10][y] == 0 && actual_matrix[x+12][y] / 100 == 1) || ((actual_matrix[x+8][y] == 0 || actual_matrix[x+10][y] == 0) && actual_matrix[x+12][y] == 0)))
-                    {
-                      if(u - x == 12 && actual_matrix[x+10][y] == 0 && actual_matrix[x+8][y] == 0 && actual_matrix[x+6][y] == 0 && actual_matrix[x+4][y] == 0 && actual_matrix[x+2][y] == 0 && !queen_mandatory && !pawn_mandatory)
-                      {
-                        return normal;
-                      }
-                      else if(u - x == 12 && (actual_matrix[x+10][y] / 100 == 1 || actual_matrix[x+8][y] / 100 == 1 || actual_matrix[x+6][y] / 100 == 1 || actual_matrix[x+4][y] / 100 == 1 || actual_matrix[x+2][y] / 100 == 1))
-                      {
-                        return destroy;
-                      }
-                      else if(u - x == 14 && actual_matrix[x+13][y] % 10 != 3)
-                      {
-                        if(actual_matrix[x+12][y] == 0 && actual_matrix[x+10][y] == 0 && actual_matrix[x+8][y] == 0 && actual_matrix[x+6][y] == 0 && actual_matrix[x+4][y] == 0 && actual_matrix[x+2][y] == 0 && !queen_mandatory && !pawn_mandatory)
-                        {
-                          return normal;
-                        }
-                        else if(actual_matrix[x+12][y] / 100 == 1 || actual_matrix[x+10][y] / 100 == 1 || actual_matrix[x+8][y] / 100 == 1 || actual_matrix[x+6][y] / 100 == 1 || actual_matrix[x+4][y] / 100 == 1 || actual_matrix[x+2][y] / 100 == 1)
-                        {
-                          return destroy;
-                        }
-                      }
-                      return impossible;
-                    }
-                    return impossible;
-                  }
-                  return impossible;
-                }
-                return impossible;
-              }
-              return impossible;
-            }
-            return impossible;
-          }
-          return impossible;
-        }
-        else if(x > u)
-        {
-          for(int z = u-2; z > 0; z -= 2)
-          {
-            if(actual_matrix[z+1][y] == -2 && actual_matrix[z][y] / 100 == 1 && actual_matrix[z-2][y] == 0 && actual_matrix[z-1][y] == -2 && actual_matrix[z+2][y] == 0)
-            {
-              return impossible;
-            }
-            else if(actual_matrix[z][y] / 100 == 2)
-            {
-              break;
-            }
-          }
-          if(x - u == 2 && actual_matrix[x-1][y] == -2 && !queen_mandatory && !pawn_mandatory)
-          {
-            return normal;
-          }
-          else if(x-2 >= 0 && actual_matrix[x-1][y] % 10 != 3 && actual_matrix[x-2][y] / 100 != 2)
-          {
-            if(x-4 >= 0 && actual_matrix[x-3][y] % 10 != 3 && ((actual_matrix[x-2][y] == 0 && actual_matrix[x-4][y] / 100 == 1) || actual_matrix[x-4][y] == 0))
-            {
-              if(x - u == 4 && actual_matrix[x-2][y] == 0 && !queen_mandatory && !pawn_mandatory)
-              {
-                return normal;
-              }
-              else if(x - u == 4 && actual_matrix[x-2][y] / 100 == 1)
-              {
-                return destroy;
-              }
-              else if(x-6 >= 0 && actual_matrix[x-5][y] % 10 != 3 && actual_matrix[x-6][y] / 100 != 2)
-              {
-                if(x - u == 6 && actual_matrix[x-4][y] == 0 && actual_matrix[x-2][y] == 0 && !queen_mandatory && !pawn_mandatory)
-                {
-                  return normal;
-                }
-                else if(x - u == 6 && (actual_matrix[x-4][y] / 100 == 1 || actual_matrix[x-2][y] / 100 == 1))
-                {
-                  return destroy;
-                }
-                else if(x-8 >= 0 && actual_matrix[x-7][y] % 10 != 3 && ((actual_matrix[x-6][y] == 0 && actual_matrix[x-8][y] / 100 == 1) || ((actual_matrix[x-4][y] == 0 || actual_matrix[x-6][y] == 0) && actual_matrix[x-8][y] == 0)))
-                {
-                  if(x - u == 8 && actual_matrix[x-6][y] == 0 && actual_matrix[x-4][y] == 0 && actual_matrix[x-2][y] == 0 && !queen_mandatory && !pawn_mandatory)
-                  {
-                    return normal;
-                  }
-                  else if(x - u == 8 && (actual_matrix[x-6][y] / 100 == 1 || actual_matrix[x-4][y] / 100 == 1 || actual_matrix[x-2][y] / 100 == 1))
-                  {
-                    return destroy;
-                  }
-                  else if(x-10 >= 0 && actual_matrix[x-9][y] % 10 != 3 && actual_matrix[x-10][y] / 100 != 2)
-                  {
-                    if(x - u == 10 && actual_matrix[x-8][y] == 0 && actual_matrix[x-6][y] == 0 && actual_matrix[x-4][y] == 0 && actual_matrix[x-2][y] == 0 && !queen_mandatory && !pawn_mandatory)
-                    {
-                      return normal;
-                    }
-                    else if(x - u == 10 && (actual_matrix[x-8][y] / 100 == 1 || actual_matrix[x-6][y] / 100 == 1 || actual_matrix[x-4][y] / 100 == 1 || actual_matrix[x-2][y] / 100 == 1))
-                    {
-                      return destroy;
-                    }
-                    else if(x-12 >= 0 && actual_matrix[x-11][y] % 10 != 3 && ((actual_matrix[x-10][y] == 0 && actual_matrix[x-12][y] / 100 == 1) || ((actual_matrix[x-8][y] == 0 || actual_matrix[x-10][y] == 0) && actual_matrix[x-12][y] == 0)))
-                    {
-                      if(x - u == 12 && actual_matrix[x-10][y] == 0 && actual_matrix[x-8][y] == 0 && actual_matrix[x-6][y] == 0 && actual_matrix[x-4][y] == 0 && actual_matrix[x-2][y] == 0 && !queen_mandatory && !pawn_mandatory)
-                      {
-                        return normal;
-                      }
-                      if(x - u == 12 && (actual_matrix[x-10][y] / 100 == 1 || actual_matrix[x-8][y] / 100 == 1 || actual_matrix[x-6][y] / 100 == 1 || actual_matrix[x-4][y] / 100 == 1 || actual_matrix[x-2][y] / 100 == 1))
-                      {
-                        return destroy;
-                      }
-                      else if(x - u == 14 && actual_matrix[x-13][y] % 10 != 3)
-                      {
-                        if(actual_matrix[x-12][y] == 0 && actual_matrix[x-10][y] == 0 && actual_matrix[x-8][y] == 0 && actual_matrix[x-6][y] == 0 && actual_matrix[x-4][y] == 0 && actual_matrix[x-2][y] == 0 && !queen_mandatory && !pawn_mandatory)
-                        {
-                          return normal;
-                        }
-                        else if(actual_matrix[x-12][y] / 100 == 1 || actual_matrix[x-10][y] / 100 == 1 || actual_matrix[x-8][y] / 100 == 1 || actual_matrix[x-6][y] / 100 == 1 || actual_matrix[x-4][y] / 100 == 1 || actual_matrix[x-2][y] / 100 == 1)
-                        {
-                          return destroy;
-                        }
-                      }
-                      return impossible;
-                    }
-                    return impossible;
-                  }
-                  return impossible;
-                }
-                return impossible;
-              }
-              return impossible;
-            }
-            return impossible;
-          }
-          return impossible;
-        }
-        return impossible;
-      }
-      return impossible;
-    }
-    return impossible;
-  }
-  return impossible;
+  allowed_count = k;
+  current_allowed = malloc(allowed_count*sizeof(IntTuple));
+  for (int i = 0; i < allowed_count; i++) { current_allowed[i] = allowed[i]; }
 }
 
-void apply_move(int x, int y, int u, int v, int ***actual_matrix)
-{
-  int temp = (*actual_matrix)[x][y];
-  mstate apply = check_move(x, y, u, v, *actual_matrix);
-  if(apply == normal || apply == turn)
-  {
-    (*actual_matrix)[u][v] = (*actual_matrix)[x][y];
-    if(apply == turn)
-    {
-      if((*actual_matrix)[u][v] % 2 == 0)
-      {
-        (*actual_matrix)[u][v]++;
+GameState switch_turn(int *current_board, FloatTuple offset) {
+  current_player = -current_player;
+  get_allowed_actions(current_board);
+  draw(current_board, offset, FALSE);
+  return check_game_state(current_board);
+}
+
+void get_allowed_piece_actions(int index, int *current_board) {
+  free(current_allowed_piece);
+  if (current_allowed == NULL)
+    get_allowed_actions(current_board);
+  int *allowed_actions = malloc(sizeof(int)*allowed_count);
+  allowed_piece_count = 0;
+  for (int i = 0; i < allowed_count; i++) {
+    if (current_allowed[i].x == index) {
+      allowed_actions[allowed_piece_count] = current_allowed[i].y;
+      allowed_piece_count++;
+    }
+  }
+  current_allowed_piece = malloc(sizeof(int)*allowed_piece_count);
+  for (int i = 0; i < allowed_piece_count; i++) { current_allowed_piece[i] = allowed_actions[i]; }
+}
+
+GameState apply_move(IntTuple move, int **current_board, FloatTuple offset) {
+  if ((*current_board)[move.x]/COLOR_DIVIDER == current_player) {
+    current_states++;
+    if (current_states == max_states) {
+      for (int i = 0; i < current_states-1; i++) {
+        for (int j = 0; j < get_board_size(); j++) {
+          (previous_states[i])[j] = (previous_states[i+1])[j];
+        }
       }
-      else
-      {
-        (*actual_matrix)[u][v]--;
-      }
+      current_states--;
     }
-    if((*actual_matrix)[x][y] % 10 == 3)
-    {
-      (*actual_matrix)[x][y] = -2;
-    }
-    else
-    {
-      (*actual_matrix)[x][y] = 0;
-    }
-  }
-  else if(apply == destroy110 || apply == destroy111 || apply == destroy_max11)
-  {
-    (*actual_matrix)[x+2][y] = 0;
-    (*actual_matrix)[x+4][y] = (*actual_matrix)[x][y];
-    (*actual_matrix)[x][y] = 0;
-    if(apply == destroy111 || apply == destroy_max11)
-    {
-      draw(*actual_matrix);
-      SDL_Delay(200);
-      (*actual_matrix)[x+4][y] = 0;
-      SDL_Delay(200);
-      (*actual_matrix)[x+6][y] = 0;
-      (*actual_matrix)[x+8][y] = temp;
-      playSound(sMove[1]);
-    }
-    if(apply == destroy_max11)
-    {
-      draw(*actual_matrix);
-      SDL_Delay(200);
-      (*actual_matrix)[x+8][y] = 0;
-      SDL_Delay(200);
-      (*actual_matrix)[x+10][y] = 0;
-      (*actual_matrix)[x+12][y] = temp;
-      playSound(sMove[1]);
-    }
-    pawn_mandatory = false;
-  }
-  else if(apply == destroy210 || apply == destroy211 || apply == destroy_max21)
-  {
-    (*actual_matrix)[x-2][y] = 0;
-    (*actual_matrix)[x-4][y] = (*actual_matrix)[x][y];
-    (*actual_matrix)[x][y] = 0;
-    if(apply == destroy211 || apply == destroy_max21)
-    {
-      draw(*actual_matrix);
-      SDL_Delay(200);
-      (*actual_matrix)[x-4][y] = 0;
-      SDL_Delay(200);
-      (*actual_matrix)[x-6][y] = 0;
-      (*actual_matrix)[x-8][y] = temp;
-      playSound(sMove[1]);
-    }
-    if(apply == destroy_max21)
-    {
-      draw(*actual_matrix);
-      SDL_Delay(200);
-      (*actual_matrix)[x-8][y] = 0;
-      SDL_Delay(200);
-      (*actual_matrix)[x-10][y] = 0;
-      (*actual_matrix)[x-12][y] = temp;
-      playSound(sMove[1]);
-    }
-    pawn_mandatory = false;
-  }
-  else if(apply == destroy)
-  {
-    (*actual_matrix)[x][y] = 0;
-    SDL_Delay(100);
-    if(x == u)
-    {
-      if(v > y)
-      {
-        for(int z = y+2; z < v; z += 2)
-        {
-          if((*actual_matrix)[x][z] / 100 != temp / 100 && (*actual_matrix)[x][z] != 0)
-          {
-            (*actual_matrix)[x][z-2] = 0;
-            (*actual_matrix)[x][z] = 0;
-            (*actual_matrix)[x][z+2] = temp;
-            draw(*actual_matrix);
-          }
-          else if((*actual_matrix)[x][z] == temp)
-          {
+    for (int i = 0; i < get_board_size(); i++) { (previous_states[current_states])[i] = (*current_board)[i]; }
+    int origin_piece = (*current_board)[move.x];
+    // King Action
+    if ((*current_board)[move.x] == WHITE_KING || (*current_board)[move.x] == BLACK_KING)
+      (*current_board)[move.x] = -2;
+    // Pawn/Queen Action
+    else {
+      int last_position = move.x;
+      int distance = move.y-move.x;
+      int direction = distance/abs(distance);
+      (*current_board)[move.x] = 0;
+      if (distance % column_count == 0) {
+        for (int i = column_count*2*direction; abs(i) < abs(distance); i += column_count*2*direction) {
+          if (validate_cell(last_position, move.x+i, *current_board) == ENEMY) {
+            if ((*current_board)[move.x+i]/COLOR_DIVIDER == WHITE_PLAYER)
+              WHITE_PIECES_COUNT--;
+            else
+              BLACK_PIECES_COUNT--;
+            (*current_board)[last_position] = 0;
+            last_position = move.x+i+column_count*2*direction;
+            (*current_board)[last_position] = origin_piece;
+            (*current_board)[move.x+i] = 0;
+            draw(*current_board, offset, FALSE);
+            play_sound(sounds[MOVE2]);
             SDL_Delay(400);
-            playSound(sMove[1]);
-            (*actual_matrix)[x][z] = 0;
           }
         }
       }
-      else if(y > v)
-      {
-        for(int z = y-2; z > v; z -= 2)
-        {
-          if((*actual_matrix)[x][z] / 100 != temp / 100 && (*actual_matrix)[x][z] != 0)
-          {
-            (*actual_matrix)[x][z+2] = 0;
-            (*actual_matrix)[x][z] = 0;
-            (*actual_matrix)[x][z-2] = temp;
-            draw(*actual_matrix);
-          }
-          else if((*actual_matrix)[x][z] == temp)
-          {
+      // Queen Horizontal Movement
+      else if ((origin_piece == WHITE_QUEEN || origin_piece == BLACK_QUEEN) && validate_cell(move.x, move.y, *current_board) != OUT_OF_BOUNDS) {
+        for (int i = 2*direction; abs(i) < abs(distance); i += 2*direction) {
+          if (validate_cell(last_position, move.x+i, *current_board) == ENEMY) {
+            if ((*current_board)[move.x+i]/COLOR_DIVIDER == WHITE_PLAYER)
+              WHITE_PIECES_COUNT--;
+            else
+              BLACK_PIECES_COUNT--;
+            (*current_board)[last_position] = 0;
+            last_position = move.x+i+2*direction;
+            (*current_board)[last_position] = origin_piece;
+            (*current_board)[move.x+i] = 0;
+            draw(*current_board, offset, FALSE);
+            play_sound(sounds[MOVE2]);
             SDL_Delay(400);
-            playSound(sMove[1]);
-            (*actual_matrix)[x][z] = 0;
           }
         }
       }
     }
-    else if(y == v)
-    {
-      if(u > x)
-      {
-        for(int z = x+2; z < u; z += 2)
-        {
-          if((*actual_matrix)[z][y] / 100 != temp / 100 && (*actual_matrix)[z][y] != 0)
-          {
-            (*actual_matrix)[z-2][y] = 0;
-            (*actual_matrix)[z][y] = 0;
-            (*actual_matrix)[z+2][y] = temp;
-            draw(*actual_matrix);
-          }
-          else if((*actual_matrix)[z][y] == temp)
-          {
-            SDL_Delay(400);
-            playSound(sMove[1]);
-            (*actual_matrix)[z][y] = 0;
-          }
-        }
-      }
-      else if(x > u)
-      {
-        for(int z = x-2; z > u; z -= 2)
-        {
-          if((*actual_matrix)[z][y] / 100 != temp / 100 && (*actual_matrix)[z][y] != 0)
-          {
-            (*actual_matrix)[z+2][y] = 0;
-            (*actual_matrix)[z][y] = 0;
-            (*actual_matrix)[z-2][y] = temp;
-            draw(*actual_matrix);
-          }
-          else if((*actual_matrix)[z][y] == temp)
-          {
-            SDL_Delay(400);
-            playSound(sMove[1]);
-            (*actual_matrix)[z][y] = 0;
-          }
-        }
-      }
+    // Pawn Promotion Check
+    if ((origin_piece == WHITE_PAWN && move.y/column_count == 0) || (origin_piece == BLACK_PAWN && move.y/column_count == row_count-1)) {
+      PieceColor color_mult = origin_piece/COLOR_DIVIDER;
+      (*current_board)[move.y] = origin_piece;
+      draw(*current_board, offset, FALSE);
+      SDL_Delay(300);
+      play_sound(sounds[PUP]);
+      (*current_board)[move.y] = WHITE_QUEEN*color_mult;
     }
-    (*actual_matrix)[u][v] = temp;
-    queen_mandatory = false;
-  }
-  if(apply != impossible)
-  {
-    if(temp / 10 == 11 && u == 14)
-    {
-      draw(*actual_matrix);
-      SDL_Delay(600);
-      playSound(sPup);
-      (*actual_matrix)[u][v] = 121;
+    else if ((*current_board)[move.y] != origin_piece) {
+      (*current_board)[move.y] = origin_piece;
+      play_sound(sounds[MOVE2]);
     }
-    else if(temp / 10 == 21 && u == 0)
-    {
-      draw(*actual_matrix);
-      SDL_Delay(600);
-      playSound(sPup);
-      (*actual_matrix)[u][v] = 221;
+    if (current_player == WHITE_PLAYER) {
+      char player[50] = "\t\tWhites Move: ";
+      log_text(strcat(player, "(%d, %d)\n\t\tWhite Pieces Left: %d\tBlack Pieces Left: %d\n\n"), move.x, move.y, WHITE_PIECES_COUNT, BLACK_PIECES_COUNT);
     }
-    actual_player++;
+    else {
+      char player[50] = "\t\tBlacks Move: ";
+      log_text(strcat(player, "(%d, %d)\n\t\tWhite Pieces Left: %d\tBlack Pieces Left: %d\n\n"), move.x, move.y, WHITE_PIECES_COUNT, BLACK_PIECES_COUNT);
+    }
+    return switch_turn(*current_board, offset);
   }
 }

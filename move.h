@@ -1,41 +1,44 @@
 #ifndef MOVE_H
 #define MOVE_H
 
-typedef enum _bool
-{
-  false,
-  true
-} bool;
+typedef enum {
+  FALSE,
+  TRUE
+} Bool;
 
-typedef enum _winner
-{
-  none,
-  whites,
-  blacks
-} winner;
+typedef enum {
+  OUT_OF_BOUNDS,
+  EMPTY,
+  FRIENDLY,
+  ENEMY
+} CellState;
 
-typedef enum _mstate
-{
-  impossible,
-  normal,
-  turn,
-  destroy110,
-  destroy111,
-  destroy210,
-  destroy211,
-  destroy_max11,
-  destroy_max21,
-  destroy
-} mstate;
+typedef enum {
+  ONGOING,
+  WHITE_WIN,
+  BLACK_WIN,
+  DRAW
+} GameState;
 
-int actual_player;
-bool pawn_mandatory, queen_mandatory;
-int mandatory_x, mandatory_y;
-winner check_mat(int **);
-bool check_null(int **);
-void check_pawn(int **);
-void check_queen(int **);
-mstate check_move(int, int, int, int, int **);
-void apply_move(int, int, int, int, int ***);
+typedef struct {
+  int x;
+  int y;
+} IntTuple;
+
+typedef struct {
+  float x;
+  float y;
+} FloatTuple;
+
+int allowed_count, allowed_piece_count, *current_allowed_piece;
+Bool mandatory_pawn_move, mandatory_queen_move;
+IntTuple *current_allowed;
+
+CellState validate_cell(int, int, int*);
+GameState check_game_state(int*);
+void get_allowed_actions(int*);
+void get_allowed_piece_actions(int, int*);
+GameState switch_turn(int*, FloatTuple);
+GameState apply_move(IntTuple, int**, FloatTuple);
 
 #endif

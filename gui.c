@@ -5,7 +5,7 @@
 #include "init.h"
 #include "utilities.h"
 
-Bool shown, mute = FALSE, indicator_on = TRUE;
+Bool shown, mute = FALSE, indicator_on = TRUE, board_rotation = TRUE;
 
 char* BASE_PATH = "./Bulltricker_Data/";
 char* SPRITE_PATH = "./Bulltricker_Data/Sprites/";
@@ -122,6 +122,13 @@ FloatTuple get_cell_size(int location) {
   }
 }
 
+int mirror(int index) {
+  if (current_player == BLACK_PLAYER && board_rotation == TRUE) {
+    return mirror_position(index);
+  }
+  return index;
+}
+
 int map_to_int(IntTuple position) {
   float step = SCREEN_HEIGHT/29.f;
   int max_count = row_count;
@@ -145,7 +152,7 @@ int map_to_int(IntTuple position) {
     }
     if (x_found == TRUE && y_found == TRUE) { break; }
   }
-  return y*column_count+x;
+  return mirror(y*column_count+x);
 }
 
 IntTuple map_to_edge(int location, FloatTuple offset) {
@@ -267,38 +274,39 @@ void draw(int *current_board, FloatTuple offset, Bool clear_render) {
   fill_blank(offset);
   float x = offset.x, y = offset.y;
   for (int i = 0; i < get_board_size(); i++) {
-    FloatTuple cell_size = get_cell_size(i);
-    Bool is_rotated = (i / column_count) % 2 == 1 ? TRUE : FALSE;
-    if (current_board[i] == BLOCKED)
+    int target = mirror(i);
+    FloatTuple cell_size = get_cell_size(target);
+    Bool is_rotated = (target / column_count) % 2 == 1 ? TRUE : FALSE;
+    if (current_board[target] == BLOCKED)
       g_texture = load_texture("NP.png");
-    else if (current_board[i] == EMPTY_KING)
+    else if (current_board[target] == EMPTY_KING)
       g_texture = load_texture("PK.png");
-    else if (current_board[i] == WHITE_KING)
+    else if (current_board[target] == WHITE_KING)
       g_texture = load_texture("KW.png");
-    else if (current_board[i] == BLACK_KING)
+    else if (current_board[target] == BLACK_KING)
       g_texture = load_texture("KB.png");
     else if (is_rotated == TRUE) {
-      if (current_board[i] == EMPTY_NORMAL)
+      if (current_board[target] == EMPTY_NORMAL)
         g_texture = load_texture("P0.png");
-      else if (current_board[i] == BLACK_QUEEN)
+      else if (current_board[target] == BLACK_QUEEN)
         g_texture = load_texture("QB.png");
-      else if (current_board[i] == WHITE_QUEEN)
+      else if (current_board[target] == WHITE_QUEEN)
         g_texture = load_texture("QW.png");
-      else if (current_board[i] == BLACK_PAWN)
+      else if (current_board[target] == BLACK_PAWN)
         g_texture = load_texture("PBR.png");
-      else if (current_board[i] == WHITE_PAWN)
+      else if (current_board[target] == WHITE_PAWN)
         g_texture = load_texture("PWR.png");
     }
     else {
-      if (current_board[i] == EMPTY_NORMAL)
+      if (current_board[target] == EMPTY_NORMAL)
         g_texture = load_texture("P1.png");
-      else if (current_board[i] == BLACK_QUEEN)
+      else if (current_board[target] == BLACK_QUEEN)
         g_texture = load_texture("QBR.png");
-      else if (current_board[i] == WHITE_QUEEN)
+      else if (current_board[target] == WHITE_QUEEN)
         g_texture = load_texture("QWR.png");
-      else if (current_board[i] == BLACK_PAWN)
+      else if (current_board[target] == BLACK_PAWN)
         g_texture = load_texture("PB.png");
-      else if (current_board[i] == WHITE_PAWN)
+      else if (current_board[target] == WHITE_PAWN)
         g_texture = load_texture("PW.png");
     }
     SDL_Rect cell_rect = { x, y, cell_size.x, cell_size.y };
@@ -393,46 +401,52 @@ void show_settings_context(SDL_Rect **button_rects) {
   int text_width;
   change_font_size(SCREEN_HEIGHT/15);
   TTF_SizeText(g_font.font, "Settings", &text_width, NULL);
-  load_text("Settings", colors[WHITE], (SCREEN_WIDTH-text_width)/2, SCREEN_HEIGHT*0.05f, 255);
+  load_text("Settings", colors[WHITE], (SCREEN_WIDTH-text_width)/2, SCREEN_HEIGHT*0.045f, 255);
   change_font_size(SCREEN_HEIGHT/25);
   TTF_SizeText(g_font.font, "Screen Resolution", &text_width, NULL);
-  load_text("Screen Resolution", colors[WHITE], (SCREEN_WIDTH*0.6f-text_width)/2, SCREEN_HEIGHT*0.3f, 255);
-  SDL_Rect rect = { (SCREEN_WIDTH*0.5f-text_width)/2, SCREEN_HEIGHT*0.3f, SCREEN_HEIGHT*0.05f, SCREEN_HEIGHT*0.05f };
+  load_text("Screen Resolution", colors[WHITE], (SCREEN_WIDTH*0.6f-text_width)/2, SCREEN_HEIGHT*0.25f, 255);
+  SDL_Rect rect = { (SCREEN_WIDTH*0.5f-text_width)/2, SCREEN_HEIGHT*0.25f, SCREEN_HEIGHT*0.05f, SCREEN_HEIGHT*0.05f };
   g_texture = load_texture("Resolution_Setting.png");
   SDL_RenderCopy(g_renderer, g_texture, NULL, &rect);
   SDL_DestroyTexture(g_texture);
-  int origin_x = (SCREEN_WIDTH*1.1f-text_width)/2, origin_y = SCREEN_HEIGHT*0.26f, origin_w = SCREEN_HEIGHT*0.04f, origin_h = SCREEN_HEIGHT*0.04f;
-  char *texts[] = { "1280x720", "1366x768", "1600x900", "1920x1080", "On", "Off", "On", "Off" };
-  FloatTuple text_coords[] = { (FloatTuple) { origin_x*1.075f, origin_y*0.985f }, (FloatTuple) { origin_x*1.075f, SCREEN_HEIGHT*0.36f*0.985f }, (FloatTuple) { (SCREEN_WIDTH*1.55f-text_width)/2*1.05f, origin_y*0.985f }, (FloatTuple) { (SCREEN_WIDTH*1.55f-text_width)/2*1.05f, SCREEN_HEIGHT*0.36f*0.985f }, (FloatTuple) { origin_x*1.075f, SCREEN_HEIGHT*0.505f*0.99f  }, (FloatTuple) { (SCREEN_WIDTH*1.55f-text_width)/2*1.05f, SCREEN_HEIGHT*0.505f*0.99f }, (FloatTuple) { origin_x*1.075f, SCREEN_HEIGHT*0.655f*0.99f }, (FloatTuple) { (SCREEN_WIDTH*1.55f-text_width)/2*1.05f, SCREEN_HEIGHT*0.655f*0.99f } };
-  (*button_rects)[R1280x720] = (SDL_Rect) { origin_x, origin_y, origin_w, origin_h }; (*button_rects)[R1366x768] = (SDL_Rect) { origin_x, SCREEN_HEIGHT*0.36f, origin_w, origin_h }; (*button_rects)[R1600x900] = (SDL_Rect) { (SCREEN_WIDTH*1.55f-text_width)/2, origin_y, origin_w, origin_h }; (*button_rects)[R1920x1080] = (SDL_Rect) { (SCREEN_WIDTH*1.55f-text_width)/2, SCREEN_HEIGHT*0.36f, origin_w, origin_h }; (*button_rects)[SOUND_ON] = (SDL_Rect) { origin_x, SCREEN_HEIGHT*0.505f, origin_w, origin_h }; (*button_rects)[SOUND_OFF] = (SDL_Rect) { (SCREEN_WIDTH*1.55f-text_width)/2, SCREEN_HEIGHT*0.505f, origin_w, origin_h  }; (*button_rects)[INDICATOR_ON] = (SDL_Rect) { origin_x, SCREEN_HEIGHT*0.655f, origin_w, origin_h }; (*button_rects)[INDICATOR_OFF] = (SDL_Rect) { (SCREEN_WIDTH*1.55f-text_width)/2, SCREEN_HEIGHT*0.655f, origin_w, origin_h };
+  int origin_x = (SCREEN_WIDTH*1.1f-text_width)/2, origin_y = SCREEN_HEIGHT*0.21f, origin_w = SCREEN_HEIGHT*0.04f, origin_h = SCREEN_HEIGHT*0.04f;
+  char *texts[] = { "1280x720", "1366x768", "1600x900", "1920x1080", "On", "Off", "On", "Off", "On", "Off" };
+  FloatTuple text_coords[] = { (FloatTuple) { origin_x*1.075f, origin_y*0.985f }, (FloatTuple) { origin_x*1.075f, SCREEN_HEIGHT*0.31f*0.985f }, (FloatTuple) { (SCREEN_WIDTH*1.55f-text_width)/2*1.05f, origin_y*0.985f }, (FloatTuple) { (SCREEN_WIDTH*1.55f-text_width)/2*1.05f, SCREEN_HEIGHT*0.31f*0.985f }, (FloatTuple) { origin_x*1.075f, SCREEN_HEIGHT*0.435f*0.99f  }, (FloatTuple) { (SCREEN_WIDTH*1.55f-text_width)/2*1.05f, SCREEN_HEIGHT*0.435f*0.99f }, (FloatTuple) { origin_x*1.075f, SCREEN_HEIGHT*0.57f*0.99f }, (FloatTuple) { (SCREEN_WIDTH*1.55f-text_width)/2*1.05f, SCREEN_HEIGHT*0.57f*0.99f }, (FloatTuple) { origin_x*1.075f, SCREEN_HEIGHT*0.705f*0.99f }, (FloatTuple) { (SCREEN_WIDTH*1.55f-text_width)/2*1.05f, SCREEN_HEIGHT*0.705f*0.99f } };
+  (*button_rects)[R1280x720] = (SDL_Rect) { origin_x, origin_y, origin_w, origin_h }; (*button_rects)[R1366x768] = (SDL_Rect) { origin_x, SCREEN_HEIGHT*0.31f, origin_w, origin_h }; (*button_rects)[R1600x900] = (SDL_Rect) { (SCREEN_WIDTH*1.55f-text_width)/2, origin_y, origin_w, origin_h }; (*button_rects)[R1920x1080] = (SDL_Rect) { (SCREEN_WIDTH*1.55f-text_width)/2, SCREEN_HEIGHT*0.31f, origin_w, origin_h }; (*button_rects)[SOUND_ON] = (SDL_Rect) { origin_x, SCREEN_HEIGHT*0.435f, origin_w, origin_h }; (*button_rects)[SOUND_OFF] = (SDL_Rect) { (SCREEN_WIDTH*1.55f-text_width)/2, SCREEN_HEIGHT*0.435f, origin_w, origin_h  }; (*button_rects)[INDICATOR_ON] = (SDL_Rect) { origin_x, SCREEN_HEIGHT*0.57f, origin_w, origin_h }; (*button_rects)[INDICATOR_OFF] = (SDL_Rect) { (SCREEN_WIDTH*1.55f-text_width)/2, SCREEN_HEIGHT*0.57f, origin_w, origin_h }, (*button_rects)[ROTATION_ON] = (SDL_Rect) { origin_x, SCREEN_HEIGHT*0.705f, origin_w, origin_h }; (*button_rects)[ROTATION_OFF] = (SDL_Rect) { (SCREEN_WIDTH*1.55f-text_width)/2, SCREEN_HEIGHT*0.705f, origin_w, origin_h };
   SDL_Texture *off_button = load_texture("Radio_Button_Off.png"), *on_button = load_texture("Radio_Button_On.png");
   for (int i = 0; i < SETTING_OPTION_COUNT-1; i++) {
     load_text(texts[i], colors[WHITE], text_coords[i].x, text_coords[i].y, 255);
-    if (i == map_resolution() || (i == SOUND_ON && mute == FALSE) || (i == SOUND_OFF && mute == TRUE) || (i == INDICATOR_ON && indicator_on == TRUE) || (i == INDICATOR_OFF && indicator_on == FALSE))
+    if (i == map_resolution() || (i == SOUND_ON && mute == FALSE) || (i == SOUND_OFF && mute == TRUE) || (i == INDICATOR_ON && indicator_on == TRUE) || (i == INDICATOR_OFF && indicator_on == FALSE) || (i == ROTATION_ON && board_rotation == TRUE) || (i == ROTATION_OFF && board_rotation == FALSE))
       SDL_RenderCopy(g_renderer, on_button, NULL, (*button_rects)+i);
     else
       SDL_RenderCopy(g_renderer, off_button, NULL, (*button_rects)+i);
   }
   TTF_SizeText(g_font.font, "Sound", &text_width, NULL);
-  load_text("Sound", colors[WHITE], (SCREEN_WIDTH*0.6f-text_width)/2, SCREEN_HEIGHT*0.5f, 255);
-  rect.x = (SCREEN_WIDTH*0.5f-text_width)/2; rect.y = SCREEN_HEIGHT*0.5f;
+  load_text("Sound", colors[WHITE], (SCREEN_WIDTH*0.6f-text_width)/2, SCREEN_HEIGHT*0.429f, 255);
+  rect.x = (SCREEN_WIDTH*0.5f-text_width)/2; rect.y = SCREEN_HEIGHT*0.429f;
   g_texture = load_texture("Sound_Setting.png");
   SDL_RenderCopy(g_renderer, g_texture, NULL, &rect);
   SDL_DestroyTexture(g_texture);
   TTF_SizeText(g_font.font, "Indicator", &text_width, NULL);
-  load_text("Indicator", colors[WHITE], (SCREEN_WIDTH*0.6f-text_width)/2, SCREEN_HEIGHT*0.65f, 255);
-  rect.x = (SCREEN_WIDTH*0.5f-text_width)/2; rect.y = SCREEN_HEIGHT*0.65f;
+  load_text("Indicator", colors[WHITE], (SCREEN_WIDTH*0.6f-text_width)/2, SCREEN_HEIGHT*0.562f, 255);
+  rect.x = (SCREEN_WIDTH*0.5f-text_width)/2; rect.y = SCREEN_HEIGHT*0.562f;
   g_texture = load_texture("Indicator_Setting.png");
+  SDL_RenderCopy(g_renderer, g_texture, NULL, &rect);
+  SDL_DestroyTexture(g_texture);
+  TTF_SizeText(g_font.font, "Board Rotation", &text_width, NULL);
+  load_text("Board Rotation", colors[WHITE], (SCREEN_WIDTH*0.6f-text_width)/2, SCREEN_HEIGHT*0.697f, 255);
+  rect.x = (SCREEN_WIDTH*0.5f-text_width)/2; rect.y = SCREEN_HEIGHT*0.697f;
+  g_texture = load_texture("Rotation_Setting.png");
   SDL_RenderCopy(g_renderer, g_texture, NULL, &rect);
   SDL_DestroyTexture(g_texture);
   SDL_DestroyTexture(off_button); SDL_DestroyTexture(on_button);
   TTF_SizeText(g_font.font, "Return", &text_width, NULL);
   g_texture = load_texture("Return_Button.png");
-  (*button_rects)[RETURN] = (SDL_Rect) { (SCREEN_WIDTH-text_width)*0.465, SCREEN_HEIGHT*0.805, SCREEN_WIDTH*0.145, SCREEN_HEIGHT*0.1 };
+  (*button_rects)[RETURN] = (SDL_Rect) { (SCREEN_WIDTH-text_width)*0.465f, SCREEN_HEIGHT*0.835f, SCREEN_WIDTH*0.145f, SCREEN_HEIGHT*0.1f };
   SDL_RenderCopy(g_renderer, g_texture, NULL, (*button_rects)+RETURN);
   SDL_DestroyTexture(g_texture);
   g_texture = NULL;
-  load_text("Return", colors[BLACK], (SCREEN_WIDTH-text_width)/2, SCREEN_HEIGHT*0.83, 255);
+  load_text("Return", colors[BLACK], (SCREEN_WIDTH-text_width)/2, SCREEN_HEIGHT*0.86f, 255);
   SDL_RenderPresent(g_renderer);
 }
 
@@ -498,6 +512,8 @@ void settings_screen(Bool *quit, Bool in_game, int *current_board, FloatTuple of
         else if (current_hover == SOUND_OFF) { mute = TRUE; }
         else if (current_hover == INDICATOR_ON) { indicator_on = TRUE; }
         else if (current_hover == INDICATOR_OFF) { indicator_on = FALSE; }
+        else if (current_hover == ROTATION_ON) { board_rotation = TRUE; }
+        else if (current_hover == ROTATION_OFF) { board_rotation = FALSE; }
         else if (current_hover == RETURN) { settings_return(&quit_settings, in_game, current_board, offset); }
         if (current_hover != -1) {
           if (current_hover != SOUND_OFF) { play_sound(sounds[BIP2]); }
@@ -660,6 +676,7 @@ Bool action_indicator(int index, int *current_board, FloatTuple offset) {
   get_allowed_piece_actions(index, current_board);
   if (current_board[index]/COLOR_DIVIDER == current_player) {
     if (indicator_on == TRUE) {
+      index = mirror(index);
       IntTuple edge_map = map_to_edge(index, offset);
       FloatTuple cell_size = get_cell_size(index);
       SDL_Rect rect = { edge_map.x, edge_map.y, cell_size.x, cell_size.y };
@@ -672,8 +689,9 @@ Bool action_indicator(int index, int *current_board, FloatTuple offset) {
       g_texture = load_texture("Indicator.png");
       set_alpha(150);
       for (int i = 0; i < allowed_piece_count; i++) {
-        edge_map = map_to_edge(current_allowed_piece[i], offset);
-        cell_size = get_cell_size(current_allowed_piece[i]);
+        int target = mirror(current_allowed_piece[i]);
+        edge_map = map_to_edge(target, offset);
+        cell_size = get_cell_size(target);
         rect = (SDL_Rect) { edge_map.x, edge_map.y, cell_size.x, cell_size.y };
         SDL_RenderCopy(g_renderer, g_texture, NULL, &rect);
       }
@@ -691,8 +709,9 @@ void mandatory_indicator(int cell_index, FloatTuple offset, int grid_x, int grid
     SDL_Rect rects[allowed_count];
     for (int i = 0; i < allowed_count; i++) {
       if (cell_index == current_allowed[i].x) { return; }
-      IntTuple edge_map = map_to_edge(current_allowed[i].x, offset);
-      FloatTuple cell_size = get_cell_size(current_allowed[i].x);
+      int target = mirror(current_allowed[i].x);
+      IntTuple edge_map = map_to_edge(target, offset);
+      FloatTuple cell_size = get_cell_size(target);
       rects[i] = (SDL_Rect) { edge_map.x, edge_map.y, cell_size.x, cell_size.y };
     }
     int text_width;

@@ -34,12 +34,12 @@ int allowed_count, allowed_piece_count, *current_allowed_piece;
 Bool mandatory_pawn_move, mandatory_queen_move;
 IntTuple *current_allowed;
 
-CellState validate_cell(int, int, int*);
-GameState check_game_state(int*);
-void get_allowed_actions(int*);
-void get_allowed_piece_actions(int, int*);
-GameState switch_turn(int*, FloatTuple);
-GameState apply_move(IntTuple, int**, FloatTuple);
+CellState validate_cell(int, int, int *);
+GameState check_game_state(int *);
+void get_allowed_actions(int *);
+void get_allowed_piece_actions(int, int *);
+GameState switch_turn(int **, FloatTuple);
+GameState apply_move(IntTuple, int **, FloatTuple);
 void undo_last_move(int **, Bool *, FloatTuple);
 
 #endif

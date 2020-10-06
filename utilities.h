@@ -7,5 +7,6 @@ time_t START_TIME;
 
 void log_text(char *, ...);
 char *trim(char *);
+int mirror_position(int);
 
 #endif

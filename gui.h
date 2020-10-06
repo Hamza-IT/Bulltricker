@@ -24,6 +24,8 @@ typedef enum {
   SOUND_OFF,
   INDICATOR_ON,
   INDICATOR_OFF,
+  ROTATION_ON,
+  ROTATION_OFF,
   RETURN,
   SETTING_OPTION_COUNT
 } SettingOption;

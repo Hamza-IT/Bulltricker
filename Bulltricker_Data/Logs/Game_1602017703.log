@@ -1,23 +1,33 @@
----------- Game Started at Mon Oct 05 13:01:47 2020 ----------
+---------- Game Started at Tue Oct 06 21:55:03 2020 ----------
 
 
 	---------- Started a New Round ----------
 
-		Whites Move: (177, 147)
+		Whites Move: (175, 145)
 		White Pieces Left: 24	Black Pieces Left: 24
 
-		Blacks Move: (57, 87)
+		Blacks Move: (55, 85)
 		White Pieces Left: 24	Black Pieces Left: 24
 
-		Whites Move: (147, 131)
+		Whites Move: (145, 131)
 		White Pieces Left: 24	Black Pieces Left: 24
 
-		Blacks Move: (87, 101)
+		Blacks Move: (85, 101)
 		White Pieces Left: 24	Black Pieces Left: 24
 
 		Whites Move: (131, 11)
 		White Pieces Left: 24	Black Pieces Left: 22
 
+		Blacks Move: (39, 69)
+		White Pieces Left: 24	Black Pieces Left: 22
+
+		Whites Move: (11, 7)
+		White Pieces Left: 24	Black Pieces Left: 22
+
+
+	---------- Game Ended with a Whites Win ----------
+
 		Undoing last move. Whites turn to play.
+
 
 ---------- Game Closed Successfully ----------

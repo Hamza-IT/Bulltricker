@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <ctype.h>
+#include "init.h"
 #include "utilities.h"
 
 char* LOG_PATH = "./Bulltricker_Data/Logs/";
@@ -32,4 +33,8 @@ char *trim(char *s) {
   for (ptr = s + strlen(s) - 1; (ptr >= s) && isspace(*ptr); --ptr);
   ptr[1] = '\0';
   return s;
+}
+
+int mirror_position(int index) {
+  return get_board_size()-1-(index/column_count)*column_count-(index%column_count);
 }

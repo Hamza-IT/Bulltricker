@@ -112,8 +112,9 @@ void get_allowed_actions(int *current_board) {
           if (validate_cell(i+column_count, i+(column_count+1), current_board) == EMPTY)
             tmp[l++] = (IntTuple) { i, i+(column_count+1) };
         }
-        for (int j = 2; j < row_count; j += 2) {
-          if (mandatory_left == FALSE && mandatory_right == FALSE) {
+        int max_count = row_count >= column_count ? row_count : column_count;
+        for (int j = 2; j < max_count; j += 2) {
+          if (mandatory_left == FALSE && mandatory_right == FALSE && j < row_count) {
             if (checking_up == TRUE) {
               // Rotated Queen Identification
               if ((i/column_count) % 2 == 1) {
@@ -177,7 +178,7 @@ void get_allowed_actions(int *current_board) {
               }
             }
           }
-          if (mandatory_up == FALSE && mandatory_down == FALSE) {
+          if (mandatory_up == FALSE && mandatory_down == FALSE && j < column_count) {
             if (checking_left == TRUE) {
               // Non Rotated Queen Identification
               if ((i/column_count) % 2 == 0) {
@@ -252,9 +253,9 @@ void get_allowed_actions(int *current_board) {
             allowed[k++] = (IntTuple) { i, i+(column_count*2) };
           if (validate_cell(i, i-(column_count*2), current_board) == EMPTY && validate_cell(i, i-column_count, current_board) == EMPTY && (validate_cell(i, i-(column_count*4), current_board) == OUT_OF_BOUNDS || validate_cell(i, i-(column_count*4), current_board) == EMPTY) && (validate_cell(i-(column_count*4), i-(column_count*4-2), current_board) == OUT_OF_BOUNDS || validate_cell(i-(column_count*4), i-(column_count*4-2), current_board) == EMPTY) && (validate_cell(i-(column_count*4), i-(column_count*4+2), current_board) == OUT_OF_BOUNDS || validate_cell(i-(column_count*4), i-(column_count*4+2), current_board) == EMPTY))
             allowed[k++] = (IntTuple) { i, i-(column_count*2) };
-          if (validate_cell(i, i+2, current_board) == EMPTY && validate_cell(i, i+1, current_board) == EMPTY && (validate_cell(i, i+4, current_board) == OUT_OF_BOUNDS || validate_cell(i, i+4, current_board) == EMPTY) && (validate_cell(i+column_count, i+4+column_count, current_board) == OUT_OF_BOUNDS || validate_cell(i+column_count, i+4+column_count, current_board) == EMPTY) && (validate_cell(i-column_count, i+4-column_count, current_board) == OUT_OF_BOUNDS || validate_cell(i-column_count, i+4-column_count, current_board) == EMPTY))
+          if (validate_cell(i, i+2, current_board) == EMPTY && validate_cell(i, i+1, current_board) == EMPTY && (validate_cell(i, i+4, current_board) == OUT_OF_BOUNDS || validate_cell(i, i+4, current_board) == EMPTY) && (validate_cell(i+2*column_count, i+4+2*column_count, current_board) == OUT_OF_BOUNDS || validate_cell(i+2*column_count, i+4+2*column_count, current_board) == EMPTY) && (validate_cell(i-2*column_count, i+4-2*column_count, current_board) == OUT_OF_BOUNDS || validate_cell(i-2*column_count, i+4-2*column_count, current_board) == EMPTY))
             allowed[k++] = (IntTuple) { i, i+2 };
-          if (validate_cell(i, i-2, current_board) == EMPTY && validate_cell(i, i-1, current_board) == EMPTY && (validate_cell(i, i-4, current_board) == OUT_OF_BOUNDS || validate_cell(i, i-4, current_board) == EMPTY) && (validate_cell(i+column_count, i-4+column_count, current_board) == OUT_OF_BOUNDS || validate_cell(i+column_count, i-4+column_count, current_board) == EMPTY) && (validate_cell(i-column_count, i-4-column_count, current_board) == OUT_OF_BOUNDS || validate_cell(i-column_count, i-4-column_count, current_board) == EMPTY))
+          if (validate_cell(i, i-2, current_board) == EMPTY && validate_cell(i, i-1, current_board) == EMPTY && (validate_cell(i, i-4, current_board) == OUT_OF_BOUNDS || validate_cell(i, i-4, current_board) == EMPTY) && (validate_cell(i+2*column_count, i-4+2*column_count, current_board) == OUT_OF_BOUNDS || validate_cell(i+2*column_count, i-4+2*column_count, current_board) == EMPTY) && (validate_cell(i-2*column_count, i-4-2*column_count, current_board) == OUT_OF_BOUNDS || validate_cell(i-2*column_count, i-4-2*column_count, current_board) == EMPTY))
             allowed[k++] = (IntTuple) { i, i-2 };
         }
       }
@@ -265,11 +266,11 @@ void get_allowed_actions(int *current_board) {
   for (int i = 0; i < allowed_count; i++) { current_allowed[i] = allowed[i]; }
 }
 
-GameState switch_turn(int *current_board, FloatTuple offset) {
+GameState switch_turn(int **current_board, FloatTuple offset) {
   current_player = -current_player;
-  get_allowed_actions(current_board);
-  draw(current_board, offset, FALSE);
-  return check_game_state(current_board);
+  get_allowed_actions(*current_board);
+  draw(*current_board, offset, FALSE);
+  return check_game_state(*current_board);
 }
 
 void get_allowed_piece_actions(int index, int *current_board) {
@@ -324,6 +325,8 @@ GameState apply_move(IntTuple move, int **current_board, FloatTuple offset) {
             draw(*current_board, offset, FALSE);
             play_sound(sounds[MOVE2]);
             SDL_Delay(400);
+            if (last_position != move.y)
+              (*current_board)[last_position] = 0;
           }
         }
       }
@@ -342,6 +345,8 @@ GameState apply_move(IntTuple move, int **current_board, FloatTuple offset) {
             draw(*current_board, offset, FALSE);
             play_sound(sounds[MOVE2]);
             SDL_Delay(400);
+            if (last_position != move.y)
+              (*current_board)[last_position] = 0;
           }
         }
       }
@@ -367,7 +372,7 @@ GameState apply_move(IntTuple move, int **current_board, FloatTuple offset) {
       char player[50] = "\t\tBlacks Move: ";
       log_text(strcat(player, "(%d, %d)\n\t\tWhite Pieces Left: %d\tBlack Pieces Left: %d\n\n"), move.x, move.y, WHITE_PIECES_COUNT, BLACK_PIECES_COUNT);
     }
-    return switch_turn(*current_board, offset);
+    return switch_turn(current_board, offset);
   }
 }
 
@@ -376,10 +381,10 @@ void undo_last_move(int **current_board, Bool *game_over, FloatTuple offset) {
     for (int i = 0; i < get_board_size(); i++)
       (*current_board)[i] = (previous_states[current_states])[i];
     current_states--;
-    switch_turn(*current_board, offset);
+    switch_turn(current_board, offset);
     *game_over = FALSE;
     play_sound(sounds[BIP2]);
     char log[50] = "\t\tUndoing last move. ";
-    log_text(strcat(log, current_player == WHITE_PLAYER ? "Whites turn to play.\n" : "Blacks turn to play.\n"));
+    log_text(strcat(log, current_player == WHITE_PLAYER ? "Whites turn to play.\n\n" : "Blacks turn to play.\n\n"));
   }
 }

@@ -61,10 +61,10 @@ void get_allowed_actions(int *current_board) {
   int k = 0;
   for (int i = 0; i < get_board_size(); i++) {
     if (current_board[i] / COLOR_DIVIDER == current_player) {
-      if ((current_board[i] == WHITE_PAWN || current_board[i] == BLACK_PAWN) && mandatory_queen_move == FALSE) {
+      if ((current_board[i] == WHITE_PAWN || current_board[i] == BLACK_PAWN)) {
         // Pawn Logic Here
         PieceColor color_mult = current_board[i] / COLOR_DIVIDER; // Piece Color Identification
-        if (mandatory_pawn_move == FALSE) {
+        if (mandatory_pawn_move == FALSE && mandatory_queen_move == FALSE) {
           if (validate_cell(i-column_count*color_mult, i-(column_count-1)*color_mult, current_board) == EMPTY)
             allowed[k++] = (IntTuple) { i, i-(column_count-1)*color_mult };
           if (validate_cell(i-column_count*color_mult, i-(column_count+1)*color_mult, current_board) == EMPTY)
@@ -82,7 +82,7 @@ void get_allowed_actions(int *current_board) {
           for (int j = 2; j < row_count; j += 4) {
             if (validate_cell(i, i-(j-1)*column_count*color_mult, current_board) == EMPTY && validate_cell(i, i-j*column_count*color_mult, current_board) == ENEMY && validate_cell(i, i-(j+1)*column_count*color_mult, current_board) == EMPTY && validate_cell(i, i-(j+2)*column_count*color_mult, current_board) == EMPTY) {
               possible_move.x = i; possible_move.y = i-(j+2)*column_count*color_mult;
-              if (mandatory_pawn_move == FALSE) {
+              if (mandatory_pawn_move == FALSE && mandatory_queen_move == FALSE) {
                 for (int x = 0; x < k; x++) { allowed[x] = (IntTuple) { 0, 0 }; }
                 k = 0;
               }
@@ -128,12 +128,12 @@ void get_allowed_actions(int *current_board) {
               // Non Rotated Queen Identification
               else {
                 if (validate_cell(i, i-(j-1)*column_count, current_board) == EMPTY) {
-                  if (validate_cell(i, i-j*column_count, current_board) == EMPTY && mandatory_pawn_move == FALSE && (mandatory_queen_move == FALSE || mandatory_up == TRUE))
+                  if (validate_cell(i, i-j*column_count, current_board) == EMPTY && ((mandatory_pawn_move == FALSE && mandatory_queen_move == FALSE) || mandatory_up == TRUE))
                     tmp[l++] = (IntTuple) { i, i-column_count*j };
                   else if (validate_cell(i, i-j*column_count, current_board) == ENEMY && validate_cell(i, i-(j+1)*column_count, current_board) == EMPTY && validate_cell(i, i-(j+2)*column_count, current_board) == EMPTY) {
                     for (int x = 0; x < l; x++) { tmp[x] = (IntTuple) { 0, 0 }; }
                     l = 0;
-                    if (mandatory_queen_move == FALSE) {
+                    if (mandatory_queen_move == FALSE && mandatory_pawn_move == FALSE) {
                       for (int x = 0; x < k; x++) { allowed[x] = (IntTuple) { 0, 0 }; }
                       k = 0;
                     }
@@ -159,12 +159,12 @@ void get_allowed_actions(int *current_board) {
               // Non Rotated Queen Identification
               else {
                 if (validate_cell(i, i+(j-1)*column_count, current_board) == EMPTY) {
-                  if (validate_cell(i, i+j*column_count, current_board) == EMPTY && mandatory_pawn_move == FALSE && (mandatory_queen_move == FALSE || mandatory_down == TRUE))
+                  if (validate_cell(i, i+j*column_count, current_board) == EMPTY && ((mandatory_pawn_move == FALSE && mandatory_queen_move == FALSE) || mandatory_down == TRUE))
                     tmp[l++] = (IntTuple) { i, i+column_count*j };
                   else if (validate_cell(i, i+j*column_count, current_board) == ENEMY && validate_cell(i, i+(j+1)*column_count, current_board) == EMPTY && validate_cell(i, i+(j+2)*column_count, current_board) == EMPTY) {
                     for (int x = 0; x < l; x++) { tmp[x] = (IntTuple) { 0, 0 }; }
                     l = 0;
-                    if (mandatory_queen_move == FALSE) {
+                    if (mandatory_queen_move == FALSE && mandatory_pawn_move == FALSE) {
                       for (int x = 0; x < k; x++) { allowed[x] = (IntTuple) { 0, 0 }; }
                       k = 0;
                     }
@@ -192,12 +192,12 @@ void get_allowed_actions(int *current_board) {
               // Rotated Queen Identification
               else {
                 if (validate_cell(i, i-(j-1), current_board) == EMPTY) {
-                  if (validate_cell(i, i-j, current_board) == EMPTY && mandatory_pawn_move == FALSE && (mandatory_queen_move == FALSE || mandatory_left == TRUE))
+                  if (validate_cell(i, i-j, current_board) == EMPTY && ((mandatory_pawn_move == FALSE && mandatory_queen_move == FALSE) || mandatory_left == TRUE))
                     tmp[l++] = (IntTuple) { i, i-j };
                   else if (validate_cell(i, i-j, current_board) == ENEMY && validate_cell(i, i-(j+1), current_board) == EMPTY && validate_cell(i, i-(j+2), current_board) == EMPTY) {
                     for (int x = 0; x < l; x++) { tmp[x] = (IntTuple) { 0, 0 }; }
                     l = 0;
-                    if (mandatory_queen_move == FALSE) {
+                    if (mandatory_queen_move == FALSE && mandatory_pawn_move == FALSE) {
                       for (int x = 0; x < k; x++) { allowed[x] = (IntTuple) { 0, 0 }; }
                       k = 0;
                     }
@@ -223,12 +223,12 @@ void get_allowed_actions(int *current_board) {
               // Rotated Queen Identification
               else {
                 if (validate_cell(i, i+(j-1), current_board) == EMPTY) {
-                  if (validate_cell(i, i+j, current_board) == EMPTY && mandatory_pawn_move == FALSE && (mandatory_queen_move == FALSE || mandatory_right == TRUE))
+                  if (validate_cell(i, i+j, current_board) == EMPTY && ((mandatory_pawn_move == FALSE && mandatory_queen_move == FALSE) || mandatory_right == TRUE))
                     tmp[l++] = (IntTuple) { i, i+j };
                   else if (validate_cell(i, i+j, current_board) == ENEMY && validate_cell(i, i+(j+1), current_board) == EMPTY && validate_cell(i, i+(j+2), current_board) == EMPTY) {
                     for (int x = 0; x < l; x++) { tmp[x] = (IntTuple) { 0, 0 }; }
                     l = 0;
-                    if (mandatory_queen_move == FALSE) {
+                    if (mandatory_queen_move == FALSE && mandatory_pawn_move == FALSE) {
                       for (int x = 0; x < k; x++) { allowed[x] = (IntTuple) { 0, 0 }; }
                       k = 0;
                     }
@@ -304,49 +304,35 @@ GameState apply_move(IntTuple move, int **current_board, FloatTuple offset) {
     int origin_piece = (*current_board)[move.x];
     // King Action
     if ((*current_board)[move.x] == WHITE_KING || (*current_board)[move.x] == BLACK_KING)
-      (*current_board)[move.x] = -2;
+      (*current_board)[move.x] = EMPTY_KING;
     // Pawn/Queen Action
     else {
       int last_position = move.x;
       int distance = move.y-move.x;
       int direction = distance/abs(distance);
-      (*current_board)[move.x] = 0;
-      if (distance % column_count == 0) {
-        for (int i = column_count*2*direction; abs(i) < abs(distance); i += column_count*2*direction) {
+      (*current_board)[move.x] = EMPTY_NORMAL;
+      if (distance % column_count == 0 || (origin_piece == WHITE_QUEEN || origin_piece == BLACK_QUEEN) && validate_cell(move.x, move.y, *current_board) != OUT_OF_BOUNDS) {
+        int step;
+        if (distance % column_count == 0)
+          step = 2*column_count*direction;
+        // Queen Horizontal Movement
+        else if ((origin_piece == WHITE_QUEEN || origin_piece == BLACK_QUEEN) && validate_cell(move.x, move.y, *current_board) != OUT_OF_BOUNDS)
+          step = 2*direction;
+        for (int i = step; abs(i) < abs(distance); i += step) {
           if (validate_cell(last_position, move.x+i, *current_board) == ENEMY) {
             if ((*current_board)[move.x+i]/COLOR_DIVIDER == WHITE_PLAYER)
               WHITE_PIECES_COUNT--;
             else
               BLACK_PIECES_COUNT--;
-            (*current_board)[last_position] = 0;
-            last_position = move.x+i+column_count*2*direction;
+            (*current_board)[last_position] = EMPTY_NORMAL;
+            last_position = move.x+i+step;
             (*current_board)[last_position] = origin_piece;
-            (*current_board)[move.x+i] = 0;
+            (*current_board)[move.x+i] = EMPTY_NORMAL;
             draw(*current_board, offset, FALSE);
             play_sound(sounds[MOVE2]);
             SDL_Delay(400);
             if (last_position != move.y)
-              (*current_board)[last_position] = 0;
-          }
-        }
-      }
-      // Queen Horizontal Movement
-      else if ((origin_piece == WHITE_QUEEN || origin_piece == BLACK_QUEEN) && validate_cell(move.x, move.y, *current_board) != OUT_OF_BOUNDS) {
-        for (int i = 2*direction; abs(i) < abs(distance); i += 2*direction) {
-          if (validate_cell(last_position, move.x+i, *current_board) == ENEMY) {
-            if ((*current_board)[move.x+i]/COLOR_DIVIDER == WHITE_PLAYER)
-              WHITE_PIECES_COUNT--;
-            else
-              BLACK_PIECES_COUNT--;
-            (*current_board)[last_position] = 0;
-            last_position = move.x+i+2*direction;
-            (*current_board)[last_position] = origin_piece;
-            (*current_board)[move.x+i] = 0;
-            draw(*current_board, offset, FALSE);
-            play_sound(sounds[MOVE2]);
-            SDL_Delay(400);
-            if (last_position != move.y)
-              (*current_board)[last_position] = 0;
+              (*current_board)[last_position] = EMPTY_NORMAL;
           }
         }
       }

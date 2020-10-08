@@ -334,7 +334,7 @@ Bool save_game(int *current_board, GameState current_state) {
       return TRUE;
     }
     else
-      log_text("\tFailed to open file at <%s>. Game could not be saved.\n");
+      log_text("\tFailed to open file at <%s>. Game could not be saved.\n", path);
   }
   return FALSE;
 }

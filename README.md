@@ -7,9 +7,9 @@ Both a pre-compiled executable and a Makefile are included within the project.
 ## How To Play
 Refer to the official rules at [http://www.bulltricker.com/](http://www.bulltricker.com/).
 ## Updates
-No further updates will be made for this version.
+No further updates will be made for this version apart from the occasional tweak.
 
-However, a full scale online version is in development and is soon to be released for WINDOWS/LINUX/MAC and Mobile with the agreement of the creator.
+However, a full scale online version is in development and is soon to be released for WINDOWS/LINUX/MAC and Mobile with the agreement of the game creator.
 
 ![Home Page Image](https://i.imgur.com/dTwuY2c.jpg)
 

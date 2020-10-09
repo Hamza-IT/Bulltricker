@@ -717,13 +717,14 @@ void mandatory_indicator(int cell_index, FloatTuple offset, int grid_x, int grid
     int text_width;
     TTF_SizeText(g_font.font, "Mandatory Move", &text_width, NULL);
     load_text("Mandatory Move", colors[BLACK], grid_x+(grid_width-text_width)*0.5, SCREEN_HEIGHT*0.41, 255);
-    play_sound(sounds[MANDATORY]);
     g_texture = load_texture("_Mandatory.png");
     set_blend_mode(SDL_BLENDMODE_BLEND);
     set_alpha(180);
     for (int i = 0; i < allowed_count; i++) { SDL_RenderCopy(g_renderer, g_texture, NULL, rects+i); }
     SDL_DestroyTexture(g_texture);
     g_texture = NULL;
+    play_sound(sounds[MANDATORY]);
+    SDL_RenderPresent(g_renderer);
   }
 }
 

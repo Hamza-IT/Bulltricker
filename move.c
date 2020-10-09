@@ -61,10 +61,10 @@ void get_allowed_actions(int *current_board) {
   int k = 0;
   for (int i = 0; i < get_board_size(); i++) {
     if (current_board[i] / COLOR_DIVIDER == current_player) {
-      if ((current_board[i] == WHITE_PAWN || current_board[i] == BLACK_PAWN)) {
+      if ((current_board[i] == WHITE_PAWN || current_board[i] == BLACK_PAWN) && mandatory_queen_move == FALSE) {
         // Pawn Logic Here
         PieceColor color_mult = current_board[i] / COLOR_DIVIDER; // Piece Color Identification
-        if (mandatory_pawn_move == FALSE && mandatory_queen_move == FALSE) {
+        if (mandatory_pawn_move == FALSE) {
           if (validate_cell(i-column_count*color_mult, i-(column_count-1)*color_mult, current_board) == EMPTY)
             allowed[k++] = (IntTuple) { i, i-(column_count-1)*color_mult };
           if (validate_cell(i-column_count*color_mult, i-(column_count+1)*color_mult, current_board) == EMPTY)
@@ -82,7 +82,7 @@ void get_allowed_actions(int *current_board) {
           for (int j = 2; j < row_count; j += 4) {
             if (validate_cell(i, i-(j-1)*column_count*color_mult, current_board) == EMPTY && validate_cell(i, i-j*column_count*color_mult, current_board) == ENEMY && validate_cell(i, i-(j+1)*column_count*color_mult, current_board) == EMPTY && validate_cell(i, i-(j+2)*column_count*color_mult, current_board) == EMPTY) {
               possible_move.x = i; possible_move.y = i-(j+2)*column_count*color_mult;
-              if (mandatory_pawn_move == FALSE && mandatory_queen_move == FALSE) {
+              if (mandatory_pawn_move == FALSE) {
                 for (int x = 0; x < k; x++) { allowed[x] = (IntTuple) { 0, 0 }; }
                 k = 0;
               }
@@ -98,8 +98,9 @@ void get_allowed_actions(int *current_board) {
       }
       if (current_board[i] == WHITE_QUEEN || current_board[i] == BLACK_QUEEN) {
         // Queen Logic Here
-        int l = 0;
-        IntTuple *tmp = malloc((get_board_size()-1)*get_board_size()*sizeof(IntTuple));
+        int l = 0, l_up = 0, l_down = 0, l_left = 0, l_right = 0;
+        IntTuple *tmp = malloc(get_board_size()*sizeof(IntTuple)), *tmp_up = malloc(get_board_size()*sizeof(IntTuple)), *tmp_down = malloc(get_board_size()*sizeof(IntTuple));
+        IntTuple *tmp_left = malloc(get_board_size()*sizeof(IntTuple)), *tmp_right = malloc(get_board_size()*sizeof(IntTuple));
         Bool checking_up = TRUE, checking_down = TRUE, checking_left = TRUE, checking_right = TRUE;
         Bool mandatory_up = FALSE, mandatory_down = FALSE, mandatory_left = FALSE, mandatory_right = FALSE;
         if (mandatory_queen_move == FALSE && mandatory_pawn_move == FALSE) {
@@ -129,21 +130,31 @@ void get_allowed_actions(int *current_board) {
               else {
                 if (validate_cell(i, i-(j-1)*column_count, current_board) == EMPTY) {
                   if (validate_cell(i, i-j*column_count, current_board) == EMPTY && ((mandatory_pawn_move == FALSE && mandatory_queen_move == FALSE) || mandatory_up == TRUE))
-                    tmp[l++] = (IntTuple) { i, i-column_count*j };
+                    tmp_up[l_up++] = (IntTuple) { i, i-column_count*j };
                   else if (validate_cell(i, i-j*column_count, current_board) == ENEMY && validate_cell(i, i-(j+1)*column_count, current_board) == EMPTY && validate_cell(i, i-(j+2)*column_count, current_board) == EMPTY) {
                     for (int x = 0; x < l; x++) { tmp[x] = (IntTuple) { 0, 0 }; }
                     l = 0;
-                    if (mandatory_queen_move == FALSE && mandatory_pawn_move == FALSE) {
+                    for (int x = 0; x < l_up; x++) { tmp_up[x] = (IntTuple) { 0, 0 }; }
+                    l_up = 0;
+                    if (mandatory_queen_move == FALSE) {
                       for (int x = 0; x < k; x++) { allowed[x] = (IntTuple) { 0, 0 }; }
                       k = 0;
                     }
                     mandatory_queen_move = mandatory_up = TRUE;
                   }
-                  else
+                  else {
                     checking_up = FALSE;
+                    for (int x = 0; x < l_up; x++)
+                      allowed[k++] = tmp_up[x];
+                    l_up = 0;
+                  }
                 }
-                else
+                else {
                   checking_up = FALSE;
+                  for (int x = 0; x < l_up; x++)
+                    allowed[k++] = tmp_up[x];
+                  l_up = 0;
+                }
               }
             }
             if (checking_down == TRUE) {
@@ -160,21 +171,31 @@ void get_allowed_actions(int *current_board) {
               else {
                 if (validate_cell(i, i+(j-1)*column_count, current_board) == EMPTY) {
                   if (validate_cell(i, i+j*column_count, current_board) == EMPTY && ((mandatory_pawn_move == FALSE && mandatory_queen_move == FALSE) || mandatory_down == TRUE))
-                    tmp[l++] = (IntTuple) { i, i+column_count*j };
+                    tmp_down[l_down++] = (IntTuple) { i, i+column_count*j };
                   else if (validate_cell(i, i+j*column_count, current_board) == ENEMY && validate_cell(i, i+(j+1)*column_count, current_board) == EMPTY && validate_cell(i, i+(j+2)*column_count, current_board) == EMPTY) {
                     for (int x = 0; x < l; x++) { tmp[x] = (IntTuple) { 0, 0 }; }
                     l = 0;
-                    if (mandatory_queen_move == FALSE && mandatory_pawn_move == FALSE) {
+                    for (int x = 0; x < l_down; x++) { tmp_down[x] = (IntTuple) { 0, 0 }; }
+                    l_down = 0;
+                    if (mandatory_queen_move == FALSE) {
                       for (int x = 0; x < k; x++) { allowed[x] = (IntTuple) { 0, 0 }; }
                       k = 0;
                     }
                     mandatory_queen_move = mandatory_down = TRUE;
                   }
-                  else
+                  else {
                     checking_down = FALSE;
+                    for (int x = 0; x < l_down; x++)
+                      allowed[k++] = tmp_down[x];
+                    l_down = 0;
+                  }
                 }
-                else
+                else {
                   checking_down = FALSE;
+                  for (int x = 0; x < l_down; x++)
+                    allowed[k++] = tmp_down[x];
+                  l_down = 0;
+                }
               }
             }
           }
@@ -193,21 +214,31 @@ void get_allowed_actions(int *current_board) {
               else {
                 if (validate_cell(i, i-(j-1), current_board) == EMPTY) {
                   if (validate_cell(i, i-j, current_board) == EMPTY && ((mandatory_pawn_move == FALSE && mandatory_queen_move == FALSE) || mandatory_left == TRUE))
-                    tmp[l++] = (IntTuple) { i, i-j };
+                    tmp_left[l_left++] = (IntTuple) { i, i-j };
                   else if (validate_cell(i, i-j, current_board) == ENEMY && validate_cell(i, i-(j+1), current_board) == EMPTY && validate_cell(i, i-(j+2), current_board) == EMPTY) {
                     for (int x = 0; x < l; x++) { tmp[x] = (IntTuple) { 0, 0 }; }
                     l = 0;
-                    if (mandatory_queen_move == FALSE && mandatory_pawn_move == FALSE) {
+                    for (int x = 0; x < l_left; x++) { tmp_left[x] = (IntTuple) { 0, 0 }; }
+                    l_left = 0;
+                    if (mandatory_queen_move == FALSE) {
                       for (int x = 0; x < k; x++) { allowed[x] = (IntTuple) { 0, 0 }; }
                       k = 0;
                     }
                     mandatory_queen_move = mandatory_left = TRUE;
                   }
-                  else
+                  else {
                     checking_left = FALSE;
+                    for (int x = 0; x < l_left; x++)
+                      allowed[k++] = tmp_left[x];
+                    l_left = 0;
+                  }
                 }
-                else
+                else {
                   checking_left = FALSE;
+                  for (int x = 0; x < l_left; x++)
+                    allowed[k++] = tmp_left[x];
+                  l_left = 0;
+                }
               }
             }
             if (checking_right == TRUE) {
@@ -224,27 +255,47 @@ void get_allowed_actions(int *current_board) {
               else {
                 if (validate_cell(i, i+(j-1), current_board) == EMPTY) {
                   if (validate_cell(i, i+j, current_board) == EMPTY && ((mandatory_pawn_move == FALSE && mandatory_queen_move == FALSE) || mandatory_right == TRUE))
-                    tmp[l++] = (IntTuple) { i, i+j };
+                    tmp_right[l_right++] = (IntTuple) { i, i+j };
                   else if (validate_cell(i, i+j, current_board) == ENEMY && validate_cell(i, i+(j+1), current_board) == EMPTY && validate_cell(i, i+(j+2), current_board) == EMPTY) {
                     for (int x = 0; x < l; x++) { tmp[x] = (IntTuple) { 0, 0 }; }
                     l = 0;
-                    if (mandatory_queen_move == FALSE && mandatory_pawn_move == FALSE) {
+                    for (int x = 0; x < l_right; x++) { tmp_right[x] = (IntTuple) { 0, 0 }; }
+                    l_right = 0;
+                    if (mandatory_queen_move == FALSE) {
                       for (int x = 0; x < k; x++) { allowed[x] = (IntTuple) { 0, 0 }; }
                       k = 0;
                     }
                     mandatory_queen_move = mandatory_right = TRUE;
                   }
-                  else
+                  else {
                     checking_right = FALSE;
+                    for (int x = 0; x < l_right; x++)
+                      allowed[k++] = tmp_right[x];
+                    l_right = 0;
+                  }
                 }
-                else
+                else {
                   checking_right = FALSE;
+                  for (int x = 0; x < l_right; x++)
+                    allowed[k++] = tmp_right[x];
+                  l_right = 0;
+                }
               }
             }
           }
         }
         for (int j = 0; j < l; j++)
           allowed[k++] = tmp[j];
+        for (int j = 0; j < l_up; j++)
+          allowed[k++] = tmp_up[j];
+        for (int j = 0; j < l_down; j++)
+          allowed[k++] = tmp_down[j];
+        for (int j = 0; j < l_left; j++)
+          allowed[k++] = tmp_left[j];
+        for (int j = 0; j < l_right; j++)
+          allowed[k++] = tmp_right[j];
+        free(tmp); free(tmp_up); free(tmp_down);
+        free(tmp_left); free(tmp_right);
       }
       if (current_board[i] == WHITE_KING || current_board[i] == BLACK_KING) {
         // King Logic Here

@@ -47,7 +47,7 @@ GameState check_game_state(int *current_board) {
       }
     }
   }
-  if (allowed_count == 0 || (WHITE_PIECES_COUNT <= 5 && BLACK_PIECES_COUNT <= 5)) {
+  if (allowed_count == 0 || (WHITE_PIECES_COUNT < 5 && BLACK_PIECES_COUNT < 5)) {
     log_text("\n\t---------- Game Ended with a Draw ----------\n\n");
     return DRAW;
   }

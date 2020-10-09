@@ -129,8 +129,12 @@ void get_allowed_actions(int *current_board) {
               // Non Rotated Queen Identification
               else {
                 if (validate_cell(i, i-(j-1)*column_count, current_board) == EMPTY) {
-                  if (validate_cell(i, i-j*column_count, current_board) == EMPTY && ((mandatory_pawn_move == FALSE && mandatory_queen_move == FALSE) || mandatory_up == TRUE))
-                    tmp_up[l_up++] = (IntTuple) { i, i-column_count*j };
+                  if (validate_cell(i, i-j*column_count, current_board) == EMPTY) {
+                    if (mandatory_up == TRUE)
+                      tmp_up[l_up++] = (IntTuple) { i, i-column_count*j };
+                    else if (mandatory_pawn_move == FALSE && mandatory_queen_move == FALSE)
+                      tmp[l++] = (IntTuple) { i, i-column_count*j };
+                  }
                   else if (validate_cell(i, i-j*column_count, current_board) == ENEMY && validate_cell(i, i-(j+1)*column_count, current_board) == EMPTY && validate_cell(i, i-(j+2)*column_count, current_board) == EMPTY) {
                     for (int x = 0; x < l; x++) { tmp[x] = (IntTuple) { 0, 0 }; }
                     l = 0;
@@ -170,8 +174,12 @@ void get_allowed_actions(int *current_board) {
               // Non Rotated Queen Identification
               else {
                 if (validate_cell(i, i+(j-1)*column_count, current_board) == EMPTY) {
-                  if (validate_cell(i, i+j*column_count, current_board) == EMPTY && ((mandatory_pawn_move == FALSE && mandatory_queen_move == FALSE) || mandatory_down == TRUE))
-                    tmp_down[l_down++] = (IntTuple) { i, i+column_count*j };
+                  if (validate_cell(i, i+j*column_count, current_board) == EMPTY) {
+                    if (mandatory_down == TRUE)
+                      tmp_down[l_down++] = (IntTuple) { i, i+column_count*j };
+                    else if (mandatory_pawn_move == FALSE && mandatory_queen_move == FALSE)
+                      tmp[l++] = (IntTuple) { i, i+column_count*j };
+                  }
                   else if (validate_cell(i, i+j*column_count, current_board) == ENEMY && validate_cell(i, i+(j+1)*column_count, current_board) == EMPTY && validate_cell(i, i+(j+2)*column_count, current_board) == EMPTY) {
                     for (int x = 0; x < l; x++) { tmp[x] = (IntTuple) { 0, 0 }; }
                     l = 0;
@@ -213,8 +221,12 @@ void get_allowed_actions(int *current_board) {
               // Rotated Queen Identification
               else {
                 if (validate_cell(i, i-(j-1), current_board) == EMPTY) {
-                  if (validate_cell(i, i-j, current_board) == EMPTY && ((mandatory_pawn_move == FALSE && mandatory_queen_move == FALSE) || mandatory_left == TRUE))
-                    tmp_left[l_left++] = (IntTuple) { i, i-j };
+                  if (validate_cell(i, i-j, current_board) == EMPTY) {
+                    if (mandatory_left == TRUE)
+                      tmp_left[l_left++] = (IntTuple) { i, i-j };
+                    else if (mandatory_pawn_move == FALSE && mandatory_queen_move == FALSE)
+                      tmp[l++] = (IntTuple) { i, i-j };
+                  }
                   else if (validate_cell(i, i-j, current_board) == ENEMY && validate_cell(i, i-(j+1), current_board) == EMPTY && validate_cell(i, i-(j+2), current_board) == EMPTY) {
                     for (int x = 0; x < l; x++) { tmp[x] = (IntTuple) { 0, 0 }; }
                     l = 0;
@@ -254,8 +266,12 @@ void get_allowed_actions(int *current_board) {
               // Rotated Queen Identification
               else {
                 if (validate_cell(i, i+(j-1), current_board) == EMPTY) {
-                  if (validate_cell(i, i+j, current_board) == EMPTY && ((mandatory_pawn_move == FALSE && mandatory_queen_move == FALSE) || mandatory_right == TRUE))
-                    tmp_right[l_right++] = (IntTuple) { i, i+j };
+                  if (validate_cell(i, i+j, current_board) == EMPTY) {
+                    if (mandatory_right == TRUE)
+                      tmp_right[l_right++] = (IntTuple) { i, i+j };
+                    else if (mandatory_pawn_move == FALSE && mandatory_queen_move == FALSE)
+                      tmp[l++] = (IntTuple) { i, i+j };
+                  }
                   else if (validate_cell(i, i+j, current_board) == ENEMY && validate_cell(i, i+(j+1), current_board) == EMPTY && validate_cell(i, i+(j+2), current_board) == EMPTY) {
                     for (int x = 0; x < l; x++) { tmp[x] = (IntTuple) { 0, 0 }; }
                     l = 0;

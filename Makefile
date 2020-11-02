@@ -1,4 +1,4 @@
-OBJS = main.c gui.c move.c init.c utilities.c
+OBJS = .\src\main.c .\src\gui.c .\src\move.c .\src\init.c .\src\utilities.c .\src\server.c .\src\client.c .\src\thread.c
 
 CC = gcc
 
@@ -8,7 +8,7 @@ LIBRARY_PATHS = -LC:\MinGW\lib
 
 COMPILER_FLAGS = -w -Wl,-subsystem,windows
 
-LINKER_FLAGS = -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer
+LINKER_FLAGS = -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -lSDL2_net -liphlpapi
 
 OBJ_NAME = Bulltricker
 

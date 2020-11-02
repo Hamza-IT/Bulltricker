@@ -1,13 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "init.h"
-#include "utilities.h"
 
 int *initialize_board() {
   char *path = "Bulltricker_Data/general.txt";
   FILE *fptr = fopen(path, "r");
   if (fptr == NULL) {
-    log_text("\tFailed to open file at <%s>. Critical Error.\n", path);
+    debug_log(true, __LINE__, __FILE__, "\tFailed to open file at <%s>. Critical Error.\n", path);
     return NULL;
   }
   fscanf(fptr, "%d %d %d %d %d", &row_count, &column_count, &WHITE_PIECES_COUNT, &BLACK_PIECES_COUNT, &COLOR_DIVIDER);
@@ -24,6 +23,5 @@ int *initialize_board() {
 }
 
 int get_board_size() {
-  if (&row_count != NULL && &column_count != NULL && row_count != 0 && column_count != 0)
-    return row_count * column_count;
+  return row_count * column_count;
 }

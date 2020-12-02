@@ -31,6 +31,8 @@ typedef enum {
   SOUND_OFF,
   INDICATOR_ON,
   INDICATOR_OFF,
+  GRID_NOTATION_ON,
+  GRID_NOTATION_OFF,
   ROTATION_ON,
   ROTATION_OFF,
   RETURN,
@@ -43,6 +45,8 @@ typedef enum {
   LOAD_GAME_BUTTON,
   SETTINGS_BUTTON,
   MAIN_MENU_BUTTON,
+  COPY_PLAY_BUTTON,
+  APPLY_PLAY_BUTTON,
   GAME_BUTTON_COUNT
 } GameButton;
 
@@ -79,7 +83,7 @@ int SCREEN_HEIGHT;
 Mix_Chunk **sounds;
 void show_menu_context(MenuHover);
 void play_sound(Mix_Chunk *);
-void draw_board(Bool);
+void draw_board(Bool, Bool);
 void main_menu();
 void start_game();
 void new_game();

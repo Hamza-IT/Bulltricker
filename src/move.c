@@ -341,7 +341,7 @@ void get_allowed_actions() {
 GameState switch_turn() {
   current_player = -current_player;
   get_allowed_actions();
-  draw_board(false);
+  draw_board(false, true);
   return check_game_state();
 }
 
@@ -400,7 +400,7 @@ GameState apply_move(IntTuple move) {
             last_position = move.x+i+step;
             current_board[last_position] = origin_piece;
             current_board[move.x+i] = EMPTY_NORMAL;
-            draw_board(false);
+            draw_board(false, true);
             play_sound(sounds[MOVE2]);
             SDL_Delay(400);
             if (last_position != move.y)
@@ -413,7 +413,7 @@ GameState apply_move(IntTuple move) {
     if ((origin_piece == WHITE_PAWN && move.y/column_count == 0) || (origin_piece == BLACK_PAWN && move.y/column_count == row_count-1)) {
       PieceColor color_mult = origin_piece/COLOR_DIVIDER;
       current_board[move.y] = origin_piece;
-      draw_board(false);
+      draw_board(false, true);
       SDL_Delay(300);
       play_sound(sounds[PUP]);
       current_board[move.y] = WHITE_QUEEN*color_mult;
@@ -422,14 +422,19 @@ GameState apply_move(IntTuple move) {
       current_board[move.y] = origin_piece;
       play_sound(sounds[MOVE2]);
     }
+    char *player = malloc(75);
     if (current_player == WHITE_PLAYER) {
-      char player[50] = "\t\tWhites Move: ";
+      strcpy(player, "\t\tWhites Move: ");
       debug_log(true, __LINE__, __FILE__, strcat(player, "(%d, %d)\n\t\tWhite Pieces Left: %d\tBlack Pieces Left: %d\n\n"), move.x, move.y, WHITE_PIECES_COUNT, BLACK_PIECES_COUNT);
     }
     else {
-      char player[50] = "\t\tBlacks Move: ";
+      strcpy(player, "\t\tBlacks Move: ");
       debug_log(true, __LINE__, __FILE__, strcat(player, "(%d, %d)\n\t\tWhite Pieces Left: %d\tBlack Pieces Left: %d\n\n"), move.x, move.y, WHITE_PIECES_COUNT, BLACK_PIECES_COUNT);
     }
+    free(player);
+    strcat(game_output_text, msg_control[move.x]);
+    strcat(game_output_text, " ");
+    strcat(game_output_text, msg_control[move.y]);
     return switch_turn();
   }
   return check_game_state();

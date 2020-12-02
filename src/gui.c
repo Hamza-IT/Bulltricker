@@ -8,7 +8,7 @@
 #include "server.h"
 #include "client.h"
 
-Bool shown, mute = false, indicator_on = true, board_rotation = true, is_host = false;
+Bool shown, mute = false, indicator_on = true, grid_notation_on = true, board_rotation = true, is_host = false, input_active = false;
 
 char* BASE_PATH = "./Bulltricker_Data/";
 char* SPRITE_PATH = "./Bulltricker_Data/Sprites/";
@@ -88,7 +88,7 @@ void play_sound(Mix_Chunk *sound) {
     Mix_PlayChannel(-1, sound, 0);
 }
 
-void close() {
+void sdl_close() {
   for (int i = 0; i < SOUND_COUNT; i++) {
     Mix_FreeChunk(sounds[i]);
     sounds[i] = NULL;
@@ -119,7 +119,7 @@ void set_alpha(unsigned char alpha) { SDL_SetTextureAlphaMod(g_texture, alpha); 
 void set_render_color (SDL_Color color) { SDL_SetRenderDrawColor(g_renderer, color.r, color.g, color.b, color.a); }
 
 FloatTuple get_cell_size(int location) {
-  float small_step = SCREEN_HEIGHT/29.f; // bigger_cell_height = 3 * smaller_cell_height and 8 smaller cells + 7 bigger cells in one column.
+  float small_step = (SCREEN_HEIGHT-2*offset.y)/29.f; // bigger_cell_height = 3 * smaller_cell_height and 8 smaller cells + 7 bigger cells in one column.
   float big_step = small_step*3.f;
   if ((location/column_count) % 2 == 0) {
     if (location % 2 == 0)
@@ -146,7 +146,7 @@ int mirror(int index) {
 }
 
 int map_to_int(IntTuple position) {
-  float step = SCREEN_HEIGHT/29.f;
+  float step = (SCREEN_HEIGHT-2*offset.y)/29.f;
   int max_count = row_count;
   if (max_count < column_count) { max_count = column_count; }
   float edges[max_count];
@@ -172,7 +172,7 @@ int map_to_int(IntTuple position) {
 }
 
 IntTuple map_to_edge(int location) {
-  float step = SCREEN_HEIGHT/29.f;
+  float step = (SCREEN_HEIGHT-2*offset.y)/29.f;
   int max_count = row_count;
   if (max_count < column_count) { max_count = column_count; }
   float edges[max_count];
@@ -236,16 +236,30 @@ void player_indication(float grid_x, float grid_width, Bool rotated) {
   load_text("Blacks", colors[DARK_GREY], grid_x+grid_width*0.575f, black_height.y, 255);
 }
 
+void draw_outline(SDL_Rect original_rect, SDL_Color outline_color, int thicc) {
+  set_render_color(outline_color);
+  SDL_RenderDrawRect(NULL, NULL);
+  SDL_RenderDrawRect(g_renderer, &original_rect);
+  for (int i = 1; i < thicc; i++) {
+    original_rect.x += 1;
+    original_rect.y += 1;
+    original_rect.w -= 2;
+    original_rect.h -= 2;
+    SDL_RenderDrawRect(g_renderer, &original_rect);
+  }
+  set_render_color(colors[VOID]);
+}
+
 void load_grid() {
-  float grid_x = SCREEN_HEIGHT+2*offset.x;
-  float grid_width = SCREEN_WIDTH-(SCREEN_HEIGHT+2*offset.x);
+  float grid_x = SCREEN_HEIGHT+2*offset.x-2*offset.y;
+  float grid_width = SCREEN_WIDTH-(SCREEN_HEIGHT+2*offset.x-2*offset.y);
   SDL_Rect hide_rect = { grid_x, 0, grid_width, SCREEN_HEIGHT };
   g_texture = load_texture("Hide_Text.png");
   SDL_RenderCopy(g_renderer, g_texture, NULL, &hide_rect);
   SDL_DestroyTexture(g_texture);
   const int grid_count = 7;
   SDL_FRect f_dark_rects[] = { (SDL_FRect) { grid_x, 0, grid_width, SCREEN_HEIGHT/13.f*2 }, (SDL_FRect) { grid_x, SCREEN_HEIGHT/13.f*2, grid_width, SCREEN_HEIGHT/13.f*2 }, (SDL_FRect) { grid_x, SCREEN_HEIGHT/13.f*4, grid_width, SCREEN_HEIGHT/13.f }, (SDL_FRect) { grid_x, SCREEN_HEIGHT/13.f*5, grid_width, SCREEN_HEIGHT/13.f*3 }, (SDL_FRect) { grid_x, SCREEN_HEIGHT/13.f*8, grid_width, SCREEN_HEIGHT/13.f }, (SDL_FRect) { grid_x, SCREEN_HEIGHT/13.f*9, grid_width, SCREEN_HEIGHT/13.f*2 }, (SDL_FRect) { grid_x, SCREEN_HEIGHT/13.f*11, grid_width, SCREEN_HEIGHT/13.f*2 }  };
-  SDL_FRect f_light_rects[] = { (SDL_FRect) { SCREEN_HEIGHT*1.005f+2*offset.x, SCREEN_HEIGHT*0.005f, grid_width-0.01f*SCREEN_HEIGHT, SCREEN_HEIGHT/13.f*2 - SCREEN_HEIGHT*0.005f }, (SDL_FRect) { SCREEN_HEIGHT*1.005f+2*offset.x, SCREEN_HEIGHT*0.005f+SCREEN_HEIGHT/13.f*2, grid_width-0.01f*SCREEN_HEIGHT, SCREEN_HEIGHT/13.f*2-SCREEN_HEIGHT*0.005f }, (SDL_FRect) { SCREEN_HEIGHT*1.005f+2*offset.x, SCREEN_HEIGHT*0.005f+SCREEN_HEIGHT/13.f*4, grid_width-0.01f*SCREEN_HEIGHT, SCREEN_HEIGHT/13.f-SCREEN_HEIGHT*0.005f }, (SDL_FRect) { SCREEN_HEIGHT*1.005f+2*offset.x, SCREEN_HEIGHT*0.005f+SCREEN_HEIGHT/13.f*5, grid_width-0.01f*SCREEN_HEIGHT, SCREEN_HEIGHT/13.f*3-SCREEN_HEIGHT*0.005f }, (SDL_FRect) { SCREEN_HEIGHT*1.005f+2*offset.x, SCREEN_HEIGHT*0.005f+SCREEN_HEIGHT/13.f*8, grid_width-0.01f*SCREEN_HEIGHT, SCREEN_HEIGHT/13.f-SCREEN_HEIGHT*0.005f }, (SDL_FRect) { SCREEN_HEIGHT*1.005f+2*offset.x, SCREEN_HEIGHT*0.005f+SCREEN_HEIGHT/13.f*9, grid_width-0.01f*SCREEN_HEIGHT, SCREEN_HEIGHT/13.f*2-SCREEN_HEIGHT*0.005f }, (SDL_FRect) { SCREEN_HEIGHT*1.005f+2*offset.x, SCREEN_HEIGHT*0.005f+SCREEN_HEIGHT/13.f*11, grid_width-0.01f*SCREEN_HEIGHT, SCREEN_HEIGHT/13.f*2-SCREEN_HEIGHT*0.01f } };
+  SDL_FRect f_light_rects[] = { (SDL_FRect) { grid_x+0.005f*SCREEN_HEIGHT, SCREEN_HEIGHT*0.005f, grid_width-2*0.005f*SCREEN_HEIGHT, SCREEN_HEIGHT/13.f*2 - SCREEN_HEIGHT*0.005f }, (SDL_FRect) { SCREEN_HEIGHT*0.005f+grid_x, SCREEN_HEIGHT*0.005f+SCREEN_HEIGHT/13.f*2, grid_width-2*0.005f*SCREEN_HEIGHT, SCREEN_HEIGHT/13.f*2-SCREEN_HEIGHT*0.005f }, (SDL_FRect) { SCREEN_HEIGHT*0.005f+grid_x, SCREEN_HEIGHT*0.005f+SCREEN_HEIGHT/13.f*4, grid_width-2*0.005f*SCREEN_HEIGHT, SCREEN_HEIGHT/13.f-SCREEN_HEIGHT*0.005f }, (SDL_FRect) { SCREEN_HEIGHT*0.005f+grid_x, SCREEN_HEIGHT*0.005f+SCREEN_HEIGHT/13.f*5, grid_width-2*0.005f*SCREEN_HEIGHT, SCREEN_HEIGHT/13.f*3-SCREEN_HEIGHT*0.005f }, (SDL_FRect) { SCREEN_HEIGHT*0.005f+grid_x, SCREEN_HEIGHT*0.005f+SCREEN_HEIGHT/13.f*8, grid_width-2*0.005f*SCREEN_HEIGHT, SCREEN_HEIGHT/13.f-SCREEN_HEIGHT*0.005f }, (SDL_FRect) { SCREEN_HEIGHT*0.005f+grid_x, SCREEN_HEIGHT*0.005f+SCREEN_HEIGHT/13.f*9, grid_width-2*0.005f*SCREEN_HEIGHT, SCREEN_HEIGHT/13.f*2-SCREEN_HEIGHT*0.005f }, (SDL_FRect) { SCREEN_HEIGHT*0.005f+grid_x, SCREEN_HEIGHT*0.005f+SCREEN_HEIGHT/13.f*11, grid_width-2*0.005f*SCREEN_HEIGHT, SCREEN_HEIGHT/13.f*2-SCREEN_HEIGHT*0.01f } };
   SDL_Color light_colors[] = { colors[GREY], colors[WHITE], colors[WHITE], colors[WHITE], colors[WHITE], colors[WHITE], colors[GREY] };
   for (int i = 0; i < grid_count; i++) {
     set_render_color(colors[DARK_GREY]);
@@ -253,17 +267,18 @@ void load_grid() {
     set_render_color(light_colors[i]);
     SDL_RenderFillRectF(g_renderer, &f_light_rects[i]);
   }
-  SDL_Texture *buttons[] = { load_texture("Undo_Button.png"), load_texture("Save_Button.png"), load_texture("Load_Button.png"), load_texture("Settings_Button.png"), load_texture("Menu_Button.png") };
-  SDL_Rect b_rects[] = { { grid_x+grid_width*0.1f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, { grid_x+grid_width*0.275f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, { grid_x+grid_width*0.45f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, { grid_x+grid_width*0.625f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, { grid_x+grid_width*0.8f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f } };
-  int button_start = 0;
+  SDL_Texture *buttons[] = { load_texture("Undo_Button.png"), load_texture("Save_Button.png"), load_texture("Load_Button.png"), load_texture("Settings_Button.png"), load_texture("Menu_Button.png"), load_texture("Empty_Button.png"), load_texture("Empty_Button.png") };
+  SDL_Rect b_rects[] = { { grid_x+grid_width*0.1f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, { grid_x+grid_width*0.275f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, { grid_x+grid_width*0.45f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, { grid_x+grid_width*0.625f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, { grid_x+grid_width*0.8f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, (SDL_Rect) { grid_x+grid_width*0.7f, SCREEN_HEIGHT*0.71f, grid_width*0.275f, SCREEN_HEIGHT*0.058f }, (SDL_Rect) { grid_x+grid_width*0.7f, SCREEN_HEIGHT*0.779f, grid_width*0.275f, SCREEN_HEIGHT*0.058f } };
+  int button_start = 0, button_end = GAME_BUTTON_COUNT;
   SDL_LockMutex(join_mutex);
   if (local_ready == true) {
     button_start = SETTINGS_BUTTON;
+    button_end = MAIN_MENU_BUTTON+1;
     b_rects[SETTINGS_BUTTON] = (SDL_Rect) { grid_x+grid_width*0.4f-SCREEN_HEIGHT/29.f*0.75f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f };
     b_rects[MAIN_MENU_BUTTON] = (SDL_Rect) { grid_x+grid_width*0.6f-SCREEN_HEIGHT/29.f*0.75f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f };
   }
   SDL_UnlockMutex(join_mutex);
-  for (int i = button_start; i < GAME_BUTTON_COUNT; i++) {
+  for (int i = button_start; i < button_end; i++) {
     g_texture = buttons[i];
     SDL_RenderCopy(g_renderer, g_texture, NULL, &(b_rects[i]));
     SDL_DestroyTexture(buttons[i]);
@@ -292,26 +307,122 @@ void load_grid() {
   rect.y = SCREEN_HEIGHT*0.875f;
   SDL_RenderCopy(g_renderer, g_texture, NULL, &rect);
   SDL_DestroyTexture(g_texture);
+  SDL_LockMutex(join_mutex);
+  if (local_ready == false) {
+    SDL_UnlockMutex(join_mutex);
+    g_texture = load_texture("GInput_Bar.png");
+    rect = (SDL_Rect) { grid_x+grid_width*0.035f, SCREEN_HEIGHT*0.71f, grid_width*0.65f, SCREEN_HEIGHT*0.058f };
+    SDL_RenderCopy(g_renderer, g_texture, NULL, &rect);
+    draw_outline(rect, colors[DARK_GREY], 1);
+    rect.y = SCREEN_HEIGHT*0.779f;
+    SDL_RenderCopy(g_renderer, g_texture, NULL, &rect);
+    draw_outline(rect, colors[DARK_GREY], 1);
+    if (input_active == true)
+      SDL_RenderDrawLine(g_renderer, rect.x+rect.w*0.5f, rect.y+rect.h*0.2f, rect.x+rect.w*0.5f, rect.y+rect.h*0.8f);
+    SDL_DestroyTexture(g_texture);
+    rect.x = grid_x+grid_width*0.7f;
+    rect.w = grid_width*0.275f;
+    draw_outline(rect, colors[DARK_GREY], 2);
+    rect.y = SCREEN_HEIGHT*0.71f;
+    draw_outline(rect, colors[DARK_GREY], 2);
+    change_font_size(SCREEN_HEIGHT/30);
+    IntTuple text_dim;
+    TTF_SizeText(g_font.font, "Copy", &text_dim.x, &text_dim.y);
+    load_text("Copy", colors[WHITE], rect.x+(rect.w-text_dim.x)/2, rect.y+(rect.h-text_dim.y)*0.45f, 255);
+    rect.y = SCREEN_HEIGHT*0.779f;
+    TTF_SizeText(g_font.font, "Apply", &text_dim.x, &text_dim.y);
+    load_text("Apply", colors[WHITE], rect.x+(rect.w-text_dim.x)/2, rect.y+(rect.h-text_dim.y)*0.45f, 255);
+    SDL_DestroyTexture(g_texture);
+    change_font_size(SCREEN_HEIGHT/25);
+  }
+  else
+    SDL_UnlockMutex(join_mutex);
   g_texture = NULL;
   set_render_color(colors[VOID]);
 }
 
 void fill_blank() {
   SDL_Rect rect = { 0, 0, offset.x, SCREEN_HEIGHT };
-  g_texture = load_texture("Board_Edge.png");
+  g_texture = load_texture("VBoard_Edge.png");
   SDL_RenderCopy(g_renderer, g_texture, NULL, &rect);
-  rect.x = SCREEN_HEIGHT+offset.x;
+  rect.x = SCREEN_HEIGHT+offset.x-2*offset.y;
   SDL_RenderCopy(g_renderer, g_texture, NULL, &rect);
   SDL_DestroyTexture(g_texture);
+  rect = (SDL_Rect) { offset.x, 0, SCREEN_HEIGHT-2*offset.y, offset.y };
+  rect.w *= 1.005f;
+  g_texture = load_texture("HBoard_Edge.png");
+  SDL_RenderCopy(g_renderer, g_texture, NULL, &rect);
+  rect.y = SCREEN_HEIGHT-offset.y;
+  rect.h *= 1.1f;
+  SDL_RenderCopy(g_renderer, g_texture, NULL, &rect);
+  SDL_DestroyTexture(g_texture);
+  IntTuple text_dim;
+  if (offset.x > 0 && offset.y > 0 && grid_notation_on == true) {
+    float start_x = offset.x*1.1f, start_y = offset.y*1.175f;
+    for (int i = 1; i <= 8; i++) {
+      char num[2] = "\0";
+      int j = 1+8-i;
+      if (board_rotation == true && current_player == BLACK_PLAYER)
+        j = i;
+      SDL_itoa(j, num, 10);
+      if ((current_player == WHITE_PLAYER || board_rotation == false) && j != 8) {
+        start_y += offset.y*0.782f;
+        change_font_size(SCREEN_HEIGHT/15);
+        TTF_SizeText(g_font.font, num, &text_dim.x, &text_dim.y);
+        load_text(num, colors[BLACK], (offset.x-text_dim.x)*0.5f, start_y-text_dim.y*0.5f, 255);
+        start_y += offset.y*0.782f;
+      }
+      char alpha_num[3] = "\0";
+      alpha_num[0] = 'h';
+      strcat(alpha_num, num);
+      change_font_size(SCREEN_HEIGHT/25);
+      TTF_SizeText(g_font.font, alpha_num, &text_dim.x, &text_dim.y);
+      load_text(alpha_num, colors[BLACK], (offset.x-text_dim.x)*0.5f, start_y-text_dim.y*0.5f, 255);
+      if (current_player == BLACK_PLAYER && board_rotation == true) {
+        if (j == 8)
+          break;
+        start_y += offset.y*0.782f;
+        change_font_size(SCREEN_HEIGHT/15);
+        TTF_SizeText(g_font.font, num, &text_dim.x, &text_dim.y);
+        load_text(num, colors[BLACK], (offset.x-text_dim.x)*0.5f, start_y-text_dim.y*0.5f, 255);
+        start_y += offset.y*0.782f;
+      }
+    }
+    for (int i = 1; i <= 8; i++) {
+      change_font_size(SCREEN_HEIGHT/25);
+      TTF_SizeText(g_font.font, "v", &text_dim.x, &text_dim.y);
+      load_text("v", colors[BLACK], start_x-text_dim.x*0.5f, SCREEN_HEIGHT-offset.y*0.8f-text_dim.y*0.5f, 255);
+      char num[2] = "\0";
+      int j = i;
+      char alpha[2] = "\0";
+      alpha[0] = 0;
+      if (board_rotation == true && current_player == BLACK_PLAYER) {
+        j = 1+8-i;
+        alpha[0]--;
+      }
+      alpha[0] += 'a'+j-1;
+      SDL_itoa(j, num, 10);
+      TTF_SizeText(g_font.font, num, &text_dim.x, &text_dim.y);
+      load_text(num, colors[BLACK], start_x-text_dim.x*0.5f, SCREEN_HEIGHT-offset.y*0.3f-text_dim.y*0.5f, 255);
+      if (i == 8)
+        break;
+      start_x += offset.x*0.39f;
+      change_font_size(SCREEN_HEIGHT/15);
+      TTF_SizeText(g_font.font, alpha, &text_dim.x, &text_dim.y);
+      load_text(alpha, colors[BLACK], start_x-text_dim.x*0.5f, SCREEN_HEIGHT-offset.y*0.6f-text_dim.y*0.5f, 255);
+      start_x += offset.x*0.39f;
+    }
+  }
   g_texture = NULL;
 }
 
-void draw_board(Bool clear_render) {
+void draw_board(Bool clear_render, Bool clear_grid) {
   if (clear_render == true)
     SDL_RenderClear(g_renderer);
   set_render_color(colors[VOID]);
-  load_grid();
   fill_blank();
+  if (clear_grid == true)
+    load_grid();
   float x = offset.x, y = offset.y;
   for (int i = 0; i < get_board_size(); i++) {
     int target = mirror(i);
@@ -354,7 +465,7 @@ void draw_board(Bool clear_render) {
     SDL_DestroyTexture(g_texture);
     g_texture = NULL;
     x += cell_size.x;
-    if (((int)x)+1 >= SCREEN_HEIGHT+offset.x) {
+    if (((int)x)+2 >= SCREEN_HEIGHT+offset.x-2*offset.y) {
       y += cell_size.y;
       x = offset.x;
     }
@@ -388,7 +499,7 @@ Bool load_game() {
         fread(&(current_board[i]), sizeof(int), 1, fptr);
       fread(&current_player, sizeof(Player), 1, fptr);
       fclose(fptr);
-      draw_board(true);
+      draw_board(true, true);
       get_allowed_actions();
       return true;
     }
@@ -445,13 +556,60 @@ SettingOption map_resolution() {
   return option;
 }
 
+void update_input(SDL_Texture *texture, const char *input_text, const SDL_Rect *rect, unsigned char font_size, SDL_Color color, Bool is_active) {
+  if (g_texture == NULL)
+    g_texture = texture;
+  SDL_RenderCopy(g_renderer, g_texture, NULL, rect);
+  draw_outline(*rect, colors[DARK_GREY], 1);
+  SDL_DestroyTexture(g_texture);
+  g_texture = NULL;
+  change_font_size(font_size);
+  int text_width;
+  TTF_SizeText(g_font.font, input_text, &text_width, NULL);
+  if (is_active)
+    SDL_RenderDrawLine(g_renderer, (*rect).x+((*rect).w+text_width)*0.5f, (*rect).y+(*rect).h*0.2f, (*rect).x+((*rect).w+text_width)*0.5f, (*rect).y+(*rect).h*0.8f);
+  if (*input_text != '\0')
+    load_text(input_text, color, (*rect).x+((*rect).w-text_width)*0.5f, (*rect).y+SCREEN_HEIGHT*0.01f, 255);
+  else
+    load_text(" ", color, (*rect).x+((*rect).w-text_width)*0.5f, (*rect).y+SCREEN_HEIGHT*0.01f, 255);
+  SDL_RenderPresent(g_renderer);
+}
+
+void handle_text_input(SDL_Event event, const char *texture_path, char *text, SDL_Rect *rect, unsigned char font_size, SDL_Color color, int max_length) {
+  if (input_active == true) {
+    if (event.type == SDL_KEYDOWN) {
+      if (event.key.keysym.sym == SDLK_BACKSPACE) {
+        if (strlen(text) > 0)
+          text = pop_back(text);
+        update_input(load_texture(texture_path), text, rect, font_size, color, true);
+      }
+      else if (event.key.keysym.sym == SDLK_c && SDL_GetModState() & KMOD_CTRL)
+        SDL_SetClipboardText(text);
+      else if (event.key.keysym.sym == SDLK_v && SDL_GetModState() & KMOD_CTRL) {
+        char *clipboard = SDL_GetClipboardText();
+        size_t length = strlen(clipboard);
+        if (length > 0 && length <= max_length) {
+          memset(text, 0x00, strlen(text)+1);
+          strcpy(text, clipboard);
+          update_input(load_texture(texture_path), text, rect, font_size, color, true);
+        }
+      }
+    }
+    else if (event.type == SDL_TEXTINPUT) {
+      if (!(SDL_GetModState() & KMOD_CTRL && (event.text.text[0] == 'c' || event.text.text[0] == 'C' || event.text.text[0] == 'v' || event.text.text[0] == 'V')) && strlen(text) < max_length) {
+        strcat(text, event.text.text);
+        update_input(load_texture(texture_path), text, rect, font_size, color, true);
+      }
+    }
+  }
+}
+
 void show_settings_context(SDL_Rect **button_rects) {
   SDL_RenderPresent(g_renderer);
   SDL_RenderClear(g_renderer);
   g_texture = load_texture("Black_BG.png");
   SDL_RenderCopy(g_renderer, g_texture, NULL, NULL);
   SDL_DestroyTexture(g_texture);
-  g_texture = NULL;
   int text_width;
   change_font_size(SCREEN_HEIGHT/15);
   TTF_SizeText(g_font.font, "Settings", &text_width, NULL);
@@ -464,35 +622,28 @@ void show_settings_context(SDL_Rect **button_rects) {
   SDL_RenderCopy(g_renderer, g_texture, NULL, &rect);
   SDL_DestroyTexture(g_texture);
   int origin_x = (SCREEN_WIDTH*1.1f-text_width)/2, origin_y = SCREEN_HEIGHT*0.21f, origin_w = SCREEN_HEIGHT*0.04f, origin_h = SCREEN_HEIGHT*0.04f;
-  char *texts[] = { "1280x720", "1366x768", "1600x900", "1920x1080", "On", "Off", "On", "Off", "On", "Off" };
-  FloatTuple text_coords[] = { (FloatTuple) { origin_x*1.075f, origin_y*0.985f }, (FloatTuple) { origin_x*1.075f, SCREEN_HEIGHT*0.31f*0.985f }, (FloatTuple) { (SCREEN_WIDTH*1.55f-text_width)/2*1.05f, origin_y*0.985f }, (FloatTuple) { (SCREEN_WIDTH*1.55f-text_width)/2*1.05f, SCREEN_HEIGHT*0.31f*0.985f }, (FloatTuple) { origin_x*1.075f, SCREEN_HEIGHT*0.435f*0.99f  }, (FloatTuple) { (SCREEN_WIDTH*1.55f-text_width)/2*1.05f, SCREEN_HEIGHT*0.435f*0.99f }, (FloatTuple) { origin_x*1.075f, SCREEN_HEIGHT*0.57f*0.99f }, (FloatTuple) { (SCREEN_WIDTH*1.55f-text_width)/2*1.05f, SCREEN_HEIGHT*0.57f*0.99f }, (FloatTuple) { origin_x*1.075f, SCREEN_HEIGHT*0.705f*0.99f }, (FloatTuple) { (SCREEN_WIDTH*1.55f-text_width)/2*1.05f, SCREEN_HEIGHT*0.705f*0.99f } };
-  (*button_rects)[R1280x720] = (SDL_Rect) { origin_x, origin_y, origin_w, origin_h }; (*button_rects)[R1366x768] = (SDL_Rect) { origin_x, SCREEN_HEIGHT*0.31f, origin_w, origin_h }; (*button_rects)[R1600x900] = (SDL_Rect) { (SCREEN_WIDTH*1.55f-text_width)/2, origin_y, origin_w, origin_h }; (*button_rects)[R1920x1080] = (SDL_Rect) { (SCREEN_WIDTH*1.55f-text_width)/2, SCREEN_HEIGHT*0.31f, origin_w, origin_h }; (*button_rects)[SOUND_ON] = (SDL_Rect) { origin_x, SCREEN_HEIGHT*0.435f, origin_w, origin_h }; (*button_rects)[SOUND_OFF] = (SDL_Rect) { (SCREEN_WIDTH*1.55f-text_width)/2, SCREEN_HEIGHT*0.435f, origin_w, origin_h  }; (*button_rects)[INDICATOR_ON] = (SDL_Rect) { origin_x, SCREEN_HEIGHT*0.57f, origin_w, origin_h }; (*button_rects)[INDICATOR_OFF] = (SDL_Rect) { (SCREEN_WIDTH*1.55f-text_width)/2, SCREEN_HEIGHT*0.57f, origin_w, origin_h }, (*button_rects)[ROTATION_ON] = (SDL_Rect) { origin_x, SCREEN_HEIGHT*0.705f, origin_w, origin_h }; (*button_rects)[ROTATION_OFF] = (SDL_Rect) { (SCREEN_WIDTH*1.55f-text_width)/2, SCREEN_HEIGHT*0.705f, origin_w, origin_h };
+  char *texts[] = { "1280x720", "1366x768", "1600x900", "1920x1080", "On", "Off", "On", "Off", "On", "Off", "On", "Off" };
+  FloatTuple text_coords[] = { (FloatTuple) { origin_x*1.075f, origin_y*0.98f }, (FloatTuple) { origin_x*1.075f, SCREEN_HEIGHT*0.31f*0.98f }, (FloatTuple) { (SCREEN_WIDTH*1.55f-text_width)/2*1.05f, origin_y*0.98f }, (FloatTuple) { (SCREEN_WIDTH*1.55f-text_width)/2*1.05f, SCREEN_HEIGHT*0.31f*0.98f }, (FloatTuple) { origin_x*1.075f, SCREEN_HEIGHT*0.41f*0.985f }, (FloatTuple) { (SCREEN_WIDTH*1.55f-text_width)/2*1.05f, SCREEN_HEIGHT*0.41f*0.985f }, (FloatTuple) { origin_x*1.075f, SCREEN_HEIGHT*0.51f*0.985f }, (FloatTuple) { (SCREEN_WIDTH*1.55f-text_width)/2*1.05f, SCREEN_HEIGHT*0.51f*0.985f }, (FloatTuple) { origin_x*1.075f, SCREEN_HEIGHT*0.61f*0.985f }, (FloatTuple) { (SCREEN_WIDTH*1.55f-text_width)/2*1.05f, SCREEN_HEIGHT*0.61f*0.985f }, (FloatTuple) { origin_x*1.075f, SCREEN_HEIGHT*0.71f*0.985f }, (FloatTuple) { (SCREEN_WIDTH*1.55f-text_width)/2*1.05f, SCREEN_HEIGHT*0.71f*0.985f } };
+  (*button_rects)[R1280x720] = (SDL_Rect) { origin_x, origin_y, origin_w, origin_h }; (*button_rects)[R1366x768] = (SDL_Rect) { origin_x, SCREEN_HEIGHT*0.31f, origin_w, origin_h }; (*button_rects)[R1600x900] = (SDL_Rect) { (SCREEN_WIDTH*1.55f-text_width)/2, origin_y, origin_w, origin_h }; (*button_rects)[R1920x1080] = (SDL_Rect) { (SCREEN_WIDTH*1.55f-text_width)/2, SCREEN_HEIGHT*0.31f, origin_w, origin_h }; (*button_rects)[SOUND_ON] = (SDL_Rect) { origin_x, SCREEN_HEIGHT*0.409f, origin_w, origin_h }; (*button_rects)[SOUND_OFF] = (SDL_Rect) { (SCREEN_WIDTH*1.55f-text_width)/2, SCREEN_HEIGHT*0.409f, origin_w, origin_h  }; (*button_rects)[INDICATOR_ON] = (SDL_Rect) { origin_x, SCREEN_HEIGHT*0.507f, origin_w, origin_h }; (*button_rects)[INDICATOR_OFF] = (SDL_Rect) { (SCREEN_WIDTH*1.55f-text_width)/2, SCREEN_HEIGHT*0.507f, origin_w, origin_h }; (*button_rects)[GRID_NOTATION_ON] = (SDL_Rect) { origin_x, SCREEN_HEIGHT*0.605f, origin_w, origin_h }; (*button_rects)[GRID_NOTATION_OFF] = (SDL_Rect) { (SCREEN_WIDTH*1.55f-text_width)/2, SCREEN_HEIGHT*0.605f, origin_w, origin_h }; (*button_rects)[ROTATION_ON] = (SDL_Rect) { origin_x, SCREEN_HEIGHT*0.703f, origin_w, origin_h }; (*button_rects)[ROTATION_OFF] = (SDL_Rect) { (SCREEN_WIDTH*1.55f-text_width)/2, SCREEN_HEIGHT*0.703f, origin_w, origin_h };
   SDL_Texture *off_button = load_texture("Radio_Button_Off.png"), *on_button = load_texture("Radio_Button_On.png");
   for (int i = 0; i < SETTING_OPTION_COUNT-1; i++) {
     load_text(texts[i], colors[WHITE], text_coords[i].x, text_coords[i].y, 255);
-    if (i == map_resolution() || (i == SOUND_ON && mute == false) || (i == SOUND_OFF && mute == true) || (i == INDICATOR_ON && indicator_on == true) || (i == INDICATOR_OFF && indicator_on == false) || (i == ROTATION_ON && board_rotation == true) || (i == ROTATION_OFF && board_rotation == false))
+    if (i == map_resolution() || (i == SOUND_ON && mute == false) || (i == SOUND_OFF && mute == true) || (i == INDICATOR_ON && indicator_on == true) || (i == INDICATOR_OFF && indicator_on == false) || (i == GRID_NOTATION_ON && grid_notation_on == true) || (i == GRID_NOTATION_OFF && grid_notation_on == false) || (i == ROTATION_ON && board_rotation == true) || (i == ROTATION_OFF && board_rotation == false))
       SDL_RenderCopy(g_renderer, on_button, NULL, (*button_rects)+i);
     else
       SDL_RenderCopy(g_renderer, off_button, NULL, (*button_rects)+i);
   }
-  TTF_SizeText(g_font.font, "Sound", &text_width, NULL);
-  load_text("Sound", colors[WHITE], (SCREEN_WIDTH*0.6f-text_width)/2, SCREEN_HEIGHT*0.429f, 255);
-  rect.x = (SCREEN_WIDTH*0.5f-text_width)/2; rect.y = SCREEN_HEIGHT*0.429f;
-  g_texture = load_texture("Sound_Setting.png");
-  SDL_RenderCopy(g_renderer, g_texture, NULL, &rect);
-  SDL_DestroyTexture(g_texture);
-  TTF_SizeText(g_font.font, "Indicator", &text_width, NULL);
-  load_text("Indicator", colors[WHITE], (SCREEN_WIDTH*0.6f-text_width)/2, SCREEN_HEIGHT*0.562f, 255);
-  rect.x = (SCREEN_WIDTH*0.5f-text_width)/2; rect.y = SCREEN_HEIGHT*0.562f;
-  g_texture = load_texture("Indicator_Setting.png");
-  SDL_RenderCopy(g_renderer, g_texture, NULL, &rect);
-  SDL_DestroyTexture(g_texture);
-  TTF_SizeText(g_font.font, "Board Rotation", &text_width, NULL);
-  load_text("Board Rotation", colors[WHITE], (SCREEN_WIDTH*0.6f-text_width)/2, SCREEN_HEIGHT*0.697f, 255);
-  rect.x = (SCREEN_WIDTH*0.5f-text_width)/2; rect.y = SCREEN_HEIGHT*0.697f;
-  g_texture = load_texture("Rotation_Setting.png");
-  SDL_RenderCopy(g_renderer, g_texture, NULL, &rect);
-  SDL_DestroyTexture(g_texture);
+  char *options_text[] = { "Sound", "Indicator", "Grid Notation", "Board Rotation" };
+  char *icons_path[] = { "Sound_Setting.png", "Indicator_Setting.png", "Notation_Setting.png", "Rotation_Setting.png" };
+  float y_pos[] = { SCREEN_HEIGHT*0.4f, SCREEN_HEIGHT*0.5f, SCREEN_HEIGHT*0.6f, SCREEN_HEIGHT*0.695f };
+  for (int i = 0; i < sizeof(options_text)/sizeof(char *); i++) {
+    TTF_SizeText(g_font.font, options_text[i], &text_width, NULL);
+    load_text(options_text[i], colors[WHITE], (SCREEN_WIDTH*0.6f-text_width)/2, y_pos[i], 255);
+    rect.x = (SCREEN_WIDTH*0.5f-text_width)/2; rect.y = y_pos[i];
+    g_texture = load_texture(icons_path[i]);
+    SDL_RenderCopy(g_renderer, g_texture, NULL, &rect);
+    SDL_DestroyTexture(g_texture);
+  }
   SDL_DestroyTexture(off_button); SDL_DestroyTexture(on_button);
   TTF_SizeText(g_font.font, "Return", &text_width, NULL);
   g_texture = load_texture("Return_Button.png");
@@ -501,6 +652,7 @@ void show_settings_context(SDL_Rect **button_rects) {
   SDL_DestroyTexture(g_texture);
   g_texture = NULL;
   load_text("Return", colors[BLACK], (SCREEN_WIDTH-text_width)/2, SCREEN_HEIGHT*0.86f, 255);
+  draw_outline((*button_rects)[RETURN], colors[DARK_GREY], 3);
   SDL_RenderPresent(g_renderer);
 }
 
@@ -508,14 +660,26 @@ void settings_return(Bool *quit_settings, Bool in_game) {
   SDL_Delay(100);
   play_sound(sounds[BIP2]);
   *quit_settings = true;
-  if (in_game == true)
-    draw_board(true);
+  offset = (FloatTuple) { SCREEN_HEIGHT*0.15f, SCREEN_HEIGHT*0.075f };
+  if (in_game == true) {
+    draw_board(true, true);
+    SDL_LockMutex(join_mutex);
+    if (local_ready == false) {
+      SDL_UnlockMutex(join_mutex);
+      float grid_x = SCREEN_HEIGHT+2*offset.x-2*offset.y;
+      float grid_width = SCREEN_WIDTH-(SCREEN_HEIGHT+2*offset.x-2*offset.y);
+      SDL_Rect input_rects[] = { { grid_x+grid_width*0.035f, SCREEN_HEIGHT*0.71f, grid_width*0.65f, SCREEN_HEIGHT*0.058f }, { grid_x+grid_width*0.035f, SCREEN_HEIGHT*0.779f, grid_width*0.65f, SCREEN_HEIGHT*0.058f } };
+      update_input(load_texture("GInput_Bar.png"), game_output_text, input_rects, SCREEN_HEIGHT/30, colors[DARK_GREY], false);
+      update_input(load_texture("GInput_Bar.png"), game_input_text, input_rects+1, SCREEN_HEIGHT/30, colors[BLACK], false);
+    }
+    else
+      SDL_UnlockMutex(join_mutex);
+  }
   else
     show_menu_context(SETTINGS);
 }
 
 void settings_screen(Bool in_game) {
-  SDL_Delay(100);
   Bool quit_settings = false;
   SDL_Rect *button_rects = malloc(sizeof(SDL_Rect)*SETTING_OPTION_COUNT);
   SDL_Cursor *arrow_cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW), *hand_cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
@@ -563,6 +727,8 @@ void settings_screen(Bool in_game) {
         else if (current_hover == SOUND_OFF) { mute = true; }
         else if (current_hover == INDICATOR_ON) { indicator_on = true; }
         else if (current_hover == INDICATOR_OFF) { indicator_on = false; }
+        else if (current_hover == GRID_NOTATION_ON) { grid_notation_on = true; }
+        else if (current_hover == GRID_NOTATION_OFF) { grid_notation_on = false; }
         else if (current_hover == ROTATION_ON) { board_rotation = true; }
         else if (current_hover == ROTATION_OFF) { board_rotation = false; }
         else if (current_hover == RETURN) { settings_return(&quit_settings, in_game); }
@@ -595,6 +761,7 @@ void show_menu_context(MenuHover current) {
 }
 
 void new_game() {
+  input_active = false;
   on_main_menu = false;
   set_render_color(colors[VOID]);
   SDL_Delay(150);
@@ -610,7 +777,8 @@ void new_game() {
   free(current_board);
   current_board = initialize_board();
   start = true;
-  draw_board(true);
+  draw_board(true, true);
+  SDL_StartTextInput();
   get_allowed_actions();
   SDL_FreeCursor(arrow_cursor);
 }
@@ -693,6 +861,7 @@ void show_host_context(SDL_Rect *button_rect, const char *ip_info) {
   SDL_DestroyTexture(g_texture);
   g_texture = NULL;
   load_text("Cancel", colors[BLACK], (SCREEN_WIDTH-width)/2, SCREEN_HEIGHT*0.8125f, 255);
+  draw_outline(*button_rect, colors[DARK_GREY], 3);
   SDL_RenderPresent(g_renderer);
 }
 
@@ -752,34 +921,28 @@ void host_screen(const char *ip) {
     host_return();
 }
 
-void update_input(const char *input_text, const SDL_Rect *rect, SDL_Color color) {
-  g_texture = load_texture("Input_Bar.png");
-  SDL_RenderCopy(g_renderer, g_texture, NULL, rect);
-  SDL_DestroyTexture(g_texture);
-  g_texture = NULL;
-  change_font_size(SCREEN_HEIGHT/22);
-  int text_width;
-  TTF_SizeText(g_font.font, input_text, &text_width, NULL);
-  if (*input_text != '\0')
-    load_text(input_text, color, (SCREEN_WIDTH-text_width)*0.5f, (*rect).y+SCREEN_HEIGHT*0.01f, 255);
-  else
-    load_text(" ", color, (SCREEN_WIDTH-text_width)*0.5f, (*rect).y+SCREEN_HEIGHT*0.01f, 255);
-  SDL_RenderPresent(g_renderer);
-}
-
 char *client_screen(char *default_text) {
   show_local_context(-1);
+  input_active = true;
   SDL_Cursor *arrow_cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW), *hand_cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND), *text_cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);
   SDL_SetCursor(arrow_cursor);
   set_render_color(colors[LIGHT_GREY]);
   SDL_Rect rect = { SCREEN_WIDTH*0.3f, SCREEN_HEIGHT*0.35f, SCREEN_WIDTH*0.4f, SCREEN_HEIGHT*0.35f };
   SDL_RenderFillRect(g_renderer, &rect);
+  draw_outline(rect, colors[DARK_GREY], 2);
   set_render_color(colors[WHITE]);
   rect = (SDL_Rect) { SCREEN_WIDTH*0.35f, SCREEN_HEIGHT*0.475f, SCREEN_WIDTH*0.3f, SCREEN_HEIGHT*0.075f };
   SDL_RenderFillRect(g_renderer, &rect);
+  draw_outline(rect, colors[DARK_GREY], 1);
+  if (input_active)
+    SDL_RenderDrawLine(g_renderer, rect.x+rect.w*0.5f, rect.y+rect.h*0.2f, rect.x+rect.w*0.5f, rect.y+rect.h*0.8f);
   SDL_Rect button_rects[] = { (SDL_Rect) { SCREEN_WIDTH*0.36f, SCREEN_HEIGHT*0.58f, SCREEN_WIDTH*0.13f, SCREEN_HEIGHT*0.09f }, (SDL_Rect) { SCREEN_WIDTH*0.51f, SCREEN_HEIGHT*0.58f, SCREEN_WIDTH*0.13f, SCREEN_HEIGHT*0.09f }};
-  for (int i = 0; i < JOIN_BUTTON_COUNT; i++)
+  for (int i = 0; i < JOIN_BUTTON_COUNT; i++) {
+    set_render_color(colors[WHITE]);
+    SDL_RenderFillRect(NULL, NULL);
     SDL_RenderFillRect(g_renderer, button_rects+i);
+    draw_outline(button_rects[i], colors[DARK_GREY], 2);
+  }
   int text_width;
   TTF_SizeText(g_font.font, "Host's IP Address", &text_width, NULL);
   load_text("Host's IP Address", colors[BLACK], (SCREEN_WIDTH-text_width)*0.5f, SCREEN_HEIGHT*0.38f, 255);
@@ -789,17 +952,18 @@ char *client_screen(char *default_text) {
   TTF_SizeText(g_font.font, "Cancel", &text_width, NULL);
   load_text("Cancel", colors[DARK_GREY], SCREEN_WIDTH*0.575f-text_width*0.5f, SCREEN_HEIGHT*0.595f, 255);
   SDL_RenderPresent(g_renderer);
-  Bool quit_join = false, confirmed = false;
+  Bool quit_join = false, confirmed = false, input_hover = false;
   SDL_Event event;
   JoinButton current_hover = -1;
   char *input_text = malloc(16);
   if (default_text != NULL)
-    update_input(default_text, &rect, colors[DARK_GREY]);
+    update_input(load_texture("Input_Bar.png"), default_text, &rect, SCREEN_HEIGHT/22, colors[DARK_GREY], true);
   memset(input_text, 0x00, 16);
   SDL_StartTextInput();
   while (quit == false && quit_join == false) {
     Bool is_hovering = false;
     if (SDL_WaitEvent(&event)) {
+      handle_text_input(event, "Input_Bar.png", input_text, &rect, SCREEN_HEIGHT/22, colors[BLACK], 15);
       if (event.type == SDL_QUIT)
         quit = true;
       else if (event.type == SDL_KEYDOWN) {
@@ -816,31 +980,16 @@ char *client_screen(char *default_text) {
           else
             play_sound(sounds[ERROR]);
         }
-        else if (event.key.keysym.sym == SDLK_BACKSPACE) {
-          if (strlen(input_text) > 0)
-            input_text = pop_back(input_text);
-          update_input(input_text, &rect, colors[BLACK]);
-        }
-        else if (event.key.keysym.sym == SDLK_c && SDL_GetModState() & KMOD_CTRL)
-          SDL_SetClipboardText(input_text);
-        else if (event.key.keysym.sym == SDLK_v && SDL_GetModState() & KMOD_CTRL) {
-          char *clipboard = SDL_GetClipboardText();
-          size_t length = strlen(clipboard);
-          if (length > 0 && length <= 15) {
-            input_text = clipboard;
-            update_input(input_text, &rect, colors[BLACK]);
-          }
-        }
-      }
-      else if (event.type == SDL_TEXTINPUT) {
-        if (!(SDL_GetModState() & KMOD_CTRL && (event.text.text[0] == 'c' || event.text.text[0] == 'C' || event.text.text[0] == 'v' || event.text.text[0] == 'V')) && strlen(input_text) < 15) {
-          strcat(input_text, event.text.text);
-          update_input(input_text, &rect, colors[BLACK]);
-        }
       }
       else if (event.type == SDL_MOUSEMOTION) {
         int x, y;
         SDL_GetMouseState(&x, &y);
+        if (x >= rect.x && x <= rect.x+rect.w && y >= rect.y && y <= rect.y+rect.h) {
+          SDL_SetCursor(text_cursor);
+          input_hover = true;
+        }
+        else
+          input_hover = false;
         for (int i = 0; i < JOIN_BUTTON_COUNT; i++) {
           if (x >= button_rects[i].x && x <= button_rects[i].x+button_rects[i].w && y >= button_rects[i].y && y <= button_rects[i].y+button_rects[i].h) {
             current_hover = i;
@@ -848,12 +997,30 @@ char *client_screen(char *default_text) {
             SDL_SetCursor(hand_cursor);
           }
         }
-        if (is_hovering == false) {
+        if (is_hovering == false && input_hover == false) {
           current_hover = -1;
           SDL_SetCursor(arrow_cursor);
         }
       }
       else if (event.type == SDL_MOUSEBUTTONDOWN) {
+        if (input_hover == true) {
+          if (input_active == false) {
+            input_active = true;
+            set_render_color(colors[BLACK]);
+            SDL_RenderDrawLine(g_renderer, rect.x+rect.w*0.5f, rect.y+rect.h*0.2f, rect.x+rect.w*0.5f, rect.y+rect.h*0.8f);
+          }
+        }
+        else if (current_hover == -1) {
+          input_active = false;
+          memset(input_text, 0x00, 16);
+          set_render_color(colors[WHITE]);
+          g_texture = load_texture("Input_Bar.png");
+          SDL_RenderCopy(g_renderer, g_texture, NULL, &rect);
+          SDL_DestroyTexture(g_texture);
+          g_texture = NULL;
+          draw_outline(rect, colors[DARK_GREY], 1);
+        }
+        SDL_RenderPresent(g_renderer);
         switch (current_hover) {
           case CONFIRM_BUTTON:
             if (strlen(input_text) >= 7) {
@@ -875,6 +1042,7 @@ char *client_screen(char *default_text) {
     SDL_Delay(1);
   }
   SDL_StopTextInput();
+  input_active = false;
   SDL_FreeCursor(arrow_cursor); SDL_FreeCursor(hand_cursor); SDL_FreeCursor(text_cursor);
   SDL_RenderClear(g_renderer);
   return confirmed == true ? input_text : NULL;
@@ -894,7 +1062,7 @@ void host_game() {
   ClientData client_data = { "127.0.0.1" };
   ClientData *cdptr = &client_data;
   SDL_CreateThread(client_routine, "Hosting Client Routine", (void*)cdptr); // Host Client Thread
-  char *server_ip = get_win_ip();
+  char *server_ip = get_current_ip();
   if (server_ip == NULL)
     server_ip = "0.0.0.0";
   host_screen(server_ip);
@@ -929,6 +1097,7 @@ void join_game(char *text) {
 }
 
 void main_menu(MenuType type) {
+  input_active = false;
   SDL_LockMutex(quit_mutex);
   quit = quit_local = game_over = start = is_host = false;
   SDL_UnlockMutex(quit_mutex);
@@ -1125,7 +1294,6 @@ Bool action_indicator(int index) {
       set_alpha(120);
       SDL_RenderCopy(g_renderer, g_texture, NULL, &rect);
       SDL_DestroyTexture(g_texture);
-      g_texture = NULL;
       g_texture = load_texture("Indicator.png");
       set_blend_mode(SDL_BLENDMODE_BLEND);
       set_alpha(150);
@@ -1194,29 +1362,41 @@ void start_game() {
   load_font("bodoni_mtblack.ttf", SCREEN_HEIGHT/20);
   init_mutexes();
   int x, y, text_width, last_active_cell = -1;
-  offset = (FloatTuple) { SCREEN_HEIGHT*0.1f, 0 };
+  offset = (FloatTuple) { SCREEN_HEIGHT*0.15f, SCREEN_HEIGHT*0.075f };
   Bool log_shown = false;
   SDL_Event event;
   main_menu(MAIN);
   GameButton current_hover = -1;
-  SDL_Cursor *arrow_cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW), *hand_cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
+  Bool input_hover = false;
+  SDL_Cursor *arrow_cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW), *hand_cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND), *text_cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);
   char *texts[] = { "Undo Move", "Save Game", "Load Game", "Settings", "Main Menu" };
+  game_output_text = malloc(12); game_input_text = malloc(12);
+  memset(game_output_text, 0x00, 12); memset(game_input_text, 0x00, 12);
   SDL_LockMutex(quit_mutex);
   SDL_LockMutex(move_mutex);
   while (quit == false) {
-    float grid_x = SCREEN_HEIGHT+2*offset.x;
-    float grid_width = SCREEN_WIDTH-(SCREEN_HEIGHT+2*offset.x);
-    SDL_Rect b_rects[] = { { grid_x+grid_width*0.1f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, { grid_x+grid_width*0.275f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, { grid_x+grid_width*0.45f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, { grid_x+grid_width*0.625f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, { grid_x+grid_width*0.8f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f } };
-    int button_start = 0;
+    float grid_x = SCREEN_HEIGHT+2*offset.x-2*offset.y;
+    float grid_width = SCREEN_WIDTH-(SCREEN_HEIGHT+2*offset.x-2*offset.y);
+    SDL_Rect b_rects[] = { { grid_x+grid_width*0.1f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, { grid_x+grid_width*0.275f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, { grid_x+grid_width*0.45f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, { grid_x+grid_width*0.625f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, { grid_x+grid_width*0.8f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, { grid_x+grid_width*0.7f, SCREEN_HEIGHT*0.71f, grid_width*0.275f, SCREEN_HEIGHT*0.058f }, { grid_x+grid_width*0.7f, SCREEN_HEIGHT*0.779f, grid_width*0.275f, SCREEN_HEIGHT*0.058f } };
+    SDL_Rect input_rects[] = { { grid_x+grid_width*0.035f, SCREEN_HEIGHT*0.71f, grid_width*0.65f, SCREEN_HEIGHT*0.058f }, { grid_x+grid_width*0.035f, SCREEN_HEIGHT*0.779f, grid_width*0.65f, SCREEN_HEIGHT*0.058f } };
+    int button_start = 0, button_end = GAME_BUTTON_COUNT;
     SDL_LockMutex(join_mutex);
     if (local_ready == true) {
       button_start = SETTINGS_BUTTON;
+      button_end = MAIN_MENU_BUTTON+1;
       b_rects[SETTINGS_BUTTON] = (SDL_Rect) { grid_x+grid_width*0.4f-SCREEN_HEIGHT/29.f*0.75f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f };
       b_rects[MAIN_MENU_BUTTON] = (SDL_Rect) { grid_x+grid_width*0.6f-SCREEN_HEIGHT/29.f*0.75f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f };
     }
     SDL_UnlockMutex(join_mutex);
     Bool is_hovering = false;
     if (SDL_WaitEventTimeout(&event, 1)) {
+      SDL_LockMutex(join_mutex);
+      if (local_ready == false) {
+        SDL_UnlockMutex(join_mutex);
+        handle_text_input(event, "GInput_Bar.png", game_input_text, &input_rects[1], SCREEN_HEIGHT/30, colors[BLACK], 9);
+      }
+      else
+        SDL_UnlockMutex(join_mutex);
       if (event.type == SDL_QUIT)
         quit = true;
       else if (event.type == SDL_KEYDOWN) {
@@ -1228,28 +1408,45 @@ void start_game() {
             SDL_SetCursor(arrow_cursor);
           try_send_quit();
           SDL_UnlockMutex(quit_mutex);
+          memset(game_output_text, 0x00, 12); memset(game_input_text, 0x00, 12);
+          last_active_cell = -1;
           main_menu(MAIN);
           SDL_LockMutex(quit_mutex);
         }
       }
       else if (event.type == SDL_MOUSEMOTION) {
         SDL_GetMouseState(&x, &y);
-        for (int i = button_start; i < GAME_BUTTON_COUNT; i++) {
+        SDL_LockMutex(join_mutex);
+        if (local_ready == false) {
+          SDL_UnlockMutex(join_mutex);
+          if (x >= input_rects[1].x && x <= input_rects[1].x+input_rects[1].w && y >= input_rects[1].y && y <= input_rects[1].y+input_rects[1].h) {
+            SDL_SetCursor(text_cursor);
+            input_hover = true;
+          }
+          else
+            input_hover = false;
+        }
+        else
+          SDL_UnlockMutex(join_mutex);
+        for (int i = button_start; i < button_end; i++) {
           if (x >= b_rects[i].x && x <= b_rects[i].x+b_rects[i].w && y >= b_rects[i].y && y <= b_rects[i].y+b_rects[i].h && log_shown == false) {
             SDL_SetCursor(hand_cursor);
-            TTF_SizeText(g_font.font, texts[i], &text_width, NULL);
-            load_text(texts[i], colors[BLACK], grid_x+(grid_width-text_width)*0.5, SCREEN_HEIGHT*0.55, 255);
-            SDL_RenderPresent(g_renderer);
+            if (i <= MAIN_MENU_BUTTON) {
+              TTF_SizeText(g_font.font, texts[i], &text_width, NULL);
+              load_text(texts[i], colors[BLACK], grid_x+(grid_width-text_width)*0.5, SCREEN_HEIGHT*0.55, 255);
+              SDL_RenderPresent(g_renderer);
+            }
             current_hover = i;
             is_hovering = true;
           }
         }
         if (is_hovering == false) {
           hide_text(grid_x, grid_width);
-          SDL_SetCursor(arrow_cursor);
           current_hover = -1;
           log_shown = false;
           SDL_RenderPresent(g_renderer);
+          if (input_hover == false)
+            SDL_SetCursor(arrow_cursor);
         }
       }
       else if (event.type == SDL_MOUSEBUTTONDOWN) {
@@ -1299,6 +1496,8 @@ void start_game() {
         }
         else if (current_hover == SETTINGS_BUTTON) {
           play_sound(sounds[BIP2]);
+          memset(game_input_text, 0x00, 12);
+          SDL_SetCursor(arrow_cursor);
           settings_screen(true);
         }
         else if (current_hover == MAIN_MENU_BUTTON) {
@@ -1307,13 +1506,89 @@ void start_game() {
           SDL_RenderClear(g_renderer);
           try_send_quit();
           SDL_UnlockMutex(quit_mutex);
+          memset(game_output_text, 0x00, 12); memset(game_input_text, 0x00, 12);
+          last_active_cell = -1;
           main_menu(MAIN);
           SDL_LockMutex(quit_mutex);
         }
-        else if (current_hover == -1 && game_over == false) {
-          if (x >= offset.x && x <= SCREEN_HEIGHT+offset.x && y >= offset.y && y <= SCREEN_HEIGHT+offset.y) {
+        else if (current_hover == COPY_PLAY_BUTTON) {
+          play_sound(sounds[BIP2]);
+          SDL_SetClipboardText(game_output_text);
+        }
+        else if (current_hover == APPLY_PLAY_BUTTON) {
+          int length;
+          if ((length = strlen(game_input_text)) > 6 && length < 12) {
+            char move_msg[2][6] = { "\0", "\0" };
+            int i, j = 0, k = 0;
+            for (i = 0; i < length; i++, k++) {
+              if (j == 0 && i >= 5) {
+                play_sound(sounds[ERROR]);
+                memset(game_input_text, 0x00, 12);
+                update_input(load_texture("GInput_Bar.png"), "Illegal Move", input_rects+1, SCREEN_HEIGHT/30, colors[DARK_GREY], true);
+                break;
+              }
+              if (i >= 3 && game_input_text[i] == ' ') {
+                j++;
+                k = -1;
+                continue;
+              }
+              move_msg[j][k] = tolower(game_input_text[i]);
+            }
+            if (i == length) {
+              IntTuple move;
+              k = 0;
+              for (i = 0; i < get_board_size(); i++) {
+                if (strcmp(msg_control[i], move_msg[0]) == 0) {
+                  move.x = i;
+                  k++;
+                }
+                else if (strcmp(msg_control[i], move_msg[1]) == 0) {
+                  move.y = i;
+                  k++;
+                }
+                if (k == 2)
+                  break;
+              }
+              if (k == 2) {
+                Bool found = false;
+                get_allowed_piece_actions(move.x);
+                for (int i = 0; i < allowed_piece_count; i++) {
+                  if (current_allowed_piece[i] == move.y) {
+                    found = true;
+                    play_sound(sounds[BIP2]);
+                    memset(game_output_text, 0x00, 12);
+                    GameState state = apply_move(move);
+                    update_input(load_texture("GInput_Bar.png"), game_output_text, input_rects, SCREEN_HEIGHT/30, colors[DARK_GREY], false);
+                    game_over = state != ONGOING ? true : false;
+                    game_over_screen(state, grid_x, grid_width);
+                    memset(game_input_text, 0x00, 12);
+                    update_input(load_texture("GInput_Bar.png"), game_input_text, input_rects+1, SCREEN_HEIGHT/30, colors[BLACK], true);
+                    break;
+                  }
+                }
+                if (!found) {
+                  play_sound(sounds[ERROR]);
+                  memset(game_input_text, 0x00, 12);
+                  update_input(load_texture("GInput_Bar.png"), "Illegal Move", input_rects+1, SCREEN_HEIGHT/30, colors[DARK_GREY], true);
+                }
+              }
+              else {
+                play_sound(sounds[ERROR]);
+                memset(game_input_text, 0x00, 12);
+                update_input(load_texture("GInput_Bar.png"), "Illegal Move", input_rects+1, SCREEN_HEIGHT/30, colors[DARK_GREY], true);
+              }
+            }
+          }
+          else {
+            play_sound(sounds[ERROR]);
+            memset(game_input_text, 0x00, 12);
+            update_input(load_texture("GInput_Bar.png"), "Illegal Move", input_rects+1, SCREEN_HEIGHT/30, colors[DARK_GREY], true);
+          }
+        }
+        else if (current_hover == -1 && input_hover == false && game_over == false) {
+          if (x >= offset.x && x <= SCREEN_HEIGHT-2*offset.y+offset.x && y >= offset.y && y <= SCREEN_HEIGHT-offset.y) {
             int cell_index = map_to_int((IntTuple) { x-offset.x, y-offset.y });
-            draw_board(false); // Clears Highlighted Path
+            draw_board(false, false); // Clears Highlighted Path
             if (last_active_cell == cell_index) {
               play_sound(sounds[MOVE2]);
               last_active_cell = -1;
@@ -1324,7 +1599,15 @@ void start_game() {
                 for (int i = 0; i < allowed_piece_count; i++) {
                   if (current_allowed_piece[i] == cell_index) {
                     found = true;
+                    memset(game_output_text, 0x00, 12);
                     GameState state = apply_move((IntTuple) { last_active_cell, cell_index });
+                    SDL_LockMutex(join_mutex);
+                    if (local_ready == false) {
+                      SDL_UnlockMutex(join_mutex);
+                      update_input(load_texture("GInput_Bar.png"), game_output_text, input_rects, SCREEN_HEIGHT/30, colors[DARK_GREY], false);
+                    }
+                    else
+                      SDL_UnlockMutex(join_mutex);
                     game_over = state != ONGOING ? true : false;
                     game_over_screen(state, grid_x, grid_width);
                     if (local_ready == true) {
@@ -1345,6 +1628,39 @@ void start_game() {
             }
           }
         }
+        if (input_hover == true) {
+          if (event.button.button == SDL_BUTTON_LEFT) {
+            if (input_active == false) {
+              input_active = true;
+              SDL_RenderDrawLine(g_renderer, input_rects[1].x+input_rects[1].w*0.5f, input_rects[1].y+input_rects[1].h*0.2f, input_rects[1].x+input_rects[1].w*0.5f, input_rects[1].y+input_rects[1].h*0.8f);
+            }
+          }
+          else if (event.button.button == SDL_BUTTON_RIGHT) {
+            char *clipboard = SDL_GetClipboardText();
+            size_t length = strlen(clipboard);
+            if (length > 0 && length < 12) {
+              memset(game_input_text, 0x00, strlen(game_input_text)+1);
+              strcpy(game_input_text, clipboard);
+              update_input(load_texture("GInput_Bar.png"), game_input_text, input_rects+1, SCREEN_HEIGHT/30, colors[BLACK], true);
+            }
+          }
+        }
+        SDL_LockMutex(join_mutex);
+        if (local_ready == false) {
+          SDL_UnlockMutex(join_mutex);
+          if (input_hover == false && current_hover == -1) {
+            input_active = false;
+            memset(game_input_text, 0x00, 12);
+            g_texture = load_texture("GInput_Bar.png");
+            SDL_RenderCopy(g_renderer, g_texture, NULL, &input_rects[1]);
+            SDL_DestroyTexture(g_texture);
+            g_texture = NULL;
+            draw_outline(input_rects[1], colors[DARK_GREY], 1);
+          }
+        }
+        else
+          SDL_UnlockMutex(join_mutex);
+        SDL_RenderPresent(g_renderer);
       }
     }
     SDL_LockMutex(join_mutex);
@@ -1380,6 +1696,8 @@ void start_game() {
     quit_ready = false;
     SDL_UnlockMutex(quit_mutex);
   }
-  SDL_FreeCursor(arrow_cursor); SDL_FreeCursor(hand_cursor);
-  close();
+  free(game_input_text); free(game_output_text);
+  SDL_StopTextInput();
+  SDL_FreeCursor(arrow_cursor); SDL_FreeCursor(hand_cursor); SDL_FreeCursor(text_cursor);
+  sdl_close();
 }

@@ -340,6 +340,8 @@ void get_allowed_actions() {
 
 GameState switch_turn() {
   current_player = -current_player;
+  if (board_rotation == true)
+    view_player = -view_player;
   get_allowed_actions();
   draw_board(false, true);
   return check_game_state();

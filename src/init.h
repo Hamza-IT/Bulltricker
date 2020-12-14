@@ -29,12 +29,14 @@ int WHITE_PIECES_COUNT, BLACK_PIECES_COUNT, COLOR_DIVIDER;
 int row_count, column_count, current_states, max_states;
 int *initial_board, *current_board, **previous_states;
 char **msg_control, *game_input_text, *game_output_text;
-Player current_player, local_player;
+Player current_player, view_player, local_player;
 Bool game_over, start, on_main_menu;
 volatile Bool quit, quit_local, ip_updated, local_ready, move_applied, local_failed, quit_ready;
 static FloatTuple offset;
 
+void set_dir_path();
 int *initialize_board();
+int *get_new_board();
 int get_board_size();
 
 #endif

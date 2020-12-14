@@ -7,7 +7,7 @@
 #include <limits.h>
 #endif
 
-int *initialize_board() {
+void set_dir_path() {
   #if defined __unix__ || defined __APPLE__
     char *target_dir = malloc(PATH_MAX+1);
     #ifdef __unix__
@@ -15,11 +15,11 @@ int *initialize_board() {
       if (bytes >= 0)
         target_dir[bytes+1] = '\0';
       else
-        return NULL;
+        return;
     #elif defined __APPLE__
       size_t max_size = PATH_MAX;
       if (_NSGetExecutablePath(target_dir, &max_size) != 0)
-        return NULL;
+        return;
     #endif
     int rm_index = 0, tmp = 0;
     char *cpy = target_dir;
@@ -36,6 +36,9 @@ int *initialize_board() {
     chdir(target_dir);
     free(target_dir);
   #endif
+}
+
+int* initialize_board() {
   char *path = "./Bulltricker_Data/general.txt";
   FILE *fptr = fopen(path, "r");
   if (fptr == NULL) {
@@ -44,10 +47,11 @@ int *initialize_board() {
   }
   fscanf(fptr, "%d %d %d %d %d", &row_count, &column_count, &WHITE_PIECES_COUNT, &BLACK_PIECES_COUNT, &COLOR_DIVIDER);
   initial_board = malloc(get_board_size()*sizeof(int));
+  int *copy_board = malloc(get_board_size()*sizeof(int));
   msg_control = malloc(get_board_size()*sizeof(char *));
-  game_input_text = game_output_text = NULL;
   for (int i = 0; i < get_board_size(); i++) {
     fscanf(fptr, "%d, ", &(initial_board[i]));
+    copy_board[i] = initial_board[i];
   }
   for (int i = 0; i < get_board_size(); i++) {
     msg_control[i] = malloc(6);
@@ -60,7 +64,14 @@ int *initialize_board() {
   previous_states = malloc(max_states*sizeof(int*));
   for (int i = 0; i < max_states; i++)
     previous_states[i] = malloc(get_board_size()*sizeof(int));
-  return initial_board;
+  return copy_board;
+}
+
+int *get_new_board() {
+  int *copy_board = malloc(get_board_size()*sizeof(int));
+  for (int i = 0; i < get_board_size(); i++)
+    copy_board[i] = initial_board[i];
+  return copy_board;
 }
 
 int get_board_size() {

@@ -41,6 +41,7 @@ typedef enum {
 
 typedef enum {
   UNDO_MOVE_BUTTON,
+  ROTATE_BOARD_BUTTON,
   SAVE_GAME_BUTTON,
   LOAD_GAME_BUTTON,
   SETTINGS_BUTTON,
@@ -79,6 +80,7 @@ typedef struct {
 
 int SCREEN_WIDTH;
 int SCREEN_HEIGHT;
+extern Bool board_rotation;
 
 Mix_Chunk **sounds;
 void show_menu_context(MenuHover);

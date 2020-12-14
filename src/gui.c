@@ -8,7 +8,8 @@
 #include "server.h"
 #include "client.h"
 
-Bool shown, mute = false, indicator_on = true, grid_notation_on = true, board_rotation = true, is_host = false, input_active = false;
+Bool shown, mute = false, indicator_on = true, grid_notation_on = true,
+board_rotation = true, is_host = false, input_active = false;
 
 char* BASE_PATH = "./Bulltricker_Data/";
 char* SPRITE_PATH = "./Bulltricker_Data/Sprites/";
@@ -140,7 +141,11 @@ int mirror(int index) {
   if (local_ready == true)
     return local_player == WHITE_PLAYER ? index : mirror_position(index);
   SDL_UnlockMutex(join_mutex);
-  if (current_player == BLACK_PLAYER && board_rotation == true)
+  if (view_player == WHITE_PLAYER)
+    return index;
+  if (view_player == BLACK_PLAYER)
+    return mirror_position(index);
+  else if (current_player == BLACK_PLAYER && board_rotation == true)
     return mirror_position(index);
   return index;
 }
@@ -214,17 +219,19 @@ SDL_Texture *load_texture(const char *name) {
 }
 
 void load_text(const char *text, SDL_Color color, int x, int y, unsigned char a) {
-  int width, height;
-  TTF_SizeText(g_font.font, text, &width, &height);
-  SDL_Rect text_rect = { x, y, width, height };
-  g_surface = TTF_RenderText_Blended(g_font.font, text, color);
-  g_texture = SDL_CreateTextureFromSurface(g_renderer, g_surface);
-  set_alpha(a);
-  SDL_FreeSurface(g_surface);
-  g_surface = NULL;
-  SDL_RenderCopy(g_renderer, g_texture, NULL, &text_rect);
-  SDL_DestroyTexture(g_texture);
-  g_texture = NULL;
+  if (text != NULL) {
+    int width, height;
+    TTF_SizeText(g_font.font, text, &width, &height);
+    SDL_Rect text_rect = { x, y, width, height };
+    g_surface = TTF_RenderText_Blended(g_font.font, text, color);
+    g_texture = SDL_CreateTextureFromSurface(g_renderer, g_surface);
+    set_alpha(a);
+    SDL_FreeSurface(g_surface);
+    g_surface = NULL;
+    SDL_RenderCopy(g_renderer, g_texture, NULL, &text_rect);
+    SDL_DestroyTexture(g_texture);
+    g_texture = NULL;
+  }
 }
 
 void player_indication(float grid_x, float grid_width, Bool rotated) {
@@ -267,8 +274,8 @@ void load_grid() {
     set_render_color(light_colors[i]);
     SDL_RenderFillRectF(g_renderer, &f_light_rects[i]);
   }
-  SDL_Texture *buttons[] = { load_texture("Undo_Button.png"), load_texture("Save_Button.png"), load_texture("Load_Button.png"), load_texture("Settings_Button.png"), load_texture("Menu_Button.png"), load_texture("Empty_Button.png"), load_texture("Empty_Button.png") };
-  SDL_Rect b_rects[] = { { grid_x+grid_width*0.1f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, { grid_x+grid_width*0.275f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, { grid_x+grid_width*0.45f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, { grid_x+grid_width*0.625f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, { grid_x+grid_width*0.8f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, (SDL_Rect) { grid_x+grid_width*0.7f, SCREEN_HEIGHT*0.71f, grid_width*0.275f, SCREEN_HEIGHT*0.058f }, (SDL_Rect) { grid_x+grid_width*0.7f, SCREEN_HEIGHT*0.779f, grid_width*0.275f, SCREEN_HEIGHT*0.058f } };
+  SDL_Texture *buttons[] = { load_texture("Undo_Button.png"), load_texture("Rotate_Button.png"), load_texture("Save_Button.png"), load_texture("Load_Button.png"), load_texture("Settings_Button.png"), load_texture("Menu_Button.png"), load_texture("Empty_Button.png"), load_texture("Empty_Button.png") };
+  SDL_Rect b_rects[] = { { grid_x+grid_width*0.085f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, { grid_x+grid_width*0.235f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, { grid_x+grid_width*0.385f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, { grid_x+grid_width*0.535f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, { grid_x+grid_width*0.685f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, { grid_x+grid_width*0.835f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, (SDL_Rect) { grid_x+grid_width*0.7f, SCREEN_HEIGHT*0.71f, grid_width*0.275f, SCREEN_HEIGHT*0.058f }, (SDL_Rect) { grid_x+grid_width*0.7f, SCREEN_HEIGHT*0.779f, grid_width*0.275f, SCREEN_HEIGHT*0.058f } };
   int button_start = 0, button_end = GAME_BUTTON_COUNT;
   SDL_LockMutex(join_mutex);
   if (local_ready == true) {
@@ -297,7 +304,9 @@ void load_grid() {
     if (local_player == BLACK_PLAYER)
       rotated = true;
   }
-  else if (board_rotation == true && current_player == BLACK_PLAYER)
+  if (view_player == WHITE_PLAYER)
+    rotated = false;
+  else if (view_player == BLACK_PLAYER || (board_rotation == true && current_player == BLACK_PLAYER))
     rotated = true;
   SDL_UnlockMutex(join_mutex);
   player_indication(grid_x, grid_width, rotated);
@@ -362,10 +371,13 @@ void fill_blank() {
     for (int i = 1; i <= 8; i++) {
       char num[2] = "\0";
       int j = 1+8-i;
-      if (board_rotation == true && current_player == BLACK_PLAYER)
+      if (view_player == WHITE_PLAYER)
+        j = 1+8-i;
+      else if (view_player == BLACK_PLAYER || (board_rotation == true && current_player == BLACK_PLAYER))
         j = i;
       SDL_itoa(j, num, 10);
-      if ((current_player == WHITE_PLAYER || board_rotation == false) && j != 8) {
+      if (view_player == BLACK_PLAYER) {}
+      else if ((current_player == WHITE_PLAYER || board_rotation == false) && j != 8) {
         start_y += offset.y*0.782f;
         change_font_size(SCREEN_HEIGHT/15);
         TTF_SizeText(g_font.font, num, &text_dim.x, &text_dim.y);
@@ -378,7 +390,18 @@ void fill_blank() {
       change_font_size(SCREEN_HEIGHT/25);
       TTF_SizeText(g_font.font, alpha_num, &text_dim.x, &text_dim.y);
       load_text(alpha_num, colors[BLACK], (offset.x-text_dim.x)*0.5f, start_y-text_dim.y*0.5f, 255);
-      if (current_player == BLACK_PLAYER && board_rotation == true) {
+      if (view_player == WHITE_PLAYER) {
+        if (current_player == BLACK_PLAYER && board_rotation == true) {
+          if (j == 1)
+            break;
+          start_y += offset.y*0.782f;
+          change_font_size(SCREEN_HEIGHT/15);
+          TTF_SizeText(g_font.font, num, &text_dim.x, &text_dim.y);
+          load_text(num, colors[BLACK], (offset.x-text_dim.x)*0.5f, start_y-text_dim.y*0.5f, 255);
+          start_y += offset.y*0.782f;
+        }
+      }
+      else if (view_player == BLACK_PLAYER || (current_player == BLACK_PLAYER && board_rotation == true)) {
         if (j == 8)
           break;
         start_y += offset.y*0.782f;
@@ -396,7 +419,9 @@ void fill_blank() {
       int j = i;
       char alpha[2] = "\0";
       alpha[0] = 0;
-      if (board_rotation == true && current_player == BLACK_PLAYER) {
+      if (view_player == WHITE_PLAYER)
+        j = i;
+      else if (view_player == BLACK_PLAYER || (board_rotation == true && current_player == BLACK_PLAYER)) {
         j = 1+8-i;
         alpha[0]--;
       }
@@ -561,14 +586,12 @@ void update_input(SDL_Texture *texture, const char *input_text, const SDL_Rect *
     g_texture = texture;
   SDL_RenderCopy(g_renderer, g_texture, NULL, rect);
   draw_outline(*rect, colors[DARK_GREY], 1);
-  SDL_DestroyTexture(g_texture);
-  g_texture = NULL;
   change_font_size(font_size);
   int text_width;
   TTF_SizeText(g_font.font, input_text, &text_width, NULL);
   if (is_active)
     SDL_RenderDrawLine(g_renderer, (*rect).x+((*rect).w+text_width)*0.5f, (*rect).y+(*rect).h*0.2f, (*rect).x+((*rect).w+text_width)*0.5f, (*rect).y+(*rect).h*0.8f);
-  if (*input_text != '\0')
+  if (input_text != NULL && *input_text != '\0')
     load_text(input_text, color, (*rect).x+((*rect).w-text_width)*0.5f, (*rect).y+SCREEN_HEIGHT*0.01f, 255);
   else
     load_text(" ", color, (*rect).x+((*rect).w-text_width)*0.5f, (*rect).y+SCREEN_HEIGHT*0.01f, 255);
@@ -589,7 +612,6 @@ void handle_text_input(SDL_Event event, const char *texture_path, char *text, SD
         char *clipboard = SDL_GetClipboardText();
         size_t length = strlen(clipboard);
         if (length > 0 && length <= max_length) {
-          memset(text, 0x00, strlen(text)+1);
           strcpy(text, clipboard);
           update_input(load_texture(texture_path), text, rect, font_size, color, true);
         }
@@ -669,8 +691,10 @@ void settings_return(Bool *quit_settings, Bool in_game) {
       float grid_x = SCREEN_HEIGHT+2*offset.x-2*offset.y;
       float grid_width = SCREEN_WIDTH-(SCREEN_HEIGHT+2*offset.x-2*offset.y);
       SDL_Rect input_rects[] = { { grid_x+grid_width*0.035f, SCREEN_HEIGHT*0.71f, grid_width*0.65f, SCREEN_HEIGHT*0.058f }, { grid_x+grid_width*0.035f, SCREEN_HEIGHT*0.779f, grid_width*0.65f, SCREEN_HEIGHT*0.058f } };
-      update_input(load_texture("GInput_Bar.png"), game_output_text, input_rects, SCREEN_HEIGHT/30, colors[DARK_GREY], false);
-      update_input(load_texture("GInput_Bar.png"), game_input_text, input_rects+1, SCREEN_HEIGHT/30, colors[BLACK], false);
+      if (game_output_text != NULL)
+        update_input(load_texture("GInput_Bar.png"), game_output_text, input_rects, SCREEN_HEIGHT/30, colors[DARK_GREY], false);
+      if (game_input_text != NULL)
+        update_input(load_texture("GInput_Bar.png"), game_input_text, input_rects+1, SCREEN_HEIGHT/30, colors[BLACK], false);
     }
     else
       SDL_UnlockMutex(join_mutex);
@@ -761,6 +785,10 @@ void show_menu_context(MenuHover current) {
 }
 
 void new_game() {
+  if (game_input_text == NULL)
+    game_input_text = calloc(12, sizeof(char));
+  if (game_output_text == NULL)
+    game_output_text = calloc(12, sizeof(char));
   input_active = false;
   on_main_menu = false;
   set_render_color(colors[VOID]);
@@ -770,12 +798,13 @@ void new_game() {
   SDL_SetCursor(arrow_cursor);
   play_sound(sounds[BIP2]);
   current_player = WHITE_PLAYER;
+  view_player = current_player;
   game_over = false;
   mandatory_pawn_move = false;
   mandatory_queen_move = false;
   shown = false;
   free(current_board);
-  current_board = initialize_board();
+  current_board = get_new_board();
   start = true;
   draw_board(true, true);
   SDL_StartTextInput();
@@ -955,10 +984,9 @@ char *client_screen(char *default_text) {
   Bool quit_join = false, confirmed = false, input_hover = false;
   SDL_Event event;
   JoinButton current_hover = -1;
-  char *input_text = malloc(16);
+  char *input_text = calloc(16, sizeof(char));
   if (default_text != NULL)
     update_input(load_texture("Input_Bar.png"), default_text, &rect, SCREEN_HEIGHT/22, colors[DARK_GREY], true);
-  memset(input_text, 0x00, 16);
   SDL_StartTextInput();
   while (quit == false && quit_join == false) {
     Bool is_hovering = false;
@@ -1012,7 +1040,7 @@ char *client_screen(char *default_text) {
         }
         else if (current_hover == -1) {
           input_active = false;
-          memset(input_text, 0x00, 16);
+          input_text[0] = '\0';
           set_render_color(colors[WHITE]);
           g_texture = load_texture("Input_Bar.png");
           SDL_RenderCopy(g_renderer, g_texture, NULL, &rect);
@@ -1097,6 +1125,14 @@ void join_game(char *text) {
 }
 
 void main_menu(MenuType type) {
+  if (game_input_text != NULL) {
+    free(game_input_text);
+    game_input_text = NULL;
+  }
+  if (game_output_text != NULL) {
+    free(game_output_text);
+    game_output_text = NULL;
+  }
   input_active = false;
   SDL_LockMutex(quit_mutex);
   quit = quit_local = game_over = start = is_host = false;
@@ -1112,7 +1148,7 @@ void main_menu(MenuType type) {
     show_local_context(current_hover);
   SDL_Event event;
   SDL_Cursor *arrow_cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW), *hand_cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
-  Bool at_local = (Bool)type;
+  Bool at_local = (Bool)type, quick = false;
   destroy_mutexes();
   init_mutexes();
   while (start == false && quit == false && on_main_menu == true) {
@@ -1169,8 +1205,10 @@ void main_menu(MenuType type) {
       }
       else if (event.type == SDL_MOUSEBUTTONDOWN) {
         if (at_local == false) {
-          if (current_hover == QUICK_PLAY)
-            new_game();
+          if (current_hover == QUICK_PLAY) {
+            quick = true;
+            break;
+          }
           else if (current_hover == LOCAL_GAME) {
             current_hover = -1;
             show_local_context(current_hover);
@@ -1234,8 +1272,10 @@ void main_menu(MenuType type) {
             break;
           case SDLK_RETURN:
             if (at_local == false) {
-              if (current_hover == QUICK_PLAY)
-                new_game();
+              if (current_hover == QUICK_PLAY) {
+                quick = true;
+                break;
+              }
               else if (current_hover == LOCAL_GAME) {
                 current_hover = -1;
                 show_local_context(current_hover);
@@ -1270,7 +1310,9 @@ void main_menu(MenuType type) {
     }
     SDL_Delay(1);
   }
-  if (on_main_menu == false && start == false)
+  if (quick == true)
+      new_game();
+  else if (on_main_menu == false && start == false)
     host_game();
   SDL_FreeCursor(arrow_cursor); SDL_FreeCursor(hand_cursor);
 }
@@ -1361,23 +1403,23 @@ void start_game() {
   load_all_sounds();
   load_font("bodoni_mtblack.ttf", SCREEN_HEIGHT/20);
   init_mutexes();
+  view_player = current_player;
   int x, y, text_width, last_active_cell = -1;
   offset = (FloatTuple) { SCREEN_HEIGHT*0.15f, SCREEN_HEIGHT*0.075f };
+  game_output_text = NULL; game_input_text = NULL;
   Bool log_shown = false;
   SDL_Event event;
   main_menu(MAIN);
   GameButton current_hover = -1;
   Bool input_hover = false;
   SDL_Cursor *arrow_cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW), *hand_cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND), *text_cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);
-  char *texts[] = { "Undo Move", "Save Game", "Load Game", "Settings", "Main Menu" };
-  game_output_text = malloc(12); game_input_text = malloc(12);
-  memset(game_output_text, 0x00, 12); memset(game_input_text, 0x00, 12);
+  char *texts[] = { "Undo Move", "Rotate Board", "Save Game", "Load Game", "Settings", "Main Menu" };
   SDL_LockMutex(quit_mutex);
   SDL_LockMutex(move_mutex);
   while (quit == false) {
     float grid_x = SCREEN_HEIGHT+2*offset.x-2*offset.y;
     float grid_width = SCREEN_WIDTH-(SCREEN_HEIGHT+2*offset.x-2*offset.y);
-    SDL_Rect b_rects[] = { { grid_x+grid_width*0.1f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, { grid_x+grid_width*0.275f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, { grid_x+grid_width*0.45f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, { grid_x+grid_width*0.625f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, { grid_x+grid_width*0.8f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, { grid_x+grid_width*0.7f, SCREEN_HEIGHT*0.71f, grid_width*0.275f, SCREEN_HEIGHT*0.058f }, { grid_x+grid_width*0.7f, SCREEN_HEIGHT*0.779f, grid_width*0.275f, SCREEN_HEIGHT*0.058f } };
+    SDL_Rect b_rects[] = { { grid_x+grid_width*0.085f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, { grid_x+grid_width*0.235f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, { grid_x+grid_width*0.385f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, { grid_x+grid_width*0.535f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, { grid_x+grid_width*0.685f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, { grid_x+grid_width*0.835f, SCREEN_HEIGHT*0.632f, SCREEN_HEIGHT/29.f*1.5f, SCREEN_HEIGHT/29.f*1.5f }, (SDL_Rect) { grid_x+grid_width*0.7f, SCREEN_HEIGHT*0.71f, grid_width*0.275f, SCREEN_HEIGHT*0.058f }, (SDL_Rect) { grid_x+grid_width*0.7f, SCREEN_HEIGHT*0.779f, grid_width*0.275f, SCREEN_HEIGHT*0.058f } };
     SDL_Rect input_rects[] = { { grid_x+grid_width*0.035f, SCREEN_HEIGHT*0.71f, grid_width*0.65f, SCREEN_HEIGHT*0.058f }, { grid_x+grid_width*0.035f, SCREEN_HEIGHT*0.779f, grid_width*0.65f, SCREEN_HEIGHT*0.058f } };
     int button_start = 0, button_end = GAME_BUTTON_COUNT;
     SDL_LockMutex(join_mutex);
@@ -1408,7 +1450,7 @@ void start_game() {
             SDL_SetCursor(arrow_cursor);
           try_send_quit();
           SDL_UnlockMutex(quit_mutex);
-          memset(game_output_text, 0x00, 12); memset(game_input_text, 0x00, 12);
+          game_output_text[0] = '\0'; game_input_text[0] = '\0';
           last_active_cell = -1;
           main_menu(MAIN);
           SDL_LockMutex(quit_mutex);
@@ -1431,6 +1473,7 @@ void start_game() {
         for (int i = button_start; i < button_end; i++) {
           if (x >= b_rects[i].x && x <= b_rects[i].x+b_rects[i].w && y >= b_rects[i].y && y <= b_rects[i].y+b_rects[i].h && log_shown == false) {
             SDL_SetCursor(hand_cursor);
+            change_font_size(SCREEN_HEIGHT/25);
             if (i <= MAIN_MENU_BUTTON) {
               TTF_SizeText(g_font.font, texts[i], &text_width, NULL);
               load_text(texts[i], colors[BLACK], grid_x+(grid_width-text_width)*0.5, SCREEN_HEIGHT*0.55, 255);
@@ -1452,6 +1495,14 @@ void start_game() {
       else if (event.type == SDL_MOUSEBUTTONDOWN) {
         if (current_hover == UNDO_MOVE_BUTTON)
           undo_last_move();
+        else if (current_hover == ROTATE_BOARD_BUTTON) {
+          play_sound(sounds[BIP2]);
+          view_player = -view_player;
+          draw_board(true, true);
+          change_font_size(SCREEN_HEIGHT/25);
+          load_text("Rotate Board", colors[BLACK], grid_x+(grid_width-text_width)*0.5, SCREEN_HEIGHT*0.55, 255);
+          update_input(load_texture("GInput_Bar.png"), game_output_text, input_rects, SCREEN_HEIGHT/30, colors[DARK_GREY], false);
+        }
         else if (current_hover == SAVE_GAME_BUTTON) {
           Bool has_saved = save_game(check_game_state());
           if (has_saved == true) {
@@ -1496,7 +1547,7 @@ void start_game() {
         }
         else if (current_hover == SETTINGS_BUTTON) {
           play_sound(sounds[BIP2]);
-          memset(game_input_text, 0x00, 12);
+          game_input_text[0] = '\0';
           SDL_SetCursor(arrow_cursor);
           settings_screen(true);
         }
@@ -1506,7 +1557,7 @@ void start_game() {
           SDL_RenderClear(g_renderer);
           try_send_quit();
           SDL_UnlockMutex(quit_mutex);
-          memset(game_output_text, 0x00, 12); memset(game_input_text, 0x00, 12);
+          game_output_text[0] = '\0'; game_input_text[0] = '\0';
           last_active_cell = -1;
           main_menu(MAIN);
           SDL_LockMutex(quit_mutex);
@@ -1523,7 +1574,7 @@ void start_game() {
             for (i = 0; i < length; i++, k++) {
               if (j == 0 && i >= 5) {
                 play_sound(sounds[ERROR]);
-                memset(game_input_text, 0x00, 12);
+                game_input_text[0] = '\0';
                 update_input(load_texture("GInput_Bar.png"), "Illegal Move", input_rects+1, SCREEN_HEIGHT/30, colors[DARK_GREY], true);
                 break;
               }
@@ -1556,32 +1607,32 @@ void start_game() {
                   if (current_allowed_piece[i] == move.y) {
                     found = true;
                     play_sound(sounds[BIP2]);
-                    memset(game_output_text, 0x00, 12);
+                    game_output_text[0] = '\0';
                     GameState state = apply_move(move);
                     update_input(load_texture("GInput_Bar.png"), game_output_text, input_rects, SCREEN_HEIGHT/30, colors[DARK_GREY], false);
                     game_over = state != ONGOING ? true : false;
                     game_over_screen(state, grid_x, grid_width);
-                    memset(game_input_text, 0x00, 12);
+                    game_input_text[0] = '\0';
                     update_input(load_texture("GInput_Bar.png"), game_input_text, input_rects+1, SCREEN_HEIGHT/30, colors[BLACK], true);
                     break;
                   }
                 }
                 if (!found) {
                   play_sound(sounds[ERROR]);
-                  memset(game_input_text, 0x00, 12);
+                  game_input_text[0] = '\0';
                   update_input(load_texture("GInput_Bar.png"), "Illegal Move", input_rects+1, SCREEN_HEIGHT/30, colors[DARK_GREY], true);
                 }
               }
               else {
                 play_sound(sounds[ERROR]);
-                memset(game_input_text, 0x00, 12);
+                game_input_text[0] = '\0';
                 update_input(load_texture("GInput_Bar.png"), "Illegal Move", input_rects+1, SCREEN_HEIGHT/30, colors[DARK_GREY], true);
               }
             }
           }
           else {
             play_sound(sounds[ERROR]);
-            memset(game_input_text, 0x00, 12);
+            game_input_text[0] = '\0';
             update_input(load_texture("GInput_Bar.png"), "Illegal Move", input_rects+1, SCREEN_HEIGHT/30, colors[DARK_GREY], true);
           }
         }
@@ -1599,7 +1650,7 @@ void start_game() {
                 for (int i = 0; i < allowed_piece_count; i++) {
                   if (current_allowed_piece[i] == cell_index) {
                     found = true;
-                    memset(game_output_text, 0x00, 12);
+                    game_output_text[0] = '\0';
                     GameState state = apply_move((IntTuple) { last_active_cell, cell_index });
                     SDL_LockMutex(join_mutex);
                     if (local_ready == false) {
@@ -1639,7 +1690,6 @@ void start_game() {
             char *clipboard = SDL_GetClipboardText();
             size_t length = strlen(clipboard);
             if (length > 0 && length < 12) {
-              memset(game_input_text, 0x00, strlen(game_input_text)+1);
               strcpy(game_input_text, clipboard);
               update_input(load_texture("GInput_Bar.png"), game_input_text, input_rects+1, SCREEN_HEIGHT/30, colors[BLACK], true);
             }
@@ -1650,7 +1700,7 @@ void start_game() {
           SDL_UnlockMutex(join_mutex);
           if (input_hover == false && current_hover == -1) {
             input_active = false;
-            memset(game_input_text, 0x00, 12);
+            game_input_text[0] = '\0';
             g_texture = load_texture("GInput_Bar.png");
             SDL_RenderCopy(g_renderer, g_texture, NULL, &input_rects[1]);
             SDL_DestroyTexture(g_texture);

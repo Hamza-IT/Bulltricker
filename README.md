@@ -7,10 +7,14 @@ A Makefile is included within the project. Pre-built executables can also be fou
 ## How To Play
 Refer to the official rules at [http://www.bulltricker.com/](http://www.bulltricker.com/).
 ## Updates
+- Added local multiplayer (1V1) support.
+- Added a play by text option (i.e. send your moves to your opponent through a messaging app so they can replay them locally.)
+
 No further updates will be made for this version apart from the occasional tweak.
 
 However, a full scale online version is in development and is soon to be released for WINDOWS/LINUX/MAC and Mobile with the agreement of the game creator.
 
+### Screenshots of the full scale version (Not the one in this repository)
 ![Home Page Image](https://i.imgur.com/dTwuY2c.jpg)
 
 ![In Game Image](https://i.imgur.com/Mnv1Yig.jpg)
